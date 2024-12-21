@@ -8,7 +8,7 @@
 			"name": "(gdb) Launch",
 			"type": "cppdbg",
 			"request": "launch",
-			"program": "${workspaceFolder}/bin/websrv",
+			"program": "${workspaceFolder}/bin/webserv",
 			"preLaunchTask": "make build",
 			"args": ["../config.cfg"],
 			"stopAtEntry": false,
