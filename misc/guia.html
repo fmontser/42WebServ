@@ -31,6 +31,10 @@
 			display: block;
 		}
 
+		#toogleConfigFile:checked + #sectionConfigFile {
+			display: block;
+		}
+
 		#toogleLimits:checked + #sectionLimits {
 			display: block;
 		}
@@ -62,6 +66,19 @@
 		#toogleErrors:checked + #sectionErrors {
 			display: block;
 		}
+
+
+		#toogleConcepts:checked + #sectionConcepts {
+			display: block;
+		}
+
+		#toogleHTTP:checked + #sectionHTTP {
+			display: block;
+		}
+
+		#toogleCGI:checked + #sectionCGI {
+			display: block;
+		}
 	
 		label {
 			cursor: pointer;
@@ -79,6 +96,39 @@
 			font-size: 12px;
 		}
 
+		blockquote {
+			background-color: #ceadad;
+			border-radius: 5px;
+			font-family: 'Courier New', monospace;
+			font-style: italic;
+			font-size: 14px;
+			overflow-x: auto;
+			margin-right: 2em;
+			padding: 1em;
+		}
+		
+		.infoquote {
+			background-color: #b4c3d3;
+			border-radius: 5px;
+			font-family: 'Courier New', monospace;
+			font-style: italic;
+			font-size: 14px;
+			overflow-x: auto;
+			margin-right: 2em;
+			padding: 1em;
+
+		}
+		.quote {
+			background-color: #a9a9a9;
+			border-radius: 5px;
+			font-family: 'Courier New', monospace;
+			font-style: italic;
+			font-size: 14px;
+			overflow-x: auto;
+			margin-right: 2em;
+			padding: 1em;
+		}
+
 		/* SINTAXIS DE CODIGO */
 
 		pre {
@@ -91,7 +141,6 @@
 		}
 
 		code {
-			margin-left: 2em;
 			color: black;
 		}
 
@@ -128,7 +177,7 @@
 </head>
 
 <body>
-	<h1 id="webserv-requerimientos-y-limitaciones">GUIA 42 WEBSERV:</h1>
+	<h1>GUIA 42 WEBSERV:</h1>
 	<p style="font-style: italic;">subject version: 21.2</p>
 	<hr>
 
@@ -137,13 +186,17 @@
 	<label for="toogleLimits">LIMITACIONES</label>
 	<input type="checkbox" id="toogleLimits" style="display: none;" >
 	<section id="sectionLimits">
-		<h3 id="restricciones-t-cnicas">Restricciones técnicas</h3>
+		<h3>Restricciones técnicas</h3>
 	<ul>
 		<li>Prohibido usar <code>fork()</code> excepto para la ejecución de CGIs. </li>
 		<li>No se puede usar <code>execve()</code> para invocar otro servidor web. </li>
 		<li>Está prohibido realizar operaciones de lectura/escritura sin pasar por <code>poll()</code> (o equivalentes). </li>
+		<li>Las librerias externas y Boost estan prohibidas.</li>
+		<li>El codigo debe compilar con las flags <strong>-Wall -Wextra -Werror -std=c++98</strong>.</li>
+		<li>Makefile debe gestionar la compilacion, almenos con las reglas <strong>$(NAME), all, clean, fclean y re</strong>.</li>
+
 	</ul>
-	<h3 id="errores-cr-ticos">Errores críticos</h3>
+	<h3>Errores críticos</h3>
 	<ul>
 		<li>El programa no debe cerrarse inesperadamente ni fallar en ninguna circunstancia (incluso en caso de falta de memoria).</li>
 	</ul>
@@ -156,58 +209,284 @@
 	<label for="toogleReq">REQUERIMIENTOS</label>
 	<input type="checkbox" id="toogleReq" style="display: none;" >
 	<section id="sectionReq">
-		<h3 id="configuraci-n-b-sica">Configuración básica</h3>
-		<ul>
-			<li>El programa debe aceptar un archivo de configuración como argumento, o usar uno por defecto.</li>
-			<li>El archivo de configuración debe permitir:
-		<ul>
-				<li>Elegir puerto y host para cada servidor.</li>
-				<li>Configurar nombres de servidor ( <code>server_name</code>). </li>
-				<li>Configurar páginas de error personalizadas.</li>
-				<li>Limitar el tamaño del cuerpo de las solicitudes.</li>
-				<li>Definir rutas específicas con opciones como: 
-					<ul>
-						<li>Métodos HTTP permitidos.</li>
-						<li>Redirecciones HTTP.</li>
-						<li>Directorios base o archivos para rutas.</li>
-						<li>Habilitar/deshabilitar listado de directorios.</li>
-						<li>Configurar archivos predeterminados para directorios.</li>
-						<li>Habilitar soporte para subida de archivos y definir su destino.</li>
-					</ul>
-				</li>
-		</ul>
+		<ol>
+			<li>
+				<p class="quote"><strong>"Your program has to take a configuration file as argument, or use a default path."</strong></p>
+				<p>
+					Tu programa debe ser capaz de recibir un archivo de configuración como argumento al ejecutarse, proporcionando flexibilidad en su configuración. Si no se proporciona un archivo de configuración al ejecutar el programa, este debe ser capaz de usar una ruta predeterminada a un archivo de configuración por defecto. Esta configuración flexible es importante para poder adaptar el comportamiento del servidor a diferentes entornos y requisitos sin tener que recompilar el código.  Por ejemplo, si el usuario no especifica un archivo, el servidor podría buscar un archivo llamado `config.conf` en el directorio de trabajo.
+				</p>
 			</li>
-		</ul>
-		<h3 id="http-y-funcionalidad-b-sica">HTTP y funcionalidad básica</h3>
-		<ul>
-			<li>Implementar soporte para los métodos HTTP: <strong>GET</strong>, <strong>POST</strong>, y <strong>DELETE</strong>. </li>
-			<li>Responder con códigos HTTP precisos y con páginas de error por defecto si no se configuran personalizadas.</li>
-			<li>Compatible con HTTP/1.1 y navegadores web.</li>
-			<li>El servidor debe ser capaz de servir sitios web estáticos completos.</li>
-		</ul>
-		<h3 id="manejo-de-conexiones">Manejo de conexiones</h3>
-		<ul>
-			<li>Implementar I/O no bloqueante utilizando <code>poll()</code> o equivalentes (como <code>select()</code>, <code>epoll()</code>, o <code>kqueue</code>). </li>
-			<li>Solo se permite un <code>poll()</code> (o equivalente) para todas las operaciones I/O. </li>
-			<li>Manejar múltiples conexiones y permitir la escucha en múltiples puertos.</li>
-		</ul>
-		<h3 id="cgi">CGI</h3>
-		<ul>
-			<li>Soportar <strong>Common Gateway Interface (CGI)</strong> para ejecutar scripts como PHP o Python: <ul>
-					<li>El servidor debe llamar al CGI con el archivo solicitado como primer argumento.</li>
-					<li>Descomprimir solicitudes chunked y procesar la salida del CGI correctamente.</li>
-				</ul>
+			<li>
+				<p class="quote"><strong>"You can’t execve another web server."</strong></p>
+				<p>
+					Está prohibido usar la función <code>execve</code> para ejecutar otro servidor web como parte de la solución. El objetivo principal de este requerimiento es garantizar que la implementación del servidor web sea completamente de tu autoría y que no dependa de la funcionalidad de otro servidor ya existente. Al evitar el uso de `execve` o funciones similares, se asegura que entiendes y aplicas todos los conceptos necesarios para construir un servidor web funcional. Esto fomenta una comprensión profunda de la implementación de un servidor web.
+				</p>
 			</li>
-		</ul>
-		<h3 id="robustez">Robustez</h3>
-		<ul>
-			<li>No debe bloquearse ni colgarse indefinidamente.</li>
-			<li>Debe resistir pruebas de estrés manteniéndose disponible en todo momento.</li>
-		</ul>
+			<li>
+				<p class="quote"><strong>"Your server must never block and the client can be bounced properly if necessary."</strong></p>
+				<p>
+					Tu servidor debe ser no bloqueante en todas sus operaciones, evitando que se detenga o se congele mientras espera a que se complete una operación (como una lectura o escritura de socket). Además, debe ser capaz de desconectar un cliente de forma apropiada y controlada si es necesario, por ejemplo, cuando un cliente envía datos incorrectos, si hay un timeout o en otras situaciones excepcionales. Esta capacidad de manejar conexiones de forma no bloqueante y rechazar clientes de forma controlada es esencial para la estabilidad y rendimiento del servidor.
+				</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"It must be non-blocking and use only 1 poll() (or equivalent) for all the I/O operations between the client and the server (listen included)."</strong></p>
+				<p>
+					Tu servidor debe ser diseñado utilizando un modelo no bloqueante. Es decir, el servidor debe utilizar una única llamada a la función `poll()` (o una función similar que proporcione las mismas capacidades) para manejar todas las operaciones de entrada/salida con los clientes, incluyendo la escucha de nuevas conexiones (`listen`). Esto significa que todas las operaciones de read, write, y accept deben pasar por una única llamada a `poll()`. El objetivo de este requerimiento es que el servidor sea eficiente en el manejo de múltiples conexiones, al poder verificar la disponibilidad de múltiples sockets con una sola llamada al sistema.  Este modelo  optimiza el uso de los recursos del sistema.
+				</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"poll() (or equivalent) must check read and write at the same time."</strong></p>
+				<p>
+					La función `poll()` (o la función equivalente que uses) debe ser configurada para verificar la disponibilidad de lectura y escritura de los sockets al mismo tiempo, en la misma llamada. El servidor debe estar atento a ambos tipos de eventos (lectura de datos del cliente y escritura de datos hacia el cliente).  Esto permite que el servidor maneje la comunicación en ambas direcciones de forma eficiente, ya que puede estar listo para recibir datos de un cliente y enviar una respuesta simultáneamente.
+				</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"You must never do a read or a write operation without going through poll() (or equivalent)."</strong></p>
+				<p>
+					Nunca debes realizar una operación de lectura (como `read` o `recv`) o de escritura (como `write` o `send`) directamente sobre un descriptor de archivo. Todas las operaciones de entrada/salida (I/O) deben ser precedidas por la verificación de que el socket está listo para la operación utilizando la función `poll()` (o equivalente). Esto asegura que el servidor no se bloquee mientras espera a que una operación de lectura o escritura se complete, manteniendo el modelo no bloqueante. Cualquier acceso directo, que ignore el uso de `poll()`, se considerará una violación de este requerimiento.
+				</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"Checking the value of errno is strictly forbidden after a read or a write operation."</strong></p>
+				<p>
+					Está estrictamente prohibido verificar el valor de la variable `errno` después de realizar una operación de lectura o escritura directamente sobre un descriptor de archivo. La variable `errno` contiene un código de error que indica qué salió mal en una operación. Sin embargo, como debes usar `poll()` para saber si un socket está listo para leer o escribir, este debe ser el único mecanismo de detección de errores. Si no respetas esto e intentas usar `errno`, violarás el requerimiento de uso estricto de `poll()`.  Este requerimiento es fundamental para asegurar que se respete el modelo no bloqueante y que el código esté escrito de forma consistente con las directrices establecidas.
+				</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"You don’t need to use poll() (or equivalent) before reading your configuration file."</strong></p>
+				<p>
+					No es necesario utilizar `poll()` (o una función equivalente) antes de leer el archivo de configuración al inicio de tu servidor. La lectura del archivo de configuración se puede realizar utilizando funciones de lectura bloqueantes estándar, como `fopen` y `fread`. Esto es porque se asume que esta es una operación única que se realiza durante la inicialización del servidor y no necesita el manejo de múltiples eventos, por lo que se permite usar funciones bloqueantes sin afectar al resto de la operación del servidor.
+				</p>
+				<blockquote>
+					"Because you have to use non-blocking file descriptors, it is possible to use read/recv or write/send functions with no poll() (or equivalent), and your server wouldn’t be blocking. But it would consume more system resources. Thus, if you try to read/recv or write/send in any file descriptor without using poll() (or equivalent), your grade will be 0."
+				</blockquote>
+				<p>
+					Si bien es técnicamente posible usar funciones de lectura y escritura no bloqueantes como `read`, `recv`, `write`, o `send` en descriptores de archivo no bloqueantes sin la necesidad de `poll()` y, en teoria, no bloquear el hilo principal del programa, esto llevaría a una utilización ineficiente de los recursos del sistema.  Si se realiza esto, el servidor estaría ejecutando operaciones en bucle que consumirian recursos del sistema sin necesidad. Por lo tanto, cualquier intento de usar `read`, `recv`, `write` o `send` directamente en un descriptor de archivo sin pasar primero por `poll()` resultará en una calificación de 0. Este requerimiento se pone para que la implementación de tu servidor sea eficiente.
+				</p>
+
+			</li>
+
+			<li>
+				<p class="quote"><strong>"You can use every macro and define like FD_SET, FD_CLR, FD_ISSET, FD_ZERO (understanding what and how they do it is very useful)."</strong></p>
+				<p>
+					Puedes utilizar las macros y definiciones como `FD_SET`, `FD_CLR`, `FD_ISSET` y `FD_ZERO`, las cuales son utilizadas para manipular conjuntos de descriptores de archivo (file descriptor sets). Estas macros forman parte de la API de sockets de Unix y facilitan el manejo de múltiples descriptores de archivo en la función `select()` (o, en este caso, una función equivalente de `poll()`). Si bien este proyecto pide el uso de `poll()`, la comprensión de como funcionan estas macros es útil para el entendimiento general de la manipulación de los descriptores de archivo. En resumen, si bien la funcion usada será `poll()`, el concepto general de manejar un conjunto de descriptores de archivo es el mismo.
+				</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"A request to your server should never hang forever."</strong></p>
+				<p>
+					Todas las peticiones realizadas a tu servidor deben ser respondidas en un tiempo razonable y nunca deben quedarse colgadas esperando una respuesta indefinidamente. Es decir, el servidor no debe quedarse bloqueado esperando a que un cliente envíe información o procese una petición. En el caso de que una petición se tarde demasiado en completar, el servidor debe tener un mecanismo de timeout para rechazar la petición y liberar los recursos, evitando el bloqueo del servidor. Este es un requerimiento vital para garantizar que el servidor sea estable y responda a las peticiones en tiempo y forma.
+				</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"Your server must be compatible with the web browser of your choice."</strong></p>
+				<p>
+					Tu servidor debe ser capaz de comunicarse correctamente con cualquier navegador web moderno (por ejemplo, Chrome, Firefox, Safari, etc.). Esto implica que el servidor debe implementar el protocolo HTTP correctamente, incluyendo la gestión de encabezados HTTP, códigos de estado y la codificación de datos. Asegúrate de probar tu servidor con un navegador real para asegurar que las solicitudes y respuestas se manejan de forma correcta y tu servidor es capaz de generar respuestas HTML validas.
+				</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"We will consider that NGINX is HTTP 1.1 compliant and may be used to compare headers and answer behaviors."</strong></p>
+				<p>
+					Se considerará que NGINX, un servidor web de referencia, cumple completamente con el protocolo HTTP 1.1. Esto significa que puedes usar NGINX como una herramienta de referencia para validar el comportamiento de tu servidor. Puedes realizar pruebas comparando los encabezados y las respuestas que genera tu servidor con las que genera NGINX para el mismo tipo de peticiones.  Si tu servidor responde de la misma forma que NGINX, entonces puedes asegurar que implementas correctamente el protocolo HTTP 1.1.
+				</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"Your HTTP response status codes must be accurate."</strong></p>
+				<p>
+				   Los códigos de estado HTTP que tu servidor genera en las respuestas deben ser precisos y representar correctamente el resultado de la solicitud del cliente. Por ejemplo, cuando un recurso se encuentra debe devolver un código 200, si el recurso no existe, 404 y si hay un error interno, 500. Usar los códigos correctos es fundamental para el protocolo HTTP y  para el funcionamiento correcto de los clientes que solicitan recursos a tu servidor.
+				</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"You server must have default error pages if none are provided."</strong></p>
+				<p>
+					Tu servidor debe incluir páginas de error por defecto para los casos en los que no se haya especificado páginas de error personalizadas. En caso de que se produzca un error y no exista una página de error configurada, el servidor debe enviar una respuesta HTML genérica para indicar el error al cliente. Esto asegura una experiencia de usuario aceptable incluso cuando se producen errores en el servidor, y evita que el cliente reciba una respuesta HTTP sin información adicional sobre el error.
+				</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"You can’t use fork for something else than CGI (like PHP, or Python, and so forth)."</strong></p>
+				<p>
+					Está prohibido usar la función <code>fork</code> para crear procesos secundarios, excepto en el caso de la ejecución de programas CGI. La función <code>fork</code> es la encargada de crear procesos secundarios en entornos Unix. En este proyecto, la idea es que no uses la funcion `fork` para implementar funcionalidades de paralelismo en tu servidor, esta debe ser usada solo para la invocación de CGIs. La única funcionalidad permitida para usar procesos secundarios es el caso de la ejecución de scripts dinámicos mediante CGIs, como PHP o Python.
+				</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"You must be able to serve a fully static website."</strong></p>
+				<p>
+					Tu servidor debe ser capaz de servir un sitio web que sea totalmente estático, lo que implica que debe poder entregar archivos HTML, CSS, JavaScript, imágenes, vídeos, y cualquier otro tipo de archivo que forme parte de un sitio web estático. Esto es fundamental para que tu servidor pueda servir contenido web básico.  La entrega de archivos estáticos es una funcionalidad básica que todo servidor web debe implementar.
+				</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"Clients must be able to upload files."</strong></p>
+				<p>
+					Tu servidor debe permitir que los clientes suban archivos al servidor. Esto implica que el servidor debe manejar las peticiones HTTP de tipo `POST` que incluyan datos de formulario y archivos adjuntos. Además, debes guardar los archivos subidos en el directorio especificado en la configuración. Esta funcionalidad es importante para poder recibir datos y archivos de clientes externos.
+				</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"You need at least GET, POST, and DELETE methods."</strong></p>
+				<p>
+					Tu servidor debe implementar al menos los métodos HTTP `GET`, `POST` y `DELETE`.  El método `GET` se utiliza para obtener recursos del servidor, `POST` para enviar datos al servidor, y `DELETE` para eliminar recursos. Estos métodos son los mas utilizados y el que tu servidor funcione correctamente con estos métodos garantiza que cumple las funciones mínimas que se espera de un servidor HTTP.
+				</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"Stress tests your server. It must stay available at all cost."</strong></p>
+				<p>
+					Es fundamental realizar pruebas de estrés para asegurar que tu servidor es capaz de soportar altas cargas y sigue respondiendo a las peticiones incluso bajo condiciones de estrés y carga máxima. El servidor debe ser capaz de manejar un gran volumen de peticiones simultáneas sin bloquearse o dejar de responder. La resiliencia y la capacidad de mantenerse disponible bajo estrés son requisitos esenciales para un servidor web.
+				</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"Your server must be able to listen to multiple ports (see Configuration file)."</strong></p>
+				<p>
+					Tu servidor debe ser capaz de escuchar en múltiples puertos al mismo tiempo. Esto permite que un solo servidor pueda gestionar peticiones en diferentes puertos para diferentes propósitos o para simular múltiples servidores en la misma maquina.  Esta característica es fundamental para el correcto funcionamiento de tu servidor.  La configuración de qué puertos debe escuchar el servidor se especificará en el archivo de configuración.
+				</p>
+			</li>
+		</ol>
 		<label for="toogleReq">COLAPSAR</label>
 	</section>
 	<hr>
 
+	<!-- SECCION ARCHIVO DE CONFIGURACION -->
+
+	<label for="toogleConfigFile">ARCHIVO DE CONFIGURACION</label>
+	<input type="checkbox" id="toogleConfigFile" style="display: none;" >
+	<section id="sectionConfigFile">
+		<ul>
+			<li>
+				<p class="quote"><strong>"Choose the port and host of each ’server’."</strong></p>
+				<p>
+					Elige el puerto y el host de cada servidor. Esto define en qué direcciones de red y puertos específicos tu servidor web estará escuchando conexiones entrantes. 
+					<br><br>
+					El <strong>host</strong> puede ser una dirección IP (como `127.0.0.1` para localhost o `192.168.1.100` para una dirección local en tu red) o un nombre de dominio (si tu servidor está en la web).  El <strong>puerto</strong> es un número (por ejemplo, 80 para HTTP o 443 para HTTPS) que identifica el servicio específico que el servidor ofrece en esa dirección. Configurar correctamente esto es fundamental para que los clientes puedan contactar a tu servidor.
+				</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"Setup the server_names or not."</strong></p>
+				<p>
+					Configura los nombres de servidor (opcional). Los nombres de servidor, también conocidos como "server names" o "virtual hosts", permiten que un único servidor web (con un mismo host y puerto) responda a múltiples dominios diferentes. Por ejemplo, un solo servidor podría manejar tanto `www.miweb1.com` como `www.miweb2.com`, y el servidor sabría a qué contenido servir basándose en el `server_name` que el cliente especificó en la cabecera HTTP. Este mecanismo es esencial para el hosting compartido, donde múltiples sitios web residen en la misma infraestructura.
+				</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"The first server for a host:port will be the default for this host:port (that means it will answer to all the requests that don’t belong to an other server)."</strong></p>
+				<p>
+					El primer servidor configurado para un par host:puerto específico se convierte en el servidor <strong>predeterminado</strong> para ese par. Esto significa que, si una solicitud entrante no coincide con un `server_name` específico, será manejada por el primer servidor configurado para ese host y puerto. Es importante considerar este comportamiento al configurar tus servidores virtuales, ya que el primer servidor actuará como un "catch-all" para cualquier solicitud que no tenga una configuración más específica.
+				</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"Setup default error pages."</strong></p>
+				<p>
+					Configura las páginas de error predeterminadas. Cuando ocurren errores durante el procesamiento de una solicitud HTTP (por ejemplo, un error 404 "No encontrado" o un error 500 "Error interno del servidor"), es crucial tener páginas de error personalizadas para ofrecer una experiencia de usuario amigable. Configurar estas páginas permite que tu servidor responda de manera controlada ante situaciones imprevistas, en lugar de mostrar errores predeterminados y poco descriptivos.
+				</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"Limit client body size."</strong></p>
+				<p>
+					Limita el tamaño máximo del cuerpo (payload) de las solicitudes HTTP que tu servidor aceptará. Esta es una medida de seguridad importante para prevenir ataques de denegación de servicio (DoS) que intenten sobrecargar el servidor enviando grandes cantidades de datos en una sola solicitud. Además, limitar el tamaño de las solicitudes evita el consumo excesivo de recursos (memoria, ancho de banda) por parte del servidor.
+				</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"Setup routes with one or multiple of the following rules/configuration (routes won’t be using regexp):"</strong></p>
+				<p>
+					Configura rutas. Una ruta define cómo tu servidor maneja las diferentes partes de las URLs. Estas rutas no usarán expresiones regulares, lo que significa que deben coincidir de forma exacta con una parte de la URL solicitada. Esto es para que tu servidor sepa qué hacer cuando un cliente solicita un recurso en una ruta específica.
+				</p>
+				<ul>
+					<li>
+						<p class="quote">"Define a list of accepted HTTP methods for the route."</p>
+						<p>Define una lista de métodos HTTP aceptados para la ruta, como `GET` para obtener datos, `POST` para enviar datos, `PUT` para actualizar recursos, `DELETE` para eliminar, entre otros. Al definir una lista de métodos permitidos, se incrementa la seguridad del servidor, impidiendo que se utilicen métodos no deseados para manipular el recurso. Por ejemplo, una ruta que solo acepta `GET` rechaza cualquier solicitud con el método `POST`.</p>
+					</li>
+					<li>
+						<p class="quote">"Define a HTTP redirection."</p>
+						<p>Define una redirección HTTP. Esto permite que tu servidor dirija a los usuarios de una URL a otra. Las redirecciones son útiles para reorganizar la estructura del sitio web, cambiar de dominio, o redirigir tráfico de una URL obsoleta a una URL actualizada. Las redirecciones pueden ser temporales (302) o permanentes (301). Esta característica mantiene el trafico y permite al usuario encontrar la informacion que busca, incluso si el recurso se encuentra en otra ruta.</p>
+					</li>
+					<li>
+						<p class="quote">"Define a directory or a file from where the file should be searched."</p>
+						<p>Especifica el directorio o archivo base desde donde el servidor buscará los recursos solicitados. Cuando un cliente pide una URL, el servidor buscará el archivo correspondiente dentro del directorio o archivo especificado para esa ruta. Por ejemplo, si una ruta corresponde al directorio "/var/www/html", cuando el cliente pide "/index.html", el servidor buscará "/var/www/html/index.html".</p>
+					</li>
+					<li>
+						<p class="quote">"Turn on or off directory listing."</p>
+						<p>Activa o desactiva la opción de mostrar una lista del contenido de un directorio si no se solicita un archivo específico dentro de ese directorio. Habilitar el listado de directorio puede ser útil para servidores de archivos o pruebas, pero en la mayoria de los casos, puede ser un riesgo de seguridad si se exponen archivos no deseados.</p>
+					</li>
+					<li>
+						<p class="quote">"Set a default file to answer if the request is a directory."</p>
+						<p>Define un archivo por defecto (como `index.html` o `index.php`) que se servirá cuando la URL solicite un directorio en lugar de un archivo específico. Si se habilita esta configuración, cuando un usuario solicite `/directorio`, el servidor buscara el archivo default dentro del directorio, `/directorio/index.html` por ejemplo, en lugar de mostrar el listado del contenido del directorio (si estuviera habilitado).</p>
+					</li>
+					<li>
+						<p class="quote">"Execute CGI based on certain file extension (for example .php)."</p>
+						<p>Habilita la ejecución de programas CGI (Interfaz de Gateway Común) basados en la extensión del archivo solicitado. Los CGIs son programas que generan contenido dinámico para la web. Al configurar esta opción, cuando un usuario pide un recurso con la extensión definida (ejemplo, `.php`), el servidor invocara el CGI adecuado para procesar la petición y generar una respuesta dinamica. Esta funcionalidad permite integrar lenguajes como PHP, Python, u otros que puedan generar respuestas dinámicas a las peticiones del usuario.</p>
+					</li>
+					<li>
+						<p class="quote">"Make it work with POST and GET methods."</p>
+						<p>Asegura que una ruta funcione con los métodos HTTP `POST` (para enviar datos) y `GET` (para obtener datos). La mayoría de las peticiones suelen ser GET, pero si quieres que el usuario envie información, debes habilitar `POST`. Asegurarse de que una ruta sea capaz de manejar estos dos metodos es vital para que funciones como la creación de cuentas de usuario o la subida de archivos funcionen correctamente.</p>
+					</li>
+					<li>
+						<p class="quote">"Make the route able to accept uploaded files and configure where they should be saved."</p>
+						<p>Permite que la ruta acepte archivos subidos por los clientes y especifica dónde deben guardarse en el sistema de archivos del servidor. Esta funcionalidad es necesaria para formularios que requieren la subida de ficheros, como por ejemplo, una subida de imagen para perfil. Al definir la ruta para los ficheros subidos, te aseguras de que los ficheros estén almacenados en un directorio que sea accesible, seguro y consistente con el resto de la configuración de tu servidor.</p>
+					</li>
+				</ul>
+			</li>
+			<li>
+				<p class="quote"><strong>"Do you wonder what a CGI is?"</strong></p>
+				<p>¿Te preguntas qué es un CGI? Es un mecanismo para ejecutar programas en el servidor que generan contenido dinámico. Los CGI son la interfaz que permite comunicar el servidor web con un programa, este programa generara una salida que el servidor retornará al cliente. Los CGIs permiten la ejecución de scripts y programas que interactúan con la solicitud del cliente y generan contenido dinámico.</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"Because you won’t call the CGI directly, use the full path as PATH_INFO."</strong></p>
+				<p>Debido a que no llamarás al CGI directamente, usa la ruta completa como <code>PATH_INFO</code>.  La variable de entorno <code>PATH_INFO</code> se usa para pasar información adicional sobre la ruta solicitada al programa CGI. Es una variable de entorno que contiene la parte de la URL que va después del nombre del script. Es importante pasar la información correctamente para que el script procese la petición correctamente.</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"Just remember that, for chunked request, your server needs to unchunk it, the CGI will expect EOF as end of the body."</strong></p>
+				<p>Recuerda que, para solicitudes chunked, tu servidor debe descomponerlas, ya que el CGI espera un EOF como final del cuerpo. Las solicitudes *chunked* son aquellas que envían el cuerpo en partes (chunks) sin especificar el tamaño total del cuerpo. Tu servidor web debe reensamblar estos chunks y enviar el cuerpo completo al script CGI para que este lo procese. Para señalar el final del cuerpo al script CGI se usa un EOF (end of file). La omision de esta funcionalidad puede llevar a fallos y comportamientos erráticos del servidor.
+				</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"Same things for the output of the CGI. If no content_length is returned from the CGI, EOF will mark the end of the returned data."</strong></p>
+				<p>Lo mismo ocurre con la salida del CGI. Si no se devuelve <code>content_length</code>, EOF marcará el final de los datos devueltos. El servidor necesita conocer la longitud del contenido (Content-Length) de la respuesta generada por el CGI. Si el CGI no proporciona esta información, el servidor considerará que el final de la respuesta es el EOF (End Of File). Es importante que el CGI devuelva el `content-length` en la cabecera o que se asegure de que su output termine con un EOF.</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"Your program should call the CGI with the file requested as first argument."</strong></p>
+				<p>Tu programa debe llamar al CGI con el archivo solicitado como primer argumento. El primer argumento del programa CGI debe ser la ruta al archivo solicitado. Por ejemplo, si el cliente pide `index.php`, el programa CGI recibirá `index.php` como primer argumento. Es importante pasar esta información para que el programa CGI pueda procesar la petición correctamente.</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"The CGI should be run in the correct directory for relative path file access."</strong></p>
+				<p>El CGI debe ejecutarse en el directorio correcto para permitir el acceso a rutas relativas. Es importante que el CGI se ejecute en el directorio correcto para que pueda acceder a los archivos usando rutas relativas. Por ejemplo, si el script CGI espera un archivo en `./data.txt`, y este se ejecuta desde `/var/www/cgi-bin/` entonces el archivo se buscara en `/var/www/cgi-bin/data.txt`. En cambio si el CGI se ejecuta desde el directorio `/var/www/html/`, entonces buscara en `/var/www/html/data.txt`. El directorio desde donde se ejecuta el script CGI puede impactar en como este accede a los archivos.</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"Your server should work with one CGI (php-CGI, Python, and so forth)."</strong></p>
+				<p>Tu servidor debe funcionar con al menos un CGI (como php-CGI, Python, etc.). Para esta practica debe asegurarse que tu servidor puede trabajar con al menos un programa CGI, como por ejemplo, PHP para generar contenido dinámico a las peticiones del cliente. La funcionalidad de soportar un CGI es fundamental para probar que el servidor es capaz de interactuar con un programa para generar contenido dinámico.</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"You must provide some configuration files and default basic files to test and demonstrate every feature works during evaluation."</strong></p>
+				<p>Debes proporcionar algunos archivos de configuración y archivos básicos por defecto para probar y demostrar que todas las características funcionan durante la evaluación. Es importante proporcionar los archivos necesarios para que el evaluador pueda probar que todas las funcionalidades funcionan correctamente. Esto incluye archivos de configuración que el servidor utiliza y archivos de prueba.
+				</p>
+			</li>
+		</ul>
+
+		<blockquote class="infoquote">
+			"If you’ve got a question about one behavior, you should compare your
+			program behavior with NGINX’s.
+			For example, check how does server_name work.
+			We’ve shared with you a small tester. It’s not mandatory to pass it
+			if everything works fine with your browser and tests, but it can help
+			you hunt some bugs."
+		</blockquote>
+		<p>
+			Si tienes dudas sobre cómo se comporta tu servidor en un caso específico, una buena práctica es comparar su comportamiento con el de NGINX, un servidor web de alto rendimiento ampliamente utilizado en la industria. Por ejemplo, si no estás seguro de cómo funciona el `server_name` (host virtual), configura un caso similar tanto en tu servidor como en NGINX y observa las diferencias y similitudes.  Esta comparación te ayudará a entender mejor los estándares de la industria y a asegurarte de que tu implementación cumple con las expectativas.  Además, se te proporciona un pequeño programa de pruebas para ayudarte a identificar errores de una forma más automática. Si bien no es obligatorio que superes este programa de pruebas, puede ser útil para detectar fallos que no son obvios en las pruebas manuales con el navegador. Utilízalo para verificar la funcionalidad de tu servidor.
+		</p>
+		
+		<blockquote>
+			"The important thing is resilience. Your server should never die."
+		</blockquote>
+		<p>
+			La resiliencia es un aspecto fundamental de un servidor web confiable. Esto significa que tu servidor debe ser capaz de seguir funcionando y respondiendo a las peticiones, incluso si se producen errores inesperados, ataques de denegación de servicio, o si recibe un número elevado de peticiones simultáneas.  Un servidor resiliente no se bloquea ni deja de responder ante problemas, sino que maneja los errores de forma controlada y sigue operativo. Para lograr la resiliencia, considera implementar mecanismos para manejar excepciones, prevenir fugas de memoria, controlar el uso de recursos, y asegurarte de que el servidor no dependa de un único punto de fallo. En resumen, el servidor debe estar diseñado para sobrevivir incluso en las peores condiciones.
+		</p>
+		
+		<blockquote>
+			"Do not test with only one program. Write your tests with a more
+			convenient language such as Python or Golang, and so forth."
+		</blockquote>
+		<p>
+			Es fundamental no limitar las pruebas de tu servidor a un único programa o herramienta. Para asegurarte de que tu servidor funciona correctamente en diversas situaciones, debes escribir pruebas utilizando lenguajes de programación más convenientes y expresivos, como Python o Golang. Estos lenguajes suelen tener bibliotecas y frameworks que facilitan la creación de pruebas automatizadas y la simulación de diferentes tipos de solicitudes HTTP.  Además, el uso de diferentes lenguajes te permite detectar errores específicos que podrían pasar desapercibidos si solo usas un único programa de pruebas.  Considera también incluir pruebas de rendimiento y de estrés para comprobar que tu servidor puede manejar un gran número de peticiones sin fallar. La idea principal es que las pruebas deben ser lo más variadas posibles.
+		</p>
+	<label for="toogleConfigFile">COLAPSAR</label>
+</section>
+<hr>
+	
 	<!-- SECCION FUNCIONES-->
 
 	<label for="toogleFuncs">FUNCIONES PERMITIDAS</label>
@@ -1492,4 +1771,182 @@
 	<label for="toogleFuncs">COLAPSAR</label>
 	</section>
 	<hr>
+
+	<!-- SECCION CONCEPTOS CLAVE -->
+
+<!-- SECCION CONCEPTOS CLAVE -->
+
+<label for="toogleConcepts">CONCEPTOS CLAVE</label>
+<input type="checkbox" id="toogleConcepts" style="display: none;" >
+<section id="sectionConcepts">
+<hr>
+
+	<!-- SECCION HTTP -->
+
+	<label for="toogleHTTP">PROTOCOLO HTTP</label>
+	<input type="checkbox" id="toogleHTTP" style="display: none;" >
+	<section id="sectionHTTP">
+		
+		<h2>Introducción al Protocolo HTTP</h2>
+		<p>
+			El <strong>Protocolo de Transferencia de Hipertexto (HTTP)</strong> es la base de la comunicación en la World Wide Web. Es un protocolo de nivel de aplicación que define cómo los clientes (como navegadores web) y los servidores web intercambian información. HTTP se basa en un modelo de solicitud-respuesta, donde un cliente envía una solicitud a un servidor, y el servidor responde con los datos solicitados o un mensaje de error.
+		</p>
+
+		<h3>Conceptos Básicos de HTTP</h3>
+		<ul>
+			<li>
+				<p><strong>Métodos HTTP:</strong> Definen la acción que el cliente quiere realizar. Algunos de los métodos más comunes son:
+					<ul>
+						<li><code>GET</code>: Solicita un recurso específico.</li>
+						<li><code>POST</code>: Envía datos al servidor para su procesamiento.</li>
+						<li><code>DELETE</code>: Solicita la eliminación de un recurso.</li>
+						<li><code>PUT</code>: Solicita la actualización o creación de un recurso.</li>
+					</ul>
+				</p>
+			</li>
+			<li>
+				<p><strong>URLs (Localizadores Uniformes de Recursos):</strong> Identifican de forma única cada recurso en la web, especificando el protocolo, el host y la ruta al recurso.</p>
+			</li>
+			<li>
+				<p><strong>Encabezados HTTP:</strong> Son pares clave-valor que proporcionan información adicional sobre la solicitud o la respuesta, como el tipo de contenido, la codificación, cookies, etc.</p>
+			</li>
+			<li>
+				<p><strong>Códigos de Estado HTTP:</strong> Números de tres dígitos que indican el resultado de la solicitud del cliente, como <code>200 OK</code>, <code>404 Not Found</code> o <code>500 Internal Server Error</code>.</p>
+			</li>
+			<li>
+				<p><strong>Cuerpo (Body):</strong> Los datos que se envían con la solicitud (como en una petición `POST`) o que se envían en la respuesta (como el HTML de una página web).</p>
+			</li>
+		</ul>
+
+		<h3>RFC (Request for Comments)</h3>
+		<p>
+			El protocolo HTTP se define formalmente en una serie de documentos llamados <strong>RFCs (Request for Comments)</strong>. Un RFC es un documento publicado por la IETF (Internet Engineering Task Force) que describe los estándares, protocolos y procedimientos para la Internet. Los RFCs son documentos públicos que describen los protocolos que hacen posible el funcionamiento de internet. El documento que define el protocolo HTTP se va actualizando periodicamente con las nuevas funcionalidades que se van incorporando.
+			
+		</p>
+		 <p>Puedes encontrar la especificación oficial de la última versión (HTTP/1.1) en el siguiente enlace:</p>
+		
+		<a href="https://datatracker.ietf.org/doc/html/rfc9110" target="_blank">RFC 9110 - HTTP Semantics</a>
+		<br>
+		<a href="https://datatracker.ietf.org/doc/html/rfc9112" target="_blank">RFC 9112 - HTTP/1.1</a>
+		
+		<h3>Implementación Mínima para este Ejercicio</h3>
+		<p>
+			Para este ejercicio, debes concentrarte en implementar un subconjunto básico del protocolo HTTP/1.1. Los puntos clave para comenzar son:
+		</p>
+		 <ul>
+			<li>
+				<p><strong>Analizar la solicitud HTTP:</strong> Implementa el código necesario para procesar una solicitud HTTP básica, incluyendo el método HTTP (GET, POST, DELETE), la URL, y los encabezados necesarios (ej: host). Ten en cuenta que tu servidor NO necesita implementar parsing de chunked requests.</p>
+			</li>
+			  <li>
+				 <p><strong>Generar la respuesta HTTP:</strong> Envía una respuesta HTTP válida con los encabezados necesarios, el código de estado correcto y el cuerpo de la respuesta. </p>
+			</li>
+			  <li>
+				<p><strong>Soporte para archivos estáticos:</strong>  Sirve archivos HTML, CSS, imágenes etc. del sistema de archivos local.
+				</p>
+			</li>
+			 <li>
+				<p><strong>Soporte para CGIs:</strong> Implementa la comunicación con CGIs externos como PHP.</p>
+			</li>
+			   <li>
+				<p><strong>Implementar los metodos:</strong> Soporta al menos los métodos <code>GET</code>, <code>POST</code>, y <code>DELETE</code>, junto con las funcionalidades de  subida de archivos y listado de directorios cuando sea necesario.
+				</p>
+			</li>
+	   </ul>
+	   <p>
+		   Recuerda, no necesitas implementar todas las funcionalidades de HTTP para este proyecto, pero debes cumplir con los requerimientos mínimos y comprender los conceptos básicos.
+		</p>
+
+		<label for="toogleHTTP">COLAPSAR</label>
+	</section>
+	<hr>
+
+	<!-- SECCION CGI -->
+
+	<label for="toogleCGI">COMMON GATEWAY INTERFACE (CGI)</label>
+	<input type="checkbox" id="toogleCGI" style="display: none;" >
+	<section id="sectionCGI">
+		
+		<h2>Introducción a CGI (Interfaz de Gateway Común)</h2>
+		<p>
+			<strong>CGI (Common Gateway Interface)</strong> es un protocolo que permite a los servidores web ejecutar programas externos para generar contenido dinámico. En lugar de servir solo archivos estáticos, los servidores pueden usar CGI para interactuar con scripts o programas que procesan datos, acceden a bases de datos, o realizan otras operaciones y generar una respuesta HTML dinamica. CGI actúa como un puente entre el servidor web y las aplicaciones dinámicas.
+		</p>
+		
+		<h3>Conceptos Básicos de CGI</h3>
+		<ul>
+			 <li>
+				<p><strong>Interacción con el Servidor:</strong> Cuando un cliente solicita un recurso que requiere contenido dinámico, el servidor web llama a un programa CGI, pasándole información sobre la solicitud.</p>
+			</li>
+			<li>
+				<p><strong>Variables de Entorno:</strong> El servidor transmite información al programa CGI mediante variables de entorno, como el método HTTP utilizado, la URL solicitada, la ruta del script, datos del usuario, etc.</p>
+			</li>
+			 <li>
+				<p><strong>Salida Estándar:</strong> El programa CGI genera el contenido dinámico a través de la salida estándar (stdout), y el servidor web lee esta salida para enviar la respuesta HTTP al cliente.</p>
+			</li>
+			 <li>
+				 <p><strong>Tipos de CGIs:</strong> Pueden ser scripts en lenguajes como Python, PHP, Perl o programas compilados en C, C++, etc. Para este ejercicio, solo se solicita soportar un solo tipo de programa CGI.
+				 </p>
+			</li>
+			 <li>
+				 <p><strong>PATH_INFO:</strong> El servidor utiliza la variable de entorno <code>PATH_INFO</code> para pasar al CGI información adicional sobre la ruta solicitada, incluyendo la parte de la ruta que sigue a la ruta del script CGI. Esta variable es fundamental para que el CGI pueda acceder a los parámetros y las rutas que se le solicitan.
+				</p>
+			</li>
+		</ul>
+
+		<h3>Funcionamiento Básico de CGI</h3>
+		<ol>
+			<li>
+				<p>El cliente envía una solicitud al servidor web, solicitando un recurso que debe ser generado dinámicamente (por ejemplo, un script `.php`).</p>
+			</li>
+			 <li>
+				<p>El servidor web reconoce que el recurso es un script CGI y ejecuta el programa o script CGI correspondiente en un proceso separado.</p>
+			</li>
+			<li>
+				<p>El servidor web pasa información sobre la petición al script CGI mediante variables de entorno y argumentos en la línea de comandos.</p>
+			</li>
+			 <li>
+				<p>El script CGI procesa la petición y genera el contenido dinámico (normalmente en formato HTML). Este contenido lo envia a la salida estandar.</p>
+			</li>
+			 <li>
+				 <p>El servidor web captura la salida estándar del script CGI y la envía de vuelta al cliente como una respuesta HTTP.</p>
+			</li>
+		</ol>
+		
+		 <h3>Implementación Mínima para este Ejercicio</h3>
+		<p>
+			Para este ejercicio, debes implementar el soporte básico para ejecutar CGIs. Los puntos clave son:
+		</p>
+		<ul>
+			<li>
+				<p><strong>Ejecución de CGIs:</strong> Implementa la lógica necesaria para ejecutar un programa o script CGI como un proceso separado (usando <code>fork</code> y <code>execve</code>), pasando la ruta del recurso como primer argumento al CGI.</p>
+			</li>
+			<li>
+				<p><strong>Variables de Entorno:</strong> Asegúrate de configurar correctamente las variables de entorno que el CGI necesita, como <code>PATH_INFO</code>.</p>
+			</li>
+			<li>
+				<p><strong>Captura de la salida:</strong> Redirige la salida estándar del script CGI a un buffer que luego será usado para generar la respuesta HTTP.</p>
+			</li>
+			 <li>
+				 <p><strong>Manejo de Content-Length:</strong>  Si el CGI no proporciona el encabezado <code>Content-Length</code> en su salida, tu servidor debe detectar el fin de la salida mediante un EOF (end of file).</p>
+			</li>
+			 <li>
+				 <p><strong>Ejecución en el directorio correcto:</strong> Asegúrate de que el script CGI se ejecute en el directorio correcto para que pueda acceder a archivos utilizando rutas relativas.
+				 </p>
+			</li>
+			 <li>
+				<p><strong>Descompresión de chunked request:</strong> Tu servidor debe ser capaz de descomprimir el cuerpo en caso de que sea un chunked request, ya que el CGI espera recibir el cuerpo completo.
+				</p>
+			</li>
+		</ul>
+		
+		<p>
+			Recuerda que tu servidor debe funcionar con al menos un tipo de CGI (como php-CGI), debes demostrar que la salida dinamica del script CGI es correctamente interpretada por el servidor y devuelta al cliente.
+		</p>
+
+		<label for="toogleCGI">COLAPSAR</label>
+	</section>
+	<hr>
+
+	<label for="toogleConcepts">COLAPSAR</label>
+</section>
+<hr>
 
