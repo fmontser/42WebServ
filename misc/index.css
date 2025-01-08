@@ -1,0 +1,171 @@
+body {
+	font-family: Arial, sans-serif;
+	background-color: #cecccc;
+	background-color: lavender;
+	padding-left: 2em;
+	display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+h1 {
+	color: #333;
+}
+
+p {
+	font-size: 16px;
+	line-height: 1.5;
+}
+
+section {
+	padding-left: 1em;
+	display: none;
+}
+
+#toogleReq:checked + #sectionReq {
+	display: block;
+}
+
+#toogleConfigFile:checked + #sectionConfigFile {
+	display: block;
+}
+
+#toogleLimits:checked + #sectionLimits {
+	display: block;
+}
+
+#toogleFuncs:checked + #sectionFuncs {
+	display: block;
+}
+
+#toogleProcs:checked + #sectionProcs {
+	display: block;
+}
+
+#toogleFileSys:checked + #sectionFileSys {
+	display: block;
+}
+
+#toogleSockets:checked + #sectionSockets {
+	display: block;
+}
+
+#toogleAddress:checked + #sectionAddress {
+	display: block;
+}
+
+#toogleEvents:checked + #sectionEvents {
+	display: block;
+}
+
+#toogleErrors:checked + #sectionErrors {
+	display: block;
+}
+
+
+#toogleConcepts:checked + #sectionConcepts {
+	display: block;
+}
+
+#toogleHTTP:checked + #sectionHTTP {
+	display: block;
+}
+
+#toogleCGI:checked + #sectionCGI {
+	display: block;
+}
+
+label {
+	cursor: pointer;
+	color: rgb(61, 55, 215);
+	font-weight: bold;
+	text-decoration: underline;
+	padding-left: 1em;
+}
+
+.functionList {
+	text-wrap-mode: wrap;
+	background-color: #a9a9a9;
+	border-radius: 5px;
+	font-family: 'Courier New', monospace;
+	font-size: 12px;
+}
+
+blockquote {
+	background-color: #ceadad;
+	border-radius: 5px;
+	font-family: 'Courier New', monospace;
+	font-style: italic;
+	font-size: 14px;
+	overflow-x: auto;
+	margin-right: 2em;
+	padding: 1em;
+}
+
+.infoquote {
+	background-color: #b4c3d3;
+	border-radius: 5px;
+	font-family: 'Courier New', monospace;
+	font-style: italic;
+	font-size: 14px;
+	overflow-x: auto;
+	margin-right: 2em;
+	padding: 1em;
+
+}
+.quote {
+	background-color: #a9a9a9;
+	border-radius: 5px;
+	font-family: 'Courier New', monospace;
+	font-style: italic;
+	font-size: 14px;
+	overflow-x: auto;
+	margin-right: 2em;
+	padding: 1em;
+}
+
+/* SINTAXIS DE CODIGO */
+
+pre {
+	background-color: #a9a9a9;
+	border-radius: 5px;
+	font-family: 'Courier New', monospace;
+	font-size: 14px;
+	overflow-x: auto;
+	margin-right: 2em;
+}
+
+code {
+	color: black;
+}
+
+
+.keyword {
+	color: #e8e539;
+	font-weight: bold;
+}
+
+.functions {
+	color: #3f4f7b;
+	font-weight: bold;
+}
+
+.names {
+	color: #68481f;
+	font-weight: bold;
+}
+
+.data {
+	color: #317912;
+}
+
+.types {
+	color: #0013bc;
+	font-weight: bold;
+}
+
+.comment {
+	color: #ffffff;
+}
+
