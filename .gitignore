@@ -1,0 +1,14 @@
+# Compiled object files
+*.o
+
+# Compiled binary files
+*.out
+*.exe
+
+# Temporary files created by editors or OS
+*~
+*.swp
+*.tmp
+.DS_Store
+Thumbs.db
+
