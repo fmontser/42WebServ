@@ -82,6 +82,10 @@
 		#toogleCGI:checked + #sectionCGI {
 			display: block;
 		}
+
+		#toogleConceptSockets:checked + #sectionConceptSockets {
+			display: block;
+		}
 	
 		label {
 			cursor: pointer;
@@ -1947,6 +1951,101 @@
 		</p>
 
 		<label for="toogleCGI">COLAPSAR</label>
+	</section>
+	<hr>
+
+	<label for="toogleConceptSockets">SOCKETS</label>
+	<input type="checkbox" id="toogleConceptSockets" style="display: none;" >
+	<section id="sectionConceptSockets">
+		
+		<h2>Introducción a Sockets</h2>
+		<p>
+			Un <strong>socket</strong> es un punto final de comunicación en una red, permitiendo que dos programas se comuniquen entre sí, ya sea en la misma máquina o a través de una red. En el contexto de un servidor web, los sockets son la herramienta fundamental para que el servidor acepte conexiones de clientes, intercambie datos y responda a las peticiones HTTP.
+		</p>
+		
+		 <h3>Conceptos Básicos de Sockets</h3>
+		<ul>
+			<li>
+				<p><strong>Tipos de Sockets:</strong> Existen varios tipos de sockets, pero en el contexto de un servidor web, los más relevantes son los <strong>sockets de flujo (stream sockets)</strong>, que utilizan el protocolo TCP. TCP garantiza que los datos lleguen en orden y sin errores, lo que es crucial para la comunicación HTTP.</p>
+			</li>
+			<li>
+			   <p><strong>Dirección y Puerto:</strong> Cada socket tiene una dirección IP y un número de puerto asociados, que identifican de forma única el punto final de comunicación en la red. El servidor usa una combinación de dirección IP y puerto para escuchar las peticiones de los clientes.</p>
+			</li>
+			 <li>
+				<p><strong>Sockets de Servidor y de Cliente:</strong> Un servidor crea un socket para escuchar las conexiones entrantes (socket de escucha). Cuando un cliente se conecta, el servidor crea un nuevo socket para manejar la comunicación con ese cliente específico (socket conectado).</p>
+			</li>
+			  <li>
+				 <p><strong>Comunicación Bidireccional:</strong> Los sockets permiten la comunicación bidireccional. Es decir, tanto el cliente como el servidor pueden enviar y recibir datos a través del mismo socket.
+				 </p>
+			</li>
+			<li>
+				<p><strong>Descriptores de Archivo:</strong> En sistemas Unix-like (como Linux y macOS), los sockets se representan como descriptores de archivo, lo que permite utilizar funciones como <code>read</code> y <code>write</code> para la comunicación.</p>
+			</li>
+		</ul>
+
+		<h3>Uso de Sockets en este Proyecto</h3>
+		<p>
+			En este proyecto, tu servidor web utilizará sockets para:
+		</p>
+		 <ol>
+			<li>
+				<p><strong>Escuchar Conexiones:</strong> Crear un socket de escucha en la dirección IP y el puerto configurados, esperando nuevas conexiones de clientes.</p>
+			</li>
+			 <li>
+				<p><strong>Aceptar Conexiones:</strong> Cuando un cliente intenta conectarse, el servidor debe aceptar la conexión, creando un nuevo socket conectado para comunicarse con ese cliente específico.</p>
+			</li>
+			<li>
+				<p><strong>Recibir Solicitudes HTTP:</strong> Leer los datos enviados por el cliente a través del socket. Estos datos contendrán la solicitud HTTP (método, URL, encabezados, cuerpo).</p>
+			</li>
+			  <li>
+				<p><strong>Enviar Respuestas HTTP:</strong> Enviar la respuesta HTTP al cliente, incluyendo el código de estado, los encabezados y el cuerpo (el contenido HTML, JSON, etc.).</p>
+			</li>
+			 <li>
+				<p><strong>Gestionar Múltiples Conexiones:</strong> Dado que tu servidor debe ser no bloqueante, debe usar la función <code>poll()</code> (o equivalente) para gestionar múltiples sockets de clientes simultáneamente.</p>
+			</li>
+		</ol>
+
+		<h3>Funciones de C/C++ Relevantes</h3>
+		 <p>
+			Aquí tienes una lista de las funciones de C/C++ más importantes que necesitarás para trabajar con sockets en este proyecto:
+		</p>
+		<ul>
+			<li>
+			   <p><strong><code>socket()</code>:</strong> Crea un nuevo socket. Debes especificar el dominio (por ejemplo, <code>AF_INET</code> para IPv4), el tipo de socket (por ejemplo, <code>SOCK_STREAM</code> para TCP) y el protocolo.</p>
+			</li>
+			<li>
+			   <p><strong><code>bind()</code>:</strong> Asocia el socket creado a una dirección IP y un puerto específicos. Es necesario llamarla en el socket que servirá como socket de escucha del servidor.</p>
+			</li>
+			<li>
+				<p><strong><code>listen()</code>:</strong> Marca el socket como socket de escucha, indicando que el servidor está listo para aceptar conexiones entrantes.</p>
+			</li>
+			<li>
+				<p><strong><code>accept()</code>:</strong> Acepta una conexión entrante y crea un nuevo socket (el socket conectado) para la comunicación con el cliente.  Esta función es bloqueante y debe usarse con cuidado.</p>
+			 </li>
+			 <li>
+				 <p><strong><code>connect()</code>:</strong> (No utilizada directamente por tu servidor, pero útil para pruebas del cliente) Intenta conectarse a un servidor en una dirección IP y puerto específicos.</p>
+			 </li>
+			   <li>
+				 <p><strong><code>send()</code> / <code>write()</code>:</strong> Envía datos a través del socket.</p>
+			 </li>
+			  <li>
+				 <p><strong><code>recv()</code> / <code>read()</code>:</strong> Recibe datos a través del socket.</p>
+			</li>
+			 <li>
+				<p><strong><code>close()</code>:</strong> Cierra un socket, liberando los recursos asociados.</p>
+			 </li>
+			  <li>
+				<p><strong><code>poll()</code>:</strong> Permite monitorizar un conjunto de sockets para verificar si están disponibles para leer, escribir o si ha ocurrido algún error.  Esta es la función primordial de gestión de sockets no bloqueantes en este proyecto.</p>
+			 </li>
+			 <li>
+				<p><strong><code>getaddrinfo()</code>:</strong>  Convierte nombres de host o direcciones IP en estructuras de direcciones de socket, facilitando el uso de sockets. </p>
+			 </li>
+		 </ul>
+		 <p>
+		   Recuerda que debes usar la función `poll()` (o equivalente) para gestionar todos los sockets de manera no bloqueante.
+		</p>
+		
+		<label for="toogleConceptSockets">COLAPSAR</label>
 	</section>
 	<hr>
 
