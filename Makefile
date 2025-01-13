@@ -8,12 +8,12 @@ OBJ_DIR			:=	obj/
 BIN_DIR			:=	bin/
 
 NAME			:=	webserv
-HDRS			:=	
-SRCS			:=	main.cpp
+HDRS			:=	Config.hpp
+SRCS			:=	main.cpp Config.cpp
 OBJS			:=	$(SRCS:.cpp=.o)
-INPUT			:=	"../config.cfg"
+INPUT			:=	"../config/config.cfg"
 
-CC				:= c++
+CC				:= g++ #c++
 CC_FLAGS		:=	-Wall -Werror -Wextra -g -c -std=c++98
 CLEAN_TARGETS	:=	$(wildcard $(addprefix $(OBJ_DIR), $(OBJS) $(TEST_OBJS)))
 FCLEAN_TARGETS	:=	$(wildcard $(addprefix $(BIN_DIR), $(NAME) $(TEST_NAME)))\
