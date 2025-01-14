@@ -17,6 +17,6 @@ int main(int argc, char** argv) {
 
 	//TODO stuff
 	
-	configFileStream.close();
+
 	return 0;
 }
