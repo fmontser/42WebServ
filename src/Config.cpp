@@ -6,7 +6,6 @@
 #define MIN_PAYLOAD 0
 #define MAX_PAYLOAD 67108864 //64Mb
 
-
 Config::Route::Route() {};
 Config::Route::~Route() {};
 
