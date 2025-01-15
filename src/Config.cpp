@@ -77,6 +77,10 @@ void	Config::setPort(std::vector<std::string>::iterator &it) {
 	port = portNumber;
 }
 
+__uint16_t		Config::getPort() const {
+	return port;
+}
+
 void	Config::setMaxPayload(std::vector<std::string>::iterator &it) {
 	char	*err;
 	int		payloadSize;

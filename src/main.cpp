@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include "Config.hpp"
+#include "WebSocket.hpp"
 
 int main(int argc, char** argv) {
 
@@ -14,6 +15,9 @@ int main(int argc, char** argv) {
 		return (1);
 
 	Config config(configFileStream);
+	
+	WebSocket ws(config.getPort());
+	ws.start();
 
 	//TODO stuff
 	
