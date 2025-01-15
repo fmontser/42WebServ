@@ -4,6 +4,11 @@ HttpResponse::HttpResponse() {}
 HttpResponse::~HttpResponse() {}
 
 void	HttpResponse::push() {
+	std::string response;
+
+	//TODO @@@@@ construir la respuesta...
+	//response.append
+
 	//TODO enviar al socket
 }
 
