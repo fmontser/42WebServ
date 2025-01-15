@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include "Config.hpp"
-#include "HttpReq.hpp"
+#include "HttpRequest.hpp"
 
 int main(int argc, char** argv) {
 
@@ -30,6 +30,9 @@ int main(int argc, char** argv) {
 				<< "Hola mundo!\n"
 				<< "Hola mundo!\n";
 
-	HttpReq test(&httpRequest);
+	HttpRequest test;
+
+	test.pull(&httpRequest);
+	
 	return 0;
 }

@@ -3,7 +3,7 @@
 #include <sstream>
 #include <map>
 
-class HttpReq {
+class HttpRequest {
 	private:
 		std::stringstream						*request;
 		std::string								method;
@@ -18,7 +18,15 @@ class HttpReq {
 		void	trimToken(std::string& str);
 
 	public:
-		HttpReq(std::stringstream *request);
-		~HttpReq();
+		HttpRequest();
+		~HttpRequest();
+
+		void	pull(std::stringstream *request);
+
+		std::string								getMethod();
+		std::string								getUrl();
+		std::string								getVersion();
+		std::multimap<std::string, std::string>	getHeaders();
+		std::string								getBody();
 };
 

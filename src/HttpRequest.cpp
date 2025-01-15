@@ -1,14 +1,17 @@
-#include "HttpReq.hpp"
+#include "HttpRequest.hpp"
 
-HttpReq::HttpReq(std::stringstream *request) : request(request){
+HttpRequest::HttpRequest() {}
+
+HttpRequest::~HttpRequest() {}
+
+void	HttpRequest::pull(std::stringstream *request) {
+	this->request = request;
 	parseRequestLine();
 	parseHeaderFields();
 	parseBody();
 }
 
-HttpReq::~HttpReq() {}
-
-void	HttpReq::parseRequestLine() {
+void	HttpRequest::parseRequestLine() {
 	std::string requestLine;
 	
 	std::getline(*request, requestLine);
@@ -19,7 +22,7 @@ void	HttpReq::parseRequestLine() {
 	version = requestLine.substr(0, requestLine.find('\r'));
 }
 
-void	HttpReq::parseHeaderFields() {
+void	HttpRequest::parseHeaderFields() {
 	std::string	headerLine;
 	std::string	fieldName;
 	std::string	fieldValue;
@@ -35,7 +38,7 @@ void	HttpReq::parseHeaderFields() {
 	}
 }
 
-void	HttpReq::parseBody() {
+void	HttpRequest::parseBody() {
 	std::string	bodyLine;
 
 	while (std::getline(*request, bodyLine)) {
@@ -45,7 +48,7 @@ void	HttpReq::parseBody() {
 	body.at(body.size() - 1) = '\0';
 }
 
-void	HttpReq::trimToken(std::string& str) {
+void	HttpRequest::trimToken(std::string& str) {
 	size_t start = 0;
 	size_t end = str.length() - 1;
 
@@ -57,3 +60,10 @@ void	HttpReq::trimToken(std::string& str) {
 	}
 	str = str.substr(start, end - start + 1);
 }
+
+
+std::string								HttpRequest::getMethod() { return method; }
+std::string								HttpRequest::getUrl() { return url;}
+std::string								HttpRequest::getVersion() { return version; }
+std::multimap<std::string, std::string>	HttpRequest::getHeaders() { return headers; }
+std::string								HttpRequest::getBody() { return body; }
