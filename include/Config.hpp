@@ -22,6 +22,7 @@ class Config {
 		std::string						page404;
 
 		void	setPort(std::vector<std::string>::iterator &it);
+		//int 	getPort() const;
 		void	setMaxPayload(std::vector<std::string>::iterator &it);
 		void	setRoute(std::vector<std::string>::iterator &it);
 		void	setPage404(std::vector<std::string>::iterator &it);

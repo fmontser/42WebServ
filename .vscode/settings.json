@@ -1,5 +1,8 @@
 {
 	"files.associations": {
+		"*.js": "javascriptreact",
+		"*.hbs": "handlebars",
+		"*.c": "c",
 		"cctype": "cpp",
 		"clocale": "cpp",
 		"cmath": "cpp",
@@ -48,29 +51,6 @@
 		"stdexcept": "cpp",
 		"streambuf": "cpp",
 		"typeinfo": "cpp",
-		"bitset": "cpp",
-		"charconv": "cpp",
-		"chrono": "cpp",
-		"codecvt": "cpp",
-		"condition_variable": "cpp",
-		"cstring": "cpp",
-		"ctime": "cpp",
-		"set": "cpp",
-		"ratio": "cpp",
-		"iomanip": "cpp",
-		"mutex": "cpp",
-		"semaphore": "cpp",
-		"span": "cpp",
-		"sstream": "cpp",
-		"stop_token": "cpp",
-		"thread": "cpp",
-		"variant": "cpp",
-		"format": "cpp",
-		"__nullptr": "cpp",
-		"__hash_table": "cpp",
-		"__split_buffer": "cpp",
-		"__tree": "cpp",
-		"filesystem": "cpp",
-		"ios": "cpp"
+		"cstring": "cpp"
 	}
 }
