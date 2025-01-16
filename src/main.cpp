@@ -2,6 +2,7 @@
 #include <fstream>
 #include "Config.hpp"
 #include "HttpRequest.hpp"
+#include "HttpResponse.hpp"
 
 int main(int argc, char** argv) {
 
@@ -33,6 +34,18 @@ int main(int argc, char** argv) {
 	HttpRequest test;
 
 	test.pull(&httpRequest);
+
+	HttpResponse responseTest;
+
+	responseTest.setVersion("HTTP/1.1");
+	responseTest.setStatusCode("200");
+	responseTest.setStatusMsg("OK");
+	responseTest.addHeader("Server", "Webserv42");
+	responseTest.addHeader("Date", "Date test");
+	responseTest.addHeader("Cacafruti", "all over the place");
+	responseTest.setBody("Body content test blah blah");
+
+	responseTest.push();
 	
 	return 0;
 }

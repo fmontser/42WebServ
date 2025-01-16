@@ -8,8 +8,8 @@ OBJ_DIR			:=	obj/
 BIN_DIR			:=	bin/
 
 NAME			:=	webserv
-HDRS			:=	Config.hpp HttpReq.hpp
-SRCS			:=	main.cpp Config.cpp HttpReq.cpp
+HDRS			:=	Config.hpp HttpRequest.hpp HttpResponse.hpp
+SRCS			:=	main.cpp Config.cpp HttpRequest.cpp HttpResponse.cpp
 OBJS			:=	$(SRCS:.cpp=.o)
 INPUT			:=	"../config/config.cfg"
 
