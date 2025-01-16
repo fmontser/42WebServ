@@ -17,9 +17,4 @@ public:
 private:
 	void _acceptConnection();
 	void _handleClient(pollfd& client_fd);
-/*
-	void _recv(int fd);
-	void _send(int fd, std::string msg);
-	void _close(int fd);
-*/	
 };
