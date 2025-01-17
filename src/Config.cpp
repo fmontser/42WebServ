@@ -18,23 +18,23 @@ Config::Config(std::fstream &configFileStream) {
 	tokenize(configFileStream, tokenList);
 
 	for (it = tokenList.begin(); it != tokenList.end(); ++it){
-		if (tokenMap.find(*it) != tokenMap.end())
-			(this->*(tokenMap[*it]))(it);
+		if (_tokenMap.find(*it) != _tokenMap.end())
+			(this->*(_tokenMap[*it]))(it);
 	}
 }
 
 Config::~Config() {}
 
 void	Config::configureOptions() {
-	tokenMap["port"] = &Config::setPort;
-	tokenMap["maxPayload"] = &Config::setMaxPayload;
-	tokenMap["route"] = &Config::setRoute;
-	tokenMap["page404"] = &Config::setPage404;
+	_tokenMap["port"] = &Config::setPort;
+	_tokenMap["maxPayload"] = &Config::setMaxPayload;
+	_tokenMap["route"] = &Config::setRoute;
+	_tokenMap["page404"] = &Config::setPage404;
 }
 
 void	Config::configureRules() {
-	tokenMap["methods"] = NULL;
-	tokenMap["file"] = NULL;
+	_tokenMap["methods"] = NULL;
+	_tokenMap["file"] = NULL;
 }
 
 void	Config::tokenize(std::fstream &configFileStream, std::vector<std::string> &tokenList){
@@ -73,11 +73,11 @@ void	Config::setPort(std::vector<std::string>::iterator &it) {
 		exit(EXIT_FAILURE);
 	}
 	std::cout << "Server Port set as: " << portNumber << std::endl;
-	port = portNumber;
+	_ports = portNumber;
 }
 
 __uint16_t		Config::getPort() const {
-	return port;
+	return _ports;
 }
 
 void	Config::setMaxPayload(std::vector<std::string>::iterator &it) {
@@ -91,7 +91,7 @@ void	Config::setMaxPayload(std::vector<std::string>::iterator &it) {
 		exit(EXIT_FAILURE);
 	}
 	std::cout << "Payload size set as: " << payloadSize << " bytes." << std::endl;
-	maxPayload = payloadSize;
+	_maxPayload = payloadSize;
 }
 
 void	Config::setRoute(std::vector<std::string>::iterator &it) {
@@ -101,7 +101,7 @@ void	Config::setRoute(std::vector<std::string>::iterator &it) {
 	route.value = *(++it);
 	if (*(++it) == "{") {
 		while(*(++it) != "}") {
-			if (tokenMap.find(*it) != tokenMap.end()){
+			if (_tokenMap.find(*it) != _tokenMap.end()){
 				key = *it;
 				++it;
 			}
@@ -110,16 +110,16 @@ void	Config::setRoute(std::vector<std::string>::iterator &it) {
 		}
 	}
 
-	if (routes.find(route.value) != routes.end()) {
+	if (_routes.find(route.value) != _routes.end()) {
 		std::cerr << "Config file error: Route " << route.value << " is duplicated." << std::endl;
 		exit(1);
 	}
 	else
-		routes[route.value] = route;
+		_routes[route.value] = route;
 }
 
 void	Config::setPage404(std::vector<std::string>::iterator &it) {
 	//TODO switch con todas las paginas
 	++it;
-	page404 = *it;
+	_page404 = *it;
 }

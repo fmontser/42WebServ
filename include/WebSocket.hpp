@@ -11,8 +11,8 @@
 class WebSocket
 {
 private:
-	int _sockfd;
-	int _port;
+	int	_sockfd;
+	int	_port;
 	//la estructura sockaddr_in contiene un sin_family, un sin_port y un sin_addr 
 	//que son la familia de direcciones, el puerto y la dirección IP del servidor
 	//respectivamente. Esta estructura se utiliza para almacenar la dirección del

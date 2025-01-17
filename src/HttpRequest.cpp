@@ -5,7 +5,7 @@ HttpRequest::HttpRequest() {}
 HttpRequest::~HttpRequest() {}
 
 void	HttpRequest::pull(std::stringstream *request) {
-	this->request = request;
+	this->_request = request;
 	parseRequestLine();
 	parseHeaderFields();
 	parseBody();
@@ -14,12 +14,12 @@ void	HttpRequest::pull(std::stringstream *request) {
 void	HttpRequest::parseRequestLine() {
 	std::string requestLine;
 	
-	std::getline(*request, requestLine);
-	method = requestLine.substr(0, requestLine.find(' '));
+	std::getline(*_request, requestLine);
+	_method = requestLine.substr(0, requestLine.find(' '));
 	requestLine =  requestLine.substr(requestLine.find(' ') + 1, requestLine.size());
-	url = requestLine.substr(0, requestLine.find(' '));
+	_url = requestLine.substr(0, requestLine.find(' '));
 	requestLine =  requestLine.substr(requestLine.find(' ') + 1, requestLine.size());
-	version = requestLine.substr(0, requestLine.find('\r'));
+	_version = requestLine.substr(0, requestLine.find('\r'));
 }
 
 void	HttpRequest::parseHeaderFields() {
@@ -27,25 +27,25 @@ void	HttpRequest::parseHeaderFields() {
 	std::string	fieldName;
 	std::string	fieldValue;
 
-	while (std::getline(*request, headerLine)) {
+	while (std::getline(*_request, headerLine)) {
 		if (headerLine == "\r")
 			return ;
 		fieldName = headerLine.substr(0, headerLine.find(':'));
 		fieldValue = headerLine.substr(headerLine.find(':') + 1 ,headerLine.size());
 		trimToken(fieldName);
 		trimToken(fieldValue);
-		headers.insert(std::make_pair(fieldName, fieldValue));
+		_headers.insert(std::make_pair(fieldName, fieldValue));
 	}
 }
 
 void	HttpRequest::parseBody() {
 	std::string	bodyLine;
 
-	while (std::getline(*request, bodyLine)) {
-		body.append(bodyLine);
-		body.append(std::string(1,'\n'));
+	while (std::getline(*_request, bodyLine)) {
+		_body.append(bodyLine);
+		_body.append(std::string(1,'\n'));
 	}
-	body.at(body.size() - 1) = '\0';
+	_body.at(_body.size() - 1) = '\0';
 }
 
 void	HttpRequest::trimToken(std::string& str) {
@@ -62,8 +62,8 @@ void	HttpRequest::trimToken(std::string& str) {
 }
 
 
-std::string								HttpRequest::getMethod() { return method; }
-std::string								HttpRequest::getUrl() { return url;}
-std::string								HttpRequest::getVersion() { return version; }
-std::multimap<std::string, std::string>	HttpRequest::getHeaders() { return headers; }
-std::string								HttpRequest::getBody() { return body; }
+std::string								HttpRequest::getMethod() { return _method; }
+std::string								HttpRequest::getUrl() { return _url;}
+std::string								HttpRequest::getVersion() { return _version; }
+std::multimap<std::string, std::string>	HttpRequest::getHeaders() { return _headers; }
+std::string								HttpRequest::getBody() { return _body; }

@@ -6,11 +6,11 @@
 class HttpResponse {
 	private:
 
-		std::string								version;
-		std::string								statusCode;
-		std::string								statusMsg;
-		std::multimap<std::string, std::string>	headers;
-		std::string								body;
+		std::string								_version;
+		std::string								_statusCode;
+		std::string								_statusMsg;
+		std::multimap<std::string, std::string>	_headers;
+		std::string								_body;
 
 	public:
 		HttpResponse();

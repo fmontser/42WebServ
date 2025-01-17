@@ -5,12 +5,12 @@
 
 class HttpRequest {
 	private:
-		std::stringstream						*request;
-		std::string								method;
-		std::string								url;
-		std::string								version;
-		std::multimap<std::string, std::string>	headers;
-		std::string								body;
+		std::stringstream						*_request;
+		std::string								_method;
+		std::string								_url;
+		std::string								_version;
+		std::multimap<std::string, std::string>	_headers;
+		std::string								_body;
 
 		void	parseRequestLine();
 		void	parseHeaderFields();

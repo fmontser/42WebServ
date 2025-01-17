@@ -15,14 +15,13 @@ class Config {
 		};
 
 	private:
-		std::map<std::string, void (Config::*)(std::vector<std::string>::iterator &it)>	tokenMap;
-		__uint16_t						port;
-		__uint32_t						maxPayload;
-		std::map<std::string, Route>	routes;
-		std::string						page404;
+		std::map<std::string, void (Config::*)(std::vector<std::string>::iterator &it)>	_tokenMap;
+		__uint16_t						_ports;
+		__uint32_t						_maxPayload;
+		std::map<std::string, Route>	_routes;
+		std::string						_page404;
 
 		void	setPort(std::vector<std::string>::iterator &it);
-		//int 	getPort() const;
 		void	setMaxPayload(std::vector<std::string>::iterator &it);
 		void	setRoute(std::vector<std::string>::iterator &it);
 		void	setPage404(std::vector<std::string>::iterator &it);
