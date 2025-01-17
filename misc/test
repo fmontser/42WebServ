@@ -1,0 +1,24 @@
+GET / HTTP/1.1
+Host: localhost
+
+
+HTTP/1.1 200 OK\r\n
+Date: 17/01/2025\r\n
+\r\n
+<!DOCTYPE html>\n
+<html lang="es">\n
+\n
+<head>\n
+\t<meta charset="UTF-8">\n
+\t<link rel="icon" href="favicon.ico">\n
+\t<meta name="viewport" content="width=device-width, initial-scale=1.0">\n
+\t<title>TEST</title>\n
+\n
+\t<link rel="stylesheet" href="index.css" />\n
+</head>\n
+\n
+<body>\n
+\t<h1>HELLO WORLD >> INDEX</h1>\n
+</body>
+\n
+\n

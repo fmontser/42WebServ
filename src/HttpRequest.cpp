@@ -45,7 +45,7 @@ void	HttpRequest::parseBody() {
 		_body.append(bodyLine);
 		_body.append(std::string(1,'\n'));
 	}
-	_body.at(_body.size() - 1) = '\0';
+	//TODO borrar _body.at(_body.size() - 1) = '\0';
 }
 
 void	HttpRequest::trimToken(std::string& str) {

@@ -1,23 +1,27 @@
 #include "HttpResponse.hpp"
+#include <sys/socket.h>
+
 #define CRLF "\r\n"
 
 HttpResponse::HttpResponse() {}
 HttpResponse::~HttpResponse() {}
 
 void	HttpResponse::push() {
-	std::stringstream response;
+	std::stringstream	buffer;
+	std::string			msg;
 	std::multimap<std::string, std::string>::iterator it;
 
-	response << _version << " " << _statusCode << " " << _statusMsg << CRLF;
-	for ( it = _headers.begin(); it != _headers.end(); ++it) {
-		response << it->first << ": " << it->second << CRLF;
-	}
-	response << CRLF;
-	response << _body;
-	
 
-	//TODO enviar al socket
-	std::string test = response.str();
+	buffer << _version << " " << _statusCode << " " << _statusMsg << CRLF;
+	for ( it = _headers.begin(); it != _headers.end(); ++it) {
+		buffer << it->first << ": " << it->second << CRLF;
+	}
+	buffer << CRLF;
+	buffer << _body;
+
+	msg = buffer.str();
+
+	send(4, &msg, msg.size(), 0);
 }
 
 void	HttpResponse::setVersion(std::string version) { this->_version = version; }
