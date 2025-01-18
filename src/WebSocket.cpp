@@ -25,6 +25,7 @@ WebSocket::WebSocket(int port) :  _port(port) {
 	_serv_addr.sin_family = AF_INET;
 	_serv_addr.sin_addr.s_addr = INADDR_ANY;
 	_serv_addr.sin_port = htons(_port);
+
 	if (bind(_sockfd, (struct sockaddr *)&_serv_addr, sizeof(_serv_addr)) < 0) {
 		std::cerr << RED << "Error: failed to bind address" << END	<<std::endl;
 		exit(1);

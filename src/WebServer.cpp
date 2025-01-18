@@ -36,21 +36,37 @@ void WebServer::run() {
 				recieveData(newSocketFd);
 			}
 			if (_pfdList[0].revents & POLLOUT) {
-				acceptConnection();
 				//TODO es posible escribir
+			}
+			if (_pfdList[1].revents & POLLIN) { //TODO hay que pasar por la lista...
+				recieveData(_pfdList[1].fd);
+			}
+			if (_pfdList[1].revents & POLLOUT) {
+				//TODO es posible escribir
+			}
+			if (_pfdList[1].revents & POLLHUP) { //TODO harcoded...
+				close(_pfdList[1].fd);
+				_pfdList.pop_back(); //TODO pffff....
 			}
 		}
 	}
 }
 
 int	WebServer::acceptConnection() {
-	sockaddr_in client_addr;
-	socklen_t client_addr_len = sizeof(client_addr);
+	pollfd		newClientSocket;
+	sockaddr_in	clientAddress;
+	socklen_t	clientAddressLength = sizeof(clientAddress);
 	
-	int newSocketFd = accept(_webSocket.getSocketFd(), (sockaddr *)&client_addr, &client_addr_len);
+	int newSocketFd = accept(_webSocket.getSocketFd(), (sockaddr *)&clientAddress, &clientAddressLength);
 	if (newSocketFd == -1) {
 		std::cerr << RED << "Error: connection failed " << END << "࣬࣬ 👾" << std::endl;
 	}
+
+	newClientSocket.fd = newSocketFd;
+	newClientSocket.events = POLLIN | POLLERR | POLLHUP;
+	newClientSocket.revents = 0;
+
+	_pfdList.push_back(newClientSocket); //TODO al cerrar la conexion hay que limpar esto!!!
 	return newSocketFd;
 }
 
@@ -82,19 +98,37 @@ void WebServer::processRequest(HttpRequest request){
 
 	if (request.getMethod() == "GET"){
 		HttpResponse response;
-		std::string line;
 		std::string body;
-		std::fstream file("../web/index.html", std::ios::in);
+		std::stringstream sstream;
+		std::fstream index("../web/index.html", std::ios::in);
+		std::fstream style("../web/style.css", std::ios::in);
 
-		while (std::getline(file, line)){
-			body.append(line);
-			body.append("\n");
+		if (request.getUrl() == "/") {
+			if (!index) {
+				std::cerr << "File error: cannot access file" << std::endl; //TODO 404?
+				return;
+			}
+			body.assign((std::istreambuf_iterator<char>(index)), std::istreambuf_iterator<char>());
+			response.addHeader("Content-Type", "text/html");
 		}
+		else if (request.getUrl() == "/style.css") {
+			if (!style) {
+				std::cerr << "File error: cannot access file" << std::endl; //TODO 404?
+				return;
+			}
+			body.assign((std::istreambuf_iterator<char>(style)), std::istreambuf_iterator<char>());
+			response.addHeader("Content-Type", "text/css");
+		}		
 		
+		sstream << std::strlen(body.c_str());
+
 		response.setVersion(HTTP_VERSION);
 		response.setStatusCode("200");
 		response.setStatusMsg("OK");
-		response.addHeader("Date", "17/01/2025");
+
+		response.addHeader("Content-Length", sstream.str());
+		response.addHeader("Connection", "keep-alive");
+		response.addHeader("Date", "Fri, 17 Jan 2025 10:00:00 GMT");
 		response.setBody(body);
 		response.push();
 

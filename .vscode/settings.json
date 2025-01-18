@@ -68,6 +68,23 @@
 		"mutex": "cpp",
 		"stop_token": "cpp",
 		"thread": "cpp",
-		"semaphore": "cpp"
+		"semaphore": "cpp",
+		"bitset": "cpp",
+		"charconv": "cpp",
+		"codecvt": "cpp",
+		"set": "cpp",
+		"iomanip": "cpp",
+		"span": "cpp",
+		"variant": "cpp",
+		"format": "cpp",
+		"__nullptr": "cpp",
+		"filesystem": "cpp",
+		"__hash_table": "cpp",
+		"__split_buffer": "cpp",
+		"__tree": "cpp",
+		"queue": "cpp",
+		"stack": "cpp",
+		"__locale": "cpp",
+		"__string": "cpp"
 	}
 }
