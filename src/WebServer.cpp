@@ -33,23 +33,17 @@ void WebServer::run() {
 	int		newSocketFd;
 
 	while (true) {
-
-	
 		size_t arraySize = 0;
 		pollfd socketArray[_pollSockets.size()];
 		for (std::list<pollfd *>::iterator it = _pollSockets.begin(); it != _pollSockets.end(); ++it) {
 			socketArray[arraySize++] = *(*it);
 		}
-		
-
 		pollStatus = poll(socketArray, _pollSockets.size(), TIMEOUT);
-
 		if (pollStatus == -1) {
 			//TODO gestionar error de socket
 			std::cerr << RED << "Error: WebSocket error" << END << std::endl;
 		}
 		else if (pollStatus > 0) {
-		
 			for (size_t i = 0; i < arraySize; i++)
 			{
 				if (socketArray[i].revents & POLLIN) {
@@ -60,7 +54,6 @@ void WebServer::run() {
 						_pollSockets.back()->fd = newSocketFd;
 						_pollSockets.back()->events = POLLIN | POLLOUT | POLLERR | POLLHUP;
 						_pollSockets.back()->revents = 0;
-						//recv(socketArray[i].fd, NULL, BUFFER_SIZE, 0); //TODO ojo
 						recieveData(newSocketFd);
 					}
 					else
@@ -139,7 +132,7 @@ void WebServer::processRequest(HttpRequest request){
 		response.setStatusMsg("OK");
 		response.addHeader("Content-Length", sstream.str());
 		response.addHeader("Connection", "keep-alive");
-		response.addHeader("Date", "Fri, 17 Jan 2025 10:00:00 GMT");
+		//response.addHeader("Date", "Fri, 17 Jan 2025 10:00:00 GMT"); //opcional!
 		response.setBody(body);
 		response.push(request.getSocket());
 	}
