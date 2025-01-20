@@ -3,85 +3,97 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <vector>
 
-#define TIMEOUT 1000
+#define TIMEOUT 10000
 #define BUFFER_SIZE 8192
 #define HTTP_VERSION "HTTP/1.1"
 
-WebServer::WebServer(WebSocket& webSocket) : _webSocket(webSocket) {
-	pollfd pfdWebSocket;
+WebServer::WebServer(Config& config) : _config(config) {
 
-	pfdWebSocket.fd = webSocket.getSocketFd();
-	pfdWebSocket.events = POLLIN | POLLOUT | POLLERR;
-	pfdWebSocket.revents = 0;
+	_pollSockets.push_back(new pollfd());
 
-	_pfdList.push_back(pfdWebSocket);
+	_pollSockets.back()->fd = _config.getWebSocket().getSocketFd();
+	_pollSockets.back()->events = POLLIN | POLLOUT | POLLERR;
+	_pollSockets.back()->revents = 0;
+
 	run();
 }
 
-WebServer::~WebServer() {}
+WebServer::~WebServer() {
+	for (std::list<pollfd *>::iterator it = _pollSockets.begin(); it != _pollSockets.end(); ++it) {
+		close((*it)->fd);
+		delete *it;
+	}
+	_pollSockets.clear();
+}
 
 void WebServer::run() {
-	int pollValue;
-	
+	int		pollStatus;
+	int		newSocketFd;
+
 	while (true) {
-		pollValue = poll(_pfdList.data(), _pfdList.size(), TIMEOUT);
-		if (pollValue == -1) {
+
+	
+		size_t arraySize = 0;
+		pollfd socketArray[_pollSockets.size()];
+		for (std::list<pollfd *>::iterator it = _pollSockets.begin(); it != _pollSockets.end(); ++it) {
+			socketArray[arraySize++] = *(*it);
+		}
+		
+
+		pollStatus = poll(socketArray, _pollSockets.size(), TIMEOUT);
+
+		if (pollStatus == -1) {
 			//TODO gestionar error de socket
 			std::cerr << RED << "Error: WebSocket error" << END << std::endl;
 		}
-		else if (pollValue > 0) {
-			if (_pfdList[0].revents & POLLIN) {
-				int newSocketFd = acceptConnection();
-				recieveData(newSocketFd);
-			}
-			if (_pfdList[0].revents & POLLOUT) {
-				//TODO es posible escribir
-			}
-			if (_pfdList[1].revents & POLLIN) { //TODO hay que pasar por la lista...
-				recieveData(_pfdList[1].fd);
-			}
-			if (_pfdList[1].revents & POLLOUT) {
-				//TODO es posible escribir
-			}
-			if (_pfdList[1].revents & POLLHUP) { //TODO harcoded...
-				close(_pfdList[1].fd);
-				_pfdList.pop_back(); //TODO pffff....
+		else if (pollStatus > 0) {
+		
+			for (size_t i = 0; i < arraySize; i++)
+			{
+				if (socketArray[i].revents & POLLIN) {
+
+					if (socketArray[i].fd == _config.getWebSocket().getSocketFd()) {
+						newSocketFd = acceptConnection();
+						_pollSockets.push_back(new pollfd());
+						_pollSockets.back()->fd = newSocketFd;
+						_pollSockets.back()->events = POLLIN | POLLOUT | POLLERR | POLLHUP;
+						_pollSockets.back()->revents = 0;
+						//recv(socketArray[i].fd, NULL, BUFFER_SIZE, 0); //TODO ojo
+						recieveData(newSocketFd);
+					}
+					else
+						recieveData(socketArray[i].fd);
+				}
 			}
 		}
 	}
 }
 
 int	WebServer::acceptConnection() {
-	pollfd		newClientSocket;
-	sockaddr_in	clientAddress;
-	socklen_t	clientAddressLength = sizeof(clientAddress);
-	
-	int newSocketFd = accept(_webSocket.getSocketFd(), (sockaddr *)&clientAddress, &clientAddressLength);
+	sockaddr_in	client_addr;
+	socklen_t	client_addr_len = sizeof(client_addr);
+
+	int newSocketFd = accept(_config.getWebSocket().getSocketFd(), (sockaddr *)&client_addr, &client_addr_len);
 	if (newSocketFd == -1) {
 		std::cerr << RED << "Error: connection failed " << END << "࣬࣬ 👾" << std::endl;
 	}
-
-	newClientSocket.fd = newSocketFd;
-	newClientSocket.events = POLLIN | POLLERR | POLLHUP;
-	newClientSocket.revents = 0;
-
-	_pfdList.push_back(newClientSocket); //TODO al cerrar la conexion hay que limpar esto!!!
 	return newSocketFd;
 }
 
-void	WebServer::recieveData(int newSocketFd) {
+void	WebServer::recieveData(int socketFd) {
 	char buf[BUFFER_SIZE] = {0};
 
-	int len = recv(newSocketFd, buf, BUFFER_SIZE, 0);
+	int len = recv(socketFd, buf, BUFFER_SIZE, 0);
 	if (len == -1) {
-		std::cerr << RED << "Error: client error " << newSocketFd << END << std::endl;
+		std::cerr << RED << "Error: client error " << socketFd << END << std::endl;
 	}
 	else if (len > 0) {
 		HttpRequest request;
 
 		std::stringstream sstream(buf);
-		request.pull(&sstream);
+		request.pull(&sstream, socketFd);
 		processRequest(request);
 	}
 }
@@ -125,14 +137,11 @@ void WebServer::processRequest(HttpRequest request){
 		response.setVersion(HTTP_VERSION);
 		response.setStatusCode("200");
 		response.setStatusMsg("OK");
-
 		response.addHeader("Content-Length", sstream.str());
 		response.addHeader("Connection", "keep-alive");
 		response.addHeader("Date", "Fri, 17 Jan 2025 10:00:00 GMT");
 		response.setBody(body);
-		response.push();
-
-
+		response.push(request.getSocket());
 	}
 	else if (request.getMethod() == "PUT"){
 		//TODO

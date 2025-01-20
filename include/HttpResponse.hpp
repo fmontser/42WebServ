@@ -16,7 +16,7 @@ class HttpResponse {
 		HttpResponse();
 		~HttpResponse();
 
-		void	push();
+		void	push(int socketFd);
 
 		void	setVersion(std::string version);
 		void	setStatusCode(std::string statusCode);

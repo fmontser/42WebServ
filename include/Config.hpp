@@ -3,6 +3,7 @@
 #include <map>
 #include <vector>
 #include <fstream>
+#include "WebSocket.hpp"
 
 class Config {
 	public:
@@ -15,8 +16,9 @@ class Config {
 		};
 
 	private:
+		WebSocket						*_webSocket;
 		std::map<std::string, void (Config::*)(std::vector<std::string>::iterator &it)>	_tokenMap;
-		__uint16_t						_ports;
+		__uint16_t						_port;
 		__uint32_t						_maxPayload;
 		std::map<std::string, Route>	_routes;
 		std::string						_page404;
@@ -35,9 +37,10 @@ class Config {
 		Config(std::fstream &configFileStream);
 		~Config();
 
-		__uint16_t					getPort() const;
-		__uint32_t					getMaxPayload() const;
-		std::map<std::string, int>	getRoutes() const;
-		const std::string			getPage404() const;
+		__uint16_t						getPort() const;
+		__uint32_t						getMaxPayload() const;
+		std::map<std::string, Route>&	getRoutes() const;
+		const std::string				getPage404() const;
+		WebSocket&						getWebSocket() const;
 };
 

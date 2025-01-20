@@ -21,9 +21,12 @@ Config::Config(std::fstream &configFileStream) {
 		if (_tokenMap.find(*it) != _tokenMap.end())
 			(this->*(_tokenMap[*it]))(it);
 	}
+	_webSocket = new WebSocket(_port);
 }
 
-Config::~Config() {}
+Config::~Config() {
+	delete _webSocket;
+}
 
 void	Config::configureOptions() {
 	_tokenMap["port"] = &Config::setPort;
@@ -73,12 +76,9 @@ void	Config::setPort(std::vector<std::string>::iterator &it) {
 		exit(EXIT_FAILURE);
 	}
 	std::cout << "Server Port set as: " << portNumber << std::endl;
-	_ports = portNumber;
+	_port = portNumber;
 }
 
-__uint16_t		Config::getPort() const {
-	return _ports;
-}
 
 void	Config::setMaxPayload(std::vector<std::string>::iterator &it) {
 	char	*err;
@@ -123,3 +123,13 @@ void	Config::setPage404(std::vector<std::string>::iterator &it) {
 	++it;
 	_page404 = *it;
 }
+
+__uint16_t								Config::getPort() const { return _port; }
+
+__uint32_t								Config::getMaxPayload() const { return _maxPayload; }
+
+std::map<std::string, Config::Route>&	Config::getRoutes() const { return (std::map<std::string, Config::Route>&)_routes; }
+
+const std::string						Config::getPage404() const { return _page404; }
+
+WebSocket&								Config::getWebSocket() const { return *_webSocket; }

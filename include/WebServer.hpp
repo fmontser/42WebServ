@@ -1,18 +1,18 @@
 #pragma once
 
-#include <vector>
+#include <list>
 #include <map>
 #include <poll.h>
-#include "WebSocket.hpp"
+#include "Config.hpp"
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
 
 class WebServer {
 private:
-	WebSocket&					_webSocket;
-	std::vector<pollfd>			_pfdList;
+	Config&						_config;
+	std::list<pollfd *>			_pollSockets;
 public:
-	WebServer(WebSocket& webSocket);
+	WebServer(Config& config);
 	~WebServer();
 	void run();
 private:

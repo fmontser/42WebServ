@@ -6,7 +6,7 @@
 HttpResponse::HttpResponse() {}
 HttpResponse::~HttpResponse() {}
 
-void	HttpResponse::push() {
+void	HttpResponse::push(int socketFd) {
 	std::stringstream	buffer;
 	std::string			msg;
 	std::multimap<std::string, std::string>::iterator it;
@@ -19,7 +19,7 @@ void	HttpResponse::push() {
 	buffer << _body;
 
 	msg = buffer.str(); 
-	send(4, msg.c_str(), msg.length(), 0); //TODO quitar el puerto hardcoded
+	send(socketFd, msg.c_str(), msg.length(), 0); //TODO quitar el puerto hardcoded
 }
 
 void	HttpResponse::setVersion(std::string version) { this->_version = version; }

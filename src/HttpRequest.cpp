@@ -4,8 +4,9 @@ HttpRequest::HttpRequest() {}
 
 HttpRequest::~HttpRequest() {}
 
-void	HttpRequest::pull(std::stringstream *request) {
+void	HttpRequest::pull(std::stringstream *request, int requestSocket) {
 	this->_request = request;
+	_socket = requestSocket;
 	parseRequestLine();
 	parseHeaderFields();
 	parseBody();
@@ -62,8 +63,9 @@ void	HttpRequest::trimToken(std::string& str) {
 }
 
 
-std::string								HttpRequest::getMethod() { return _method; }
-std::string								HttpRequest::getUrl() { return _url;}
-std::string								HttpRequest::getVersion() { return _version; }
-std::multimap<std::string, std::string>	HttpRequest::getHeaders() { return _headers; }
-std::string								HttpRequest::getBody() { return _body; }
+std::string								HttpRequest::getMethod() const { return _method; }
+std::string								HttpRequest::getUrl() const { return _url;}
+std::string								HttpRequest::getVersion() const { return _version; }
+std::multimap<std::string, std::string>	HttpRequest::getHeaders() const { return _headers; }
+std::string								HttpRequest::getBody() const { return _body; }
+int										HttpRequest::getSocket() const { return _socket; }

@@ -19,8 +19,7 @@ int main(int argc, char** argv) {
 		return (1);
 
 	Config config(configFileStream);
-	WebSocket webSocket(config.getPort());
-	WebServer server(webSocket);
+	WebServer server(config);
 	
 	return 0;
 }
