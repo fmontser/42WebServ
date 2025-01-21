@@ -97,16 +97,23 @@ void	WebServer::sendData(int newSocketFd) {
 }
 
 void WebServer::processRequest(HttpRequest request){
-	if (request.getVersion() != HTTP_VERSION )
+		HttpResponse response;
+		std::string body;
+		std::string sendErrorPage;
+	/* 	std::fstream  */
+
+	if (request.getVersion() != HTTP_VERSION ) {
 		std::cerr << "Error: wrong version" << std::endl;
+		this->sendErrorPage(response, "400", "Bad Request", "../web/default.html", request.getSocket());
+	}
+
 	//TODO ahcer un map con funciones??
 
 	if (request.getMethod() == "GET"){
-		HttpResponse response;
-		std::string body;
 		std::stringstream sstream;
 		std::fstream index("../web/index.html", std::ios::in);
 		std::fstream style("../web/style.css", std::ios::in);
+		std::fstream favicon("../web/favicon.ico", std::ios::in);
 
 		if (request.getUrl() == "/") {
 			if (!index) {
@@ -123,7 +130,10 @@ void WebServer::processRequest(HttpRequest request){
 			}
 			body.assign((std::istreambuf_iterator<char>(style)), std::istreambuf_iterator<char>());
 			response.addHeader("Content-Type", "text/css");
-		}		
+		} else {
+				this->sendErrorPage(response, "404", "Not Found", "../web/default.html", request.getSocket());
+				return;
+		}
 		
 		sstream << std::strlen(body.c_str());
 
@@ -136,6 +146,11 @@ void WebServer::processRequest(HttpRequest request){
 		response.setBody(body);
 		response.push(request.getSocket());
 	}
+	
+/* 	if (!loadFile(filePath, body)) {
+						sendErrorPage(response, "404", "Not Found", "../web/default.html", request.getSocket());
+						return;
+	} */
 	else if (request.getMethod() == "PUT"){
 		//TODO
 	}
@@ -143,6 +158,33 @@ void WebServer::processRequest(HttpRequest request){
 		//TODO
 	}
 	else {
+		this->sendErrorPage(response, "405", "Method Not Allowed", "../web/default.html", request.getSocket());
 		//TODO
 	}
+}
+
+void WebServer::sendErrorPage(HttpResponse& response, const std::string& statusCode, const std::string& statusMsg, const std::string& errorPagePath, int socketFd) {
+    std::string body;
+		if (!errorPagePath.empty()) {
+		std::ifstream errorFile(errorPagePath.c_str());
+				if (errorFile) {
+						body.assign((std::istreambuf_iterator<char>(errorFile)), std::istreambuf_iterator<char>());
+				} else {
+						body = "<html><body><h1>Error " + statusCode + ": " + statusMsg + "</h1><p>Default error page unavailable.</p></body></html>";
+				}
+		} else {
+				body = "<html><body><h1>Error " + statusCode + ": " + statusMsg + "</h1><p>Default error page unavailable.</p></body></html>";
+		}
+  
+    std::stringstream sstream;
+    sstream << body.size();
+
+    response.setVersion(HTTP_VERSION);
+    response.setStatusCode(statusCode);
+    response.setStatusMsg(statusMsg);
+    response.addHeader("Content-Type", "text/html");
+    response.addHeader("Content-Length", sstream.str());
+    response.addHeader("Connection", "close");
+    response.setBody(body);
+    response.push(socketFd);
 }
