@@ -147,10 +147,6 @@ void WebServer::processRequest(HttpRequest request){
 		response.push(request.getSocket());
 	}
 	
-/* 	if (!loadFile(filePath, body)) {
-						sendErrorPage(response, "404", "Not Found", "../web/default.html", request.getSocket());
-						return;
-	} */
 	else if (request.getMethod() == "PUT"){
 		//TODO
 	}
