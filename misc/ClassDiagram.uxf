@@ -1,4 +1,4 @@
-<diagram program="umletino" version="15.1"><zoom_level>10</zoom_level><help_text>Space for diagram notes</help_text><element><id>UMLClass</id><coordinates><x>120</x><y>33</y><w>340</w><h>220</h></coordinates><panel_attributes>Config
+<diagram program="umletino" version="15.1"><zoom_level>11</zoom_level><help_text>Space for diagram notes</help_text><element><id>UMLClass</id><coordinates><x>33</x><y>0</y><w>374</w><h>319</h></coordinates><panel_attributes>Config
 --
 - maxPayLoad : unsigned int
 - servers : std::map&lt;std::string, Server&gt;
@@ -6,24 +6,137 @@
 --
 + Config() 
 + ~Config()
-- Config(const Config&amp; src)
-- const Config&amp; operator=(const Config&amp; src)
++ Config(const Config&amp; src)
++ operator=(const Config&amp; src) : const Config&amp;
+
 - loadConfig(file : std::fstream &amp;configFileStream) : void
+
 + getMaxPayload() : unsigned int
 + getServers() :  std::map&lt;std::string, Server&gt;
 + getRoutes() :  std::map&lt;std::string, Routes&gt;
-</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>120</x><y>333</y><w>340</w><h>230</h></coordinates><panel_attributes>Server
+
++ setMaxPayload(unsigned int maxPayload) : void
++ setServers(std::map&lt;std::string, Server&gt; servers) : void
++ setRoutes(std::map&lt;std::string, Route&gt; routes) : void
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>858</x><y>22</y><w>374</w><h>297</h></coordinates><panel_attributes>Server
 --
 - name : std::string
 - host : std::string
 - port : int
 --
-
-+ server(const std::string&amp; name, const std::string&amp; host, int port) 
++ server() 
 + ~server()
-- server(const Server&amp; src)
-- const Server&amp; operator=(const Server&amp; src)
-+ getName() : std::string
-+ getHost() :  std::string
-+ getPort() : int
-</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>280</x><y>243</y><w>40</w><h>110</h></coordinates><panel_attributes>lt=&lt;-</panel_attributes><additional_attributes>20;90;10;10</additional_attributes></element></diagram>
++ server(const Server&amp; src)
++ operator=(const Server&amp; src) : const Server&amp;
+
++ getName() const : std::string
++ getHost() const :  std::string
++ getPort() const : int
+
++ setName(const std::string&amp; name) : void
++ setHost(const std::string&amp; host) : void
++ setPort(int port) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>440</x><y>22</y><w>374</w><h>297</h></coordinates><panel_attributes>Route
+--
+- url : std::string
+- methods : std::map&lt;std::string, std::string&gt; 
+- files : std::map&lt;std::string, std::string&gt; 
+--
++ Route() 
++ ~Route()
++ Route(const Route&amp; src)
++ const Route&amp; operator=(const Route&amp; src)
+
++ getUrl() : std::string
++ getMethods() : std::map&lt;std::string, std::string&gt;
++ getFiles() : std::map&lt;std::string, std::string&gt;
+
++ setUrl(const std::string&amp; url) : void
++ setMethods(std::map&lt;std::string, std::string&gt; methods) : void
++ setFiles( std::map&lt;std::string, std::string&gt; files) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>22</x><y>374</y><w>374</w><h>253</h></coordinates><panel_attributes>Socket
+--
+- port : unsigned int
+- fd : int
+--
++ Socket() 
++ ~Socket()
++ Socket(const Socket&amp; src)
++ operator=(const Socket&amp; src) : const Socket&amp;
+
++ configureSocket() : void
++ getFd() : int
++ getPort() : unsigned int
+
++ setPort(unsigned int port) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>451</x><y>396</y><w>407</w><h>407</h></coordinates><panel_attributes>HttpRequest
+--
+- method : std::string
+- url : std::string
+- version : std::string
+- headers : std::multimap&lt;std::string, std::string&gt;
+- body : std::string
+--
++ HttpRequest() 
++ ~HttpRequest()
++ HttpRequest(const HttpRequest&amp; src)
++ operator=(const HttpRequest&amp; src) : const HttpRequest&amp;
+
+- parseRequestLine() : void
+- parseHeaderFields() : void
+- parseBody() : void
+- trimToken(std::string&amp; str) : void
+
++ getMethod() const : std::string
++ getUrl() const : std::string
++ getVersion() cons : std::string
++ getHeaders() cons : std::multimap&lt;std::string, std::string&gt;
++ getBody() const : std::string
+
++ setStream(std::stringstream *request) : void
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>880</x><y>396</y><w>407</w><h>407</h></coordinates><panel_attributes>HttpResponse
+--
+- version : std::string
+- statusCode : std::string
+- statusMsg : std::string
+- headers : std::multimap&lt;std::string, std::string&gt;
+- body : std::string
+--
++ HttpResponse() 
++ ~HttpResponse()
++ HttpResponse(const HttpResponse&amp; src)
++ operator=(const HttpResponse&amp; src) : const HttpResponse&amp;
+
++ getVersion() const : std::string
++ getStatusCode() const : std::string
++ getStatusMsg() const : std::string
++ getHeaders() const : std::multimap&lt;std::string, std::string&gt;
++ getBody() const : std::string
+
++ setVersion(std::string version) : void
++ setStatusCode(std::string statusCode) : void
++ setStatusMsg(std::string statusMsg) : void
++ addHeader(std::string name, std::string value) : void
++ setBody(std::string body) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>0</x><y>770</y><w>374</w><h>253</h></coordinates><panel_attributes>SocketManager
+--
+- socketList : std::list&lt;Socket&gt;
+- buffer : std::string
+--
++ SocketManager() 
++ ~SocketManager()
+- SocketManager(const SocketManager&amp; src)
+- operator=(const SocketManager&amp; src) : const SocketManager&amp;
+
++ monitorSockets() : void
+- recieveData() : void
++ sendData(std::string&amp; response) : void
++ addSocket(Socket&amp; socket) : void
++ deleteSocket(Socket&amp; socket) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>440</x><y>869</y><w>374</w><h>253</h></coordinates><panel_attributes>DataProcessor
+--
+- buffer : std::string
+--
++ DataProcessor() 
++ ~DataProcessor()
+- DataProcessor(const DataProcessor&amp; src)
+- operator=(const DataProcessor&amp; src) : const DataProcessor&amp;
+
++ recieveData(std::string&amp; request) : void
+- processRequest() : void
++ sendData() : void</panel_attributes><additional_attributes></additional_attributes></element></diagram>
