@@ -30,5 +30,6 @@ class HttpRequest {
 		std::multimap<std::string, std::string>	getHeaders() const;
 		std::string								getBody() const;
 		int										getSocket() const;
+	//	std::string to_string(int value);
 };
 

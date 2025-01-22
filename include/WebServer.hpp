@@ -20,4 +20,5 @@ private:
 	void	recieveData(int newSocketFd);
 	void	sendData(int newSocketFd);
 	void	processRequest(HttpRequest request);
+	void	sendErrorPage(HttpResponse& response, const std::string& statusCode, const std::string& statusMsg, const std::string& errorPagePath, int socketFd);
 };
