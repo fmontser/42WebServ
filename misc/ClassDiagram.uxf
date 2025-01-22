@@ -1,0 +1,29 @@
+<diagram program="umletino" version="15.1"><zoom_level>10</zoom_level><help_text>Space for diagram notes</help_text><element><id>UMLClass</id><coordinates><x>120</x><y>33</y><w>340</w><h>220</h></coordinates><panel_attributes>Config
+--
+- maxPayLoad : unsigned int
+- servers : std::map&lt;std::string, Server&gt;
+- routes : std::map&lt;std::string, Route&gt;
+--
++ Config() 
++ ~Config()
+- Config(const Config&amp; src)
+- const Config&amp; operator=(const Config&amp; src)
+- loadConfig(file : std::fstream &amp;configFileStream) : void
++ getMaxPayload() : unsigned int
++ getServers() :  std::map&lt;std::string, Server&gt;
++ getRoutes() :  std::map&lt;std::string, Routes&gt;
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>120</x><y>333</y><w>340</w><h>230</h></coordinates><panel_attributes>Server
+--
+- name : std::string
+- host : std::string
+- port : int
+--
+
++ server(const std::string&amp; name, const std::string&amp; host, int port) 
++ ~server()
+- server(const Server&amp; src)
+- const Server&amp; operator=(const Server&amp; src)
++ getName() : std::string
++ getHost() :  std::string
++ getPort() : int
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>280</x><y>243</y><w>40</w><h>110</h></coordinates><panel_attributes>lt=&lt;-</panel_attributes><additional_attributes>20;90;10;10</additional_attributes></element></diagram>
