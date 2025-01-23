@@ -17,18 +17,9 @@ Route& Route::operator=(const Route& src) {
 }
 
 std::string Route::getUrl() const {	return this->_url;}
-std::map<std::string, std::string> Route::getMethods() const {	
-	return this->_methods;
-	}	
-std::map<std::string, std::string> Route::getFiles() const {	
-	return this->_files;
-	}
+std::map<std::string, std::string> Route::getMethods() const { return this->_methods; }
+std::map<std::string, std::string> Route::getFiles() const { return this->_files; }
 
-void Route::setUrl(const std::string& url) {	this->_url = url;}
-void Route::setMethods(std::map<std::string, std::string>& methods) {	
-	this->_methods = methods;
-	}
-void Route::setFiles(std::map<std::string, std::string>& files) {	
-	this->_files = files;
-	}
-
+void Route::setUrl(const std::string& url) { this->_url = url;}
+void Route::addMethod(const std::pair<std::string, std::string>& method) { _methods.insert(method); }
+void Route::addFile(const std::pair<std::string, std::string>& file) { _files.insert(file); }

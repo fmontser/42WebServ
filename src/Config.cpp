@@ -2,8 +2,6 @@
 #include <cstdlib>
 #include "Config.hpp"
 
-#define MIN_PORT_NUMBER 0
-#define MAX_PORT_NUMBER 65536
 #define MIN_PAYLOAD 0
 #define MAX_PAYLOAD 67108864 //64Mb
 
@@ -12,7 +10,9 @@ Config::~Config() {}
 Config::Config(const Config& src) {}
 Config& Config::operator=(const Config& src) {}
 
-void	Config::tokenize(std::fstream &configFileStream, std::vector<std::string> &tokenList){
+static std::map<std::string, void (Config::*)(std::vector<std::string>::iterator &it)>	_tokenMap;
+
+static void	tokenize(std::fstream &configFileStream, std::vector<std::string> &tokenList){
 	char		c;
 	std::string	token;
 	bool		flag = false;
@@ -39,19 +39,19 @@ void	Config::tokenize(std::fstream &configFileStream, std::vector<std::string> &
 
 void	Config::loadConfig(std::fstream &configFileStream) {
 	
- 	std::vector<std::string>			tokenList;
+	std::vector<std::string>			tokenList;
 	std::vector<std::string>::iterator	it;
-	std::map<std::string, void (Config::*)(std::vector<std::string>::iterator &it)>	_tokenMap;
-
+	
 	tokenize(configFileStream, tokenList);
 
 	_tokenMap["maxPayload"] = &Config::setMaxPayload;
-	_tokenMap["route"] = &Config::setRoutes;
-	_tokenMap["server"] = &Config::setServers;
+	_tokenMap["route"] = &Config::addRoute;
+	_tokenMap["server"] = &Config::addServer;
 	_tokenMap["method"] = NULL;
 	_tokenMap["file"] = NULL;
 	_tokenMap["port"] = NULL;
 	_tokenMap["host"] = NULL;
+	_tokenMap["name"] = NULL;
 
 	for (it = tokenList.begin(); it != tokenList.end(); ++it){
 		if (_tokenMap.find(*it) != _tokenMap.end())
@@ -60,7 +60,7 @@ void	Config::loadConfig(std::fstream &configFileStream) {
 }
 
 void	Config::setMaxPayload(std::vector<std::string>::iterator &it) {
- 	char	*err;
+	char	*err;
 	int		payloadSize;
 	
 	++it;
@@ -73,11 +73,12 @@ void	Config::setMaxPayload(std::vector<std::string>::iterator &it) {
 	_maxPayload = payloadSize;
 }
 
-void	Config::setRoutes(std::vector<std::string>::iterator &it) {
-/* 	Route route;
+//TODO if else meh... (hacer metodos estaticos y anadirlos al tokenmap??)
+void	Config::addRoute(std::vector<std::string>::iterator &it) {
+	Route route;
 	std::string key, value;
 
-	route.value = *(++it);
+	route.setUrl(*(++it));
 	if (*(++it) == "{") {
 		while(*(++it) != "}") {
 			if (_tokenMap.find(*it) != _tokenMap.end()){
@@ -85,40 +86,45 @@ void	Config::setRoutes(std::vector<std::string>::iterator &it) {
 				++it;
 			}
 			value = *it;
-			route.rules.insert(std::make_pair(key, value));
+			if (key == "method")
+				route.addMethod(std::make_pair(key, value));
+			else if (key == "file")
+				route.addFile(std::make_pair(key, value));
 		}
 	}
 
-	if (_routes.find(route.value) != _routes.end()) {
-		std::cerr << "Config file error: Route " << route.value << " is duplicated." << std::endl;
+	if (_routes.find(route.getUrl()) != _routes.end()) {
+		std::cerr << "Config file error: Route " << route.getUrl()<< " is duplicated." << std::endl;
 		exit(1);
 	}
 	else
-		_routes[route.value] = route; */ */
+		_routes.insert(std::make_pair(route.getUrl(), route));
 }
 
+//TODO if else meh...(hacer metodos estaticos y anadirlos al tokenmap??)
+void	Config::addServer(std::vector<std::string>::iterator &it) {
+	Server server;
 
-void	Config::setServers(std::vector<std::string>::iterator &it) {}
-
-/* void	Config::setPort(std::vector<std::string>::iterator &it) {
-	char	*err;
-	int		portNumber;
-	
-	++it;
-	portNumber = strtol((*it).c_str(), &err, 10);
-	if (portNumber < MIN_PORT_NUMBER || portNumber > MAX_PORT_NUMBER || isalpha(*err)) {
-		std::cerr << "Config file error: Invalid port number." << std::endl;
-		exit(EXIT_FAILURE);
+	if (*(++it) == "{") {
+		while(*(++it) != "}") {
+			if (_tokenMap.find(*it) != _tokenMap.end()){
+				if (*it == "name")
+					server.setName(*(++it));
+				else if (*it == "host")
+					server.setHost(*(++it));
+				else if (*it == "port")
+					server.setPort(*(++it));
+			}
+		}
 	}
-	std::cout << "Server Port set as: " << portNumber << std::endl;
-	_port = portNumber;
-} */
+	if (_servers.find(server.getName()) != _servers.end()) {
+		std::cerr << "Config file error: server " << server.getName()<< " is duplicated." << std::endl;
+		exit(1);
+	}
+	else
+		_servers.insert(std::make_pair(server.getName(), server));
+}
 
-//setFile
-
-//setHost
-
-
-int										Config::getMaxPayload() const { return _maxPayload; }
+int								Config::getMaxPayload() const { return _maxPayload; }
 std::map<std::string, Route>&	Config::getRoutes() const { return (std::map<std::string, Route>&)_routes; }
 std::map<std::string, Server>&	Config::getServers() const { return (std::map<std::string, Server>&)_servers; }
