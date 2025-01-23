@@ -1,4 +1,5 @@
-<diagram program="umletino" version="15.1"><zoom_level>11</zoom_level><help_text>Space for diagram notes</help_text><element><id>UMLClass</id><coordinates><x>33</x><y>0</y><w>374</w><h>319</h></coordinates><panel_attributes>Config
+<diagram program="umletino" version="15.1"><zoom_level>9</zoom_level><help_text>Space for diagram notes</help_text><element><id>UMLClass</id><coordinates><x>153</x><y>36</y><w>306</w><h>279</h></coordinates><panel_attributes>&lt;&lt;Data&gt;&gt;
+Config
 --
 - maxPayLoad : unsigned int
 - servers : std::map&lt;std::string, Server&gt;
@@ -18,7 +19,8 @@
 + setMaxPayload(unsigned int maxPayload) : void
 + setServers(std::map&lt;std::string, Server&gt; servers) : void
 + setRoutes(std::map&lt;std::string, Route&gt; routes) : void
-</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>858</x><y>22</y><w>374</w><h>297</h></coordinates><panel_attributes>Server
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>405</x><y>441</y><w>306</w><h>243</h></coordinates><panel_attributes>&lt;&lt;Data&gt;&gt;
+Server
 --
 - name : std::string
 - host : std::string
@@ -35,7 +37,8 @@
 
 + setName(const std::string&amp; name) : void
 + setHost(const std::string&amp; host) : void
-+ setPort(int port) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>440</x><y>22</y><w>374</w><h>297</h></coordinates><panel_attributes>Route
++ setPort(int port) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>0</x><y>441</y><w>306</w><h>243</h></coordinates><panel_attributes>&lt;&lt;Data&gt;&gt;
+Route
 --
 - url : std::string
 - methods : std::map&lt;std::string, std::string&gt; 
@@ -52,7 +55,8 @@
 
 + setUrl(const std::string&amp; url) : void
 + setMethods(std::map&lt;std::string, std::string&gt; methods) : void
-+ setFiles( std::map&lt;std::string, std::string&gt; files) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>22</x><y>374</y><w>374</w><h>253</h></coordinates><panel_attributes>Socket
++ setFiles( std::map&lt;std::string, std::string&gt; files) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>18</x><y>1116</y><w>306</w><h>207</h></coordinates><panel_attributes>&lt;&lt;OS Resource&gt;&gt;
+Socket
 --
 - port : unsigned int
 - fd : int
@@ -66,7 +70,8 @@
 + getFd() : int
 + getPort() : unsigned int
 
-+ setPort(unsigned int port) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>451</x><y>396</y><w>407</w><h>407</h></coordinates><panel_attributes>HttpRequest
++ setPort(unsigned int port) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1098</x><y>0</y><w>333</w><h>333</h></coordinates><panel_attributes>&lt;&lt;Data&gt;&gt;
+HttpRequest
 --
 - method : std::string
 - url : std::string
@@ -91,7 +96,8 @@
 + getBody() const : std::string
 
 + setStream(std::stringstream *request) : void
-</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>880</x><y>396</y><w>407</w><h>407</h></coordinates><panel_attributes>HttpResponse
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>720</x><y>0</y><w>333</w><h>333</h></coordinates><panel_attributes>&lt;&lt;Data&gt;&gt;
+HttpResponse
 --
 - version : std::string
 - statusCode : std::string
@@ -114,7 +120,8 @@
 + setStatusCode(std::string statusCode) : void
 + setStatusMsg(std::string statusMsg) : void
 + addHeader(std::string name, std::string value) : void
-+ setBody(std::string body) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>0</x><y>770</y><w>374</w><h>253</h></coordinates><panel_attributes>SocketManager
++ setBody(std::string body) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>18</x><y>837</y><w>306</w><h>243</h></coordinates><panel_attributes>&lt;&lt;Resource Manager&gt;&gt;
+SocketManager
 --
 - socketList : std::list&lt;Socket&gt;
 - buffer : std::string
@@ -128,9 +135,14 @@
 - recieveData() : void
 + sendData(std::string&amp; response) : void
 + addSocket(Socket&amp; socket) : void
-+ deleteSocket(Socket&amp; socket) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>440</x><y>869</y><w>374</w><h>253</h></coordinates><panel_attributes>DataProcessor
++ deleteSocket(Socket&amp; socket) : void
+--
+Input: DataProcessor -&gt; String
+Manages: Socket events, creation, destruction and data</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>504</x><y>981</y><w>306</w><h>207</h></coordinates><panel_attributes>&lt;&lt;Adapter&gt;&gt;
+DataProcessor
 --
 - buffer : std::string
+- request : HttpRequest
 --
 + DataProcessor() 
 + ~DataProcessor()
@@ -139,4 +151,29 @@
 
 + recieveData(std::string&amp; request) : void
 - processRequest() : void
-+ sendData() : void</panel_attributes><additional_attributes></additional_attributes></element></diagram>
++ sendData(HttpResponse&amp; response) : void
+--
+Input: SocketManager -&gt; String 
+Output: String -&gt; FileManager
+Manages: Data to http adaptation, logic hub</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>504</x><y>1251</y><w>306</w><h>234</h></coordinates><panel_attributes>&lt;&lt;Resource Manager&gt;&gt;
+FileManager
+--
+- request : HttpRequest
+- response : HttpResponse
+--
++ FileManager() 
++ ~FileManager()
+- FileManager(const FileManager&amp; src)
+- operator=(const FileManager&amp; src) : const FileManager&amp;
+
++ recieveHttpRequest(HttpRequest&amp; request) : void
+- processHttpRequest() : void
+- searchFile() : bool
+- createFile() : bool
+- deleteFile() : bool
+- controlAccess() : bool
+--
+Input: DataProcessor -&gt; HttpRequest
+Output: HttpResponse -&gt; DataProcessor
+Manage statusCode: 200, 403, 404, 405
+</panel_attributes><additional_attributes></additional_attributes></element></diagram>
