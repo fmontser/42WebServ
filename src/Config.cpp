@@ -67,10 +67,7 @@ void	Config::loadConfig(std::fstream &configFileStream) {
 
 }
 
-
-
-
-void	Config::setPort(std::vector<std::string>::iterator &it) {
+/* void	Config::setPort(std::vector<std::string>::iterator &it) {
 	char	*err;
 	int		portNumber;
 	
@@ -82,10 +79,10 @@ void	Config::setPort(std::vector<std::string>::iterator &it) {
 	}
 	std::cout << "Server Port set as: " << portNumber << std::endl;
 	_port = portNumber;
-}
+} */
 
 
-void	Config::setMaxPayload(std::vector<std::string>::iterator &it) {
+/* void	Config::setMaxPayload(std::vector<std::string>::iterator &it) {
 	char	*err;
 	int		payloadSize;
 	
@@ -97,10 +94,10 @@ void	Config::setMaxPayload(std::vector<std::string>::iterator &it) {
 	}
 	std::cout << "Payload size set as: " << payloadSize << " bytes." << std::endl;
 	_maxPayload = payloadSize;
-}
+} */
 
-void	Config::setRoute(std::vector<std::string>::iterator &it) {
-	Route route;
+void	Config::setRoutes(std::vector<std::string>::iterator &it) {
+/* 	Route route;
 	std::string key, value;
 
 	route.value = *(++it);
@@ -120,21 +117,17 @@ void	Config::setRoute(std::vector<std::string>::iterator &it) {
 		exit(1);
 	}
 	else
-		_routes[route.value] = route;
+		_routes[route.value] = route; */
 }
 
-void	Config::setPage404(std::vector<std::string>::iterator &it) {
-	//TODO switch con todas las paginas
-	++it;
-	_page404 = *it;
-}
+void	Config::setServers(std::vector<std::string>::iterator &it) {}
 
-__uint16_t								Config::getPort() const { return _port; }
 
-__uint32_t								Config::getMaxPayload() const { return _maxPayload; }
 
-std::map<std::string, Config::Route>&	Config::getRoutes() const { return (std::map<std::string, Config::Route>&)_routes; }
 
-const std::string						Config::getPage404() const { return _page404; }
 
-WebSocket&								Config::getWebSocket() const { return *_webSocket; }
+int										Config::getMaxPayload() const { return _maxPayload; }
+
+std::map<std::string, Route>&	Config::getRoutes() const { return (std::map<std::string, Route>&)_routes; }
+
+std::map<std::string, Server>&	Config::getServers() const { return (std::map<std::string, Server>&)_servers; }
