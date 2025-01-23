@@ -1,4 +1,4 @@
-<diagram program="umletino" version="15.1"><zoom_level>9</zoom_level><help_text>Space for diagram notes</help_text><element><id>UMLClass</id><coordinates><x>153</x><y>36</y><w>306</w><h>279</h></coordinates><panel_attributes>&lt;&lt;Data&gt;&gt;
+<diagram program="umletino" version="15.1"><zoom_level>3</zoom_level><help_text>Space for diagram notes</help_text><element><id>UMLClass</id><coordinates><x>78</x><y>177</y><w>102</w><h>93</h></coordinates><panel_attributes>&lt;&lt;Data&gt;&gt;
 Config
 --
 - maxPayLoad : unsigned int
@@ -19,7 +19,7 @@ Config
 + setMaxPayload(unsigned int maxPayload) : void
 + setServers(std::map&lt;std::string, Server&gt; servers) : void
 + setRoutes(std::map&lt;std::string, Route&gt; routes) : void
-</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>405</x><y>441</y><w>306</w><h>243</h></coordinates><panel_attributes>&lt;&lt;Data&gt;&gt;
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>156</x><y>312</y><w>102</w><h>81</h></coordinates><panel_attributes>&lt;&lt;Data&gt;&gt;
 Server
 --
 - name : std::string
@@ -37,7 +37,7 @@ Server
 
 + setName(const std::string&amp; name) : void
 + setHost(const std::string&amp; host) : void
-+ setPort(int port) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>0</x><y>441</y><w>306</w><h>243</h></coordinates><panel_attributes>&lt;&lt;Data&gt;&gt;
++ setPort(int port) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>0</x><y>312</y><w>102</w><h>81</h></coordinates><panel_attributes>&lt;&lt;Data&gt;&gt;
 Route
 --
 - url : std::string
@@ -55,7 +55,7 @@ Route
 
 + setUrl(const std::string&amp; url) : void
 + setMethods(std::map&lt;std::string, std::string&gt; methods) : void
-+ setFiles( std::map&lt;std::string, std::string&gt; files) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>18</x><y>1116</y><w>306</w><h>207</h></coordinates><panel_attributes>&lt;&lt;OS Resource&gt;&gt;
++ setFiles( std::map&lt;std::string, std::string&gt; files) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>3</x><y>606</y><w>102</w><h>114</h></coordinates><panel_attributes>&lt;&lt;OS Resource&gt;&gt;
 Socket
 --
 - port : unsigned int
@@ -70,7 +70,7 @@ Socket
 + getFd() : int
 + getPort() : unsigned int
 
-+ setPort(unsigned int port) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1098</x><y>0</y><w>333</w><h>333</h></coordinates><panel_attributes>&lt;&lt;Data&gt;&gt;
++ setPort(unsigned int port) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>453</x><y>609</y><w>102</w><h>117</h></coordinates><panel_attributes>&lt;&lt;Data&gt;&gt;
 HttpRequest
 --
 - method : std::string
@@ -96,7 +96,7 @@ HttpRequest
 + getBody() const : std::string
 
 + setStream(std::stringstream *request) : void
-</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>720</x><y>0</y><w>333</w><h>333</h></coordinates><panel_attributes>&lt;&lt;Data&gt;&gt;
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>306</x><y>609</y><w>102</w><h>117</h></coordinates><panel_attributes>&lt;&lt;Data&gt;&gt;
 HttpResponse
 --
 - version : std::string
@@ -120,7 +120,7 @@ HttpResponse
 + setStatusCode(std::string statusCode) : void
 + setStatusMsg(std::string statusMsg) : void
 + addHeader(std::string name, std::string value) : void
-+ setBody(std::string body) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>18</x><y>837</y><w>306</w><h>243</h></coordinates><panel_attributes>&lt;&lt;Resource Manager&gt;&gt;
++ setBody(std::string body) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>3</x><y>441</y><w>102</w><h>111</h></coordinates><panel_attributes>&lt;&lt;Resource Manager&gt;&gt;
 SocketManager
 --
 - socketList : std::list&lt;Socket&gt;
@@ -138,16 +138,16 @@ SocketManager
 + deleteSocket(Socket&amp; socket) : void
 --
 Input: DataProcessor -&gt; String
-Manages: Socket events, creation, destruction and data</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>504</x><y>981</y><w>306</w><h>207</h></coordinates><panel_attributes>&lt;&lt;Adapter&gt;&gt;
-DataProcessor
+Manages: Socket events, creation, destruction and data</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>156</x><y>441</y><w>102</w><h>111</h></coordinates><panel_attributes>&lt;&lt;Adapter&gt;&gt;
+DataAdapter
 --
 - buffer : std::string
 - request : HttpRequest
 --
-+ DataProcessor() 
-+ ~DataProcessor()
-- DataProcessor(const DataProcessor&amp; src)
-- operator=(const DataProcessor&amp; src) : const DataProcessor&amp;
++ DataAdapter() 
++ ~DataAdapter()
+- DataAdapter(const DataAdapter&amp; src)
+- operator=(const DataAdapter&amp; src) : const DataAdapter&amp;
 
 + recieveData(std::string&amp; request) : void
 - processRequest() : void
@@ -155,7 +155,7 @@ DataProcessor
 --
 Input: SocketManager -&gt; String 
 Output: String -&gt; FileManager
-Manages: Data to http adaptation, logic hub</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>504</x><y>1251</y><w>306</w><h>234</h></coordinates><panel_attributes>&lt;&lt;Resource Manager&gt;&gt;
+Manages: Data to http adaptation, logic hub</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>306</x><y>441</y><w>102</w><h>111</h></coordinates><panel_attributes>&lt;&lt;Resource Manager&gt;&gt;
 FileManager
 --
 - request : HttpRequest
@@ -167,13 +167,43 @@ FileManager
 - operator=(const FileManager&amp; src) : const FileManager&amp;
 
 + recieveHttpRequest(HttpRequest&amp; request) : void
++ recieveHttpResponse(HttpResponse&amp; response) : void
 - processHttpRequest() : void
 - searchFile() : bool
 - createFile() : bool
 - deleteFile() : bool
 - controlAccess() : bool
 --
-Input: DataProcessor -&gt; HttpRequest
-Output: HttpResponse -&gt; DataProcessor
+Input 1: DataAdapter -&gt; HttpRequest
+Input 2: CgiProcessor -&gt; HttpResponse
+Output: HttpResponse -&gt; DataPAdapter
+Output2: HttpResponse -&gt; CgiProcessor
+
 Manage statusCode: 200, 403, 404, 405
-</panel_attributes><additional_attributes></additional_attributes></element></diagram>
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>453</x><y>441</y><w>102</w><h>111</h></coordinates><panel_attributes>&lt;&lt;Processor&gt;&gt;
+CgiProcessor
+--
+- response : HttpResponse
+--
++ CgiProcessor() 
++ ~CgiProcessor()
+- CgiProcessor(const CgiProcessor&amp; src)
+- operator=(const CgiProcessor&amp; src) : const CgiProcessor&amp;
+
++ recieveHttpResponse(HttpResponse&amp; Response) : void
+- processHttpResponse() : void
+- setEnviorment() : void
+- executeCGI();
+--
+Input: FileManager -&gt; HttpResponse
+Output: HttpResponse -&gt; FileManager
+
+Manage cgi response modification
+
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>48</x><y>549</y><w>15</w><h>63</h></coordinates><panel_attributes>lt=&lt;-
+m1=1..n</panel_attributes><additional_attributes>10;10;10;190</additional_attributes></element><element><id>Relation</id><coordinates><x>48</x><y>267</y><w>93</w><h>51</h></coordinates><panel_attributes>lt=&lt;-
+m1=1..n</panel_attributes><additional_attributes>270;10;270;100;10;100;10;150</additional_attributes></element><element><id>Relation</id><coordinates><x>126</x><y>267</y><w>87</w><h>51</h></coordinates><panel_attributes>lt=&lt;-
+m1=1..n</panel_attributes><additional_attributes>10;10;10;100;270;100;270;150</additional_attributes></element><element><id>Relation</id><coordinates><x>102</x><y>486</y><w>60</w><h>9</h></coordinates><panel_attributes>lt=-</panel_attributes><additional_attributes>10;10;180;10</additional_attributes></element><element><id>Relation</id><coordinates><x>255</x><y>486</y><w>57</w><h>9</h></coordinates><panel_attributes>lt=-</panel_attributes><additional_attributes>10;10;170;10</additional_attributes></element><element><id>Relation</id><coordinates><x>405</x><y>486</y><w>54</w><h>9</h></coordinates><panel_attributes>lt=-</panel_attributes><additional_attributes>10;10;160;10</additional_attributes></element><element><id>Relation</id><coordinates><x>354</x><y>549</y><w>144</w><h>66</h></coordinates><panel_attributes>lt=&lt;-
+m1=1..1</panel_attributes><additional_attributes>10;10;10;140;460;140;460;200</additional_attributes></element><element><id>Relation</id><coordinates><x>354</x><y>549</y><w>15</w><h>66</h></coordinates><panel_attributes>lt=&lt;-
+m1=1..1</panel_attributes><additional_attributes>10;10;10;200</additional_attributes></element><element><id>Relation</id><coordinates><x>501</x><y>549</y><w>15</w><h>66</h></coordinates><panel_attributes>lt=&lt;-
+m1=1..1</panel_attributes><additional_attributes>10;10;10;200</additional_attributes></element></diagram>
