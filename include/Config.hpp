@@ -8,8 +8,6 @@
 
 class Config {
 	private:
-		//TODO borrar std::map<std::string, void (Config::*)(std::vector<std::string>::iterator &it)>	_tokenMap;
-
 		int								_maxPayload;
 		std::map<std::string, Route>	_routes;
 		std::map<std::string, Server>	_servers;
@@ -21,10 +19,13 @@ class Config {
 		void	setRoutes(std::vector<std::string>::iterator &it);
 		void	setServers(std::vector<std::string>::iterator &it);
 
-		void	loadConfig(std::fstream &configFileStream);
+		void	tokenize(std::fstream &configFileStream, std::vector<std::string> &tokenList);
+
 	public:
 		Config();
 		~Config();
+
+		void	loadConfig(std::fstream &configFileStream);
 
 		int								getMaxPayload() const;
 		std::map<std::string, Route>&	getRoutes() const;

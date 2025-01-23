@@ -1,5 +1,6 @@
-#include "Config.hpp"
+#include <iostream>
 #include <cstdlib>
+#include "Config.hpp"
 
 #define MIN_PORT_NUMBER 0
 #define MAX_PORT_NUMBER 65536
@@ -11,21 +12,7 @@ Config::~Config() {}
 Config::Config(const Config& src) {}
 Config& Config::operator=(const Config& src) {}
 
-/* void	Config::configureOptions() {
-	_tokenMap["port"] = &Config::setPort;
-	_tokenMap["maxPayload"] = &Config::setMaxPayload;
-	_tokenMap["route"] = &Config::setRoute;
-	_tokenMap["page404"] = &Config::setPage404;
-} */
-
-/* void	Config::configureRules() {
-	_tokenMap["methods"] = NULL;
-	_tokenMap["file"] = NULL;
-} */
-
-
-
-/* void	Config::tokenize(std::fstream &configFileStream, std::vector<std::string> &tokenList){
+void	Config::tokenize(std::fstream &configFileStream, std::vector<std::string> &tokenList){
 	char		c;
 	std::string	token;
 	bool		flag = false;
@@ -48,42 +35,32 @@ Config& Config::operator=(const Config& src) {}
 	}
 	tokenList.push_back(token);
 	configFileStream.close();
-} */
+}
 
 void	Config::loadConfig(std::fstream &configFileStream) {
 	
-/* 	std::vector<std::string> tokenList;
-	std::vector<std::string>::iterator it;
+ 	std::vector<std::string>			tokenList;
+	std::vector<std::string>::iterator	it;
+	std::map<std::string, void (Config::*)(std::vector<std::string>::iterator &it)>	_tokenMap;
 
-	configureOptions();
-	configureRules();
 	tokenize(configFileStream, tokenList);
+
+	_tokenMap["maxPayload"] = &Config::setMaxPayload;
+	_tokenMap["route"] = &Config::setRoutes;
+	_tokenMap["server"] = &Config::setServers;
+	_tokenMap["method"] = NULL;
+	_tokenMap["file"] = NULL;
+	_tokenMap["port"] = NULL;
+	_tokenMap["host"] = NULL;
 
 	for (it = tokenList.begin(); it != tokenList.end(); ++it){
 		if (_tokenMap.find(*it) != _tokenMap.end())
 			(this->*(_tokenMap[*it]))(it);
 	}
-	_webSocket = new WebSocket(_port); */
-
 }
 
-/* void	Config::setPort(std::vector<std::string>::iterator &it) {
-	char	*err;
-	int		portNumber;
-	
-	++it;
-	portNumber = strtol((*it).c_str(), &err, 10);
-	if (portNumber < MIN_PORT_NUMBER || portNumber > MAX_PORT_NUMBER || isalpha(*err)) {
-		std::cerr << "Config file error: Invalid port number." << std::endl;
-		exit(EXIT_FAILURE);
-	}
-	std::cout << "Server Port set as: " << portNumber << std::endl;
-	_port = portNumber;
-} */
-
-
-/* void	Config::setMaxPayload(std::vector<std::string>::iterator &it) {
-	char	*err;
+void	Config::setMaxPayload(std::vector<std::string>::iterator &it) {
+ 	char	*err;
 	int		payloadSize;
 	
 	++it;
@@ -94,7 +71,7 @@ void	Config::loadConfig(std::fstream &configFileStream) {
 	}
 	std::cout << "Payload size set as: " << payloadSize << " bytes." << std::endl;
 	_maxPayload = payloadSize;
-} */
+}
 
 void	Config::setRoutes(std::vector<std::string>::iterator &it) {
 /* 	Route route;
@@ -117,17 +94,31 @@ void	Config::setRoutes(std::vector<std::string>::iterator &it) {
 		exit(1);
 	}
 	else
-		_routes[route.value] = route; */
+		_routes[route.value] = route; */ */
 }
+
 
 void	Config::setServers(std::vector<std::string>::iterator &it) {}
 
+/* void	Config::setPort(std::vector<std::string>::iterator &it) {
+	char	*err;
+	int		portNumber;
+	
+	++it;
+	portNumber = strtol((*it).c_str(), &err, 10);
+	if (portNumber < MIN_PORT_NUMBER || portNumber > MAX_PORT_NUMBER || isalpha(*err)) {
+		std::cerr << "Config file error: Invalid port number." << std::endl;
+		exit(EXIT_FAILURE);
+	}
+	std::cout << "Server Port set as: " << portNumber << std::endl;
+	_port = portNumber;
+} */
 
+//setFile
 
+//setHost
 
 
 int										Config::getMaxPayload() const { return _maxPayload; }
-
 std::map<std::string, Route>&	Config::getRoutes() const { return (std::map<std::string, Route>&)_routes; }
-
 std::map<std::string, Server>&	Config::getServers() const { return (std::map<std::string, Server>&)_servers; }
