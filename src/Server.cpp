@@ -2,7 +2,12 @@
 
 Server::Server() {}
 Server::~Server() {}
-Server::Server(const Server& src) {	*this = src;}
+Server::Server(const Server& src) {	
+		this->_name = src._name;
+		this->_host = src._host;
+		this->_port = src._port;
+	}
+
 Server& Server::operator=(const Server& src) {
 	if (this != &src) {
 		this->_name = src._name;
