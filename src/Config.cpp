@@ -7,8 +7,12 @@
 
 Config::Config() {}
 Config::~Config() {}
-Config::Config(const Config& src) {}
-Config& Config::operator=(const Config& src) {}
+Config::Config(const Config& src) {
+	//TODO
+}
+Config& Config::operator=(const Config& src) {
+	//TODO
+}
 
 static std::map<std::string, void (Config::*)(std::vector<std::string>::iterator &it)>	_tokenMap;
 
