@@ -1,46 +1,32 @@
 #pragma once
-#include <iostream>
+
 #include <map>
 #include <vector>
 #include <fstream>
-#include "WebSocket.hpp"
+#include "Route.hpp"
+#include "Server.hpp"
 
 class Config {
-	public:
-		struct Route
-		{
-			std::string								value;
-			std::multimap<std::string, std::string>	rules;
-			Route();
-			~Route();
-		};
-
 	private:
-		WebSocket						*_webSocket;
-		std::map<std::string, void (Config::*)(std::vector<std::string>::iterator &it)>	_tokenMap;
-		__uint16_t						_port;
-		__uint32_t						_maxPayload;
+		//TODO borrar std::map<std::string, void (Config::*)(std::vector<std::string>::iterator &it)>	_tokenMap;
+
+		int								_maxPayload;
 		std::map<std::string, Route>	_routes;
-		std::string						_page404;
+		std::map<std::string, Server>	_servers;
 
-		void	setPort(std::vector<std::string>::iterator &it);
 		void	setMaxPayload(std::vector<std::string>::iterator &it);
-		void	setRoute(std::vector<std::string>::iterator &it);
-		void	setPage404(std::vector<std::string>::iterator &it);
+		void	setRoutes(std::vector<std::string>::iterator &it);
+		void	setServers(std::vector<std::string>::iterator &it);
 
-		void	tokenize(std::fstream &configFileStream, std::vector<std::string> &tokenList);
-		void	configureOptions();
-		void	configureRules();
-
+		void	loadConfig(std::fstream &configFileStream);
 	public:
-
-		Config(std::fstream &configFileStream);
+		Config();
 		~Config();
+		Config(const Config& src);
+		Config& operator=(const Config& src);
 
-		__uint16_t						getPort() const;
-		__uint32_t						getMaxPayload() const;
+		int								getMaxPayload() const;
 		std::map<std::string, Route>&	getRoutes() const;
-		const std::string				getPage404() const;
-		WebSocket&						getWebSocket() const;
+		std::map<std::string, Server>&	getServers() const;
 };
 

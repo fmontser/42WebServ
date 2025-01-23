@@ -9,8 +9,8 @@ BIN_DIR			:=	bin/
 
 NAME			:=	webserv
 
-HDRS			:=	Config.hpp HttpRequest.hpp HttpResponse.hpp WebSocket.hpp WebServer.hpp
-SRCS			:=	main.cpp Config.cpp HttpRequest.cpp HttpResponse.cpp WebSocket.cpp WebServer.cpp
+HDRS			:=	Config.hpp  Route.hpp Server.hpp HttpRequest.hpp HttpResponse.hpp Socket.hpp SocketManager.hpp DataAdapter.hpp CgiProcessor.hpp FileManager.hpp
+SRCS			:=	main.cpp Config.cpp  Route.cpp Server.cpp HttpRequest.cpp HttpResponse.cpp Socket.cpp SocketManager.cpp DataAdapter.cpp CgiProcessor.cpp FileManager.cpp
 
 OBJS			:=	$(SRCS:.cpp=.o)
 INPUT			:=	"../config/config.cfg"

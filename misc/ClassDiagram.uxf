@@ -1,4 +1,4 @@
-<diagram program="umletino" version="15.1"><zoom_level>10</zoom_level><help_text>Space for diagram notes</help_text><element><id>UMLClass</id><coordinates><x>260</x><y>0</y><w>340</w><h>310</h></coordinates><panel_attributes>&lt;&lt;Data&gt;&gt;
+<diagram program="umletino" version="15.1"><zoom_level>13</zoom_level><help_text>Space for diagram notes</help_text><element><id>UMLClass</id><coordinates><x>338</x><y>0</y><w>442</w><h>403</h></coordinates><panel_attributes>&lt;&lt;Data&gt;&gt;
 Config
 --
 - maxPayLoad : unsigned int
@@ -19,7 +19,7 @@ Config
 + setMaxPayload(unsigned int maxPayload) : void
 + setServers(std::map&lt;std::string, Server&gt; servers) : void
 + setRoutes(std::map&lt;std::string, Route&gt; routes) : void
-</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>520</x><y>450</y><w>340</w><h>270</h></coordinates><panel_attributes>&lt;&lt;Data&gt;&gt;
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>676</x><y>585</y><w>442</w><h>351</h></coordinates><panel_attributes>&lt;&lt;Data&gt;&gt;
 Server
 --
 - name : std::string
@@ -37,7 +37,7 @@ Server
 
 + setName(const std::string&amp; name) : void
 + setHost(const std::string&amp; host) : void
-+ setPort(int port) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>0</x><y>450</y><w>340</w><h>270</h></coordinates><panel_attributes>&lt;&lt;Data&gt;&gt;
++ setPort(int port) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>0</x><y>585</y><w>442</w><h>351</h></coordinates><panel_attributes>&lt;&lt;Data&gt;&gt;
 Route
 --
 - url : std::string
@@ -55,7 +55,7 @@ Route
 
 + setUrl(const std::string&amp; url) : void
 + setMethods(std::map&lt;std::string, std::string&gt; methods) : void
-+ setFiles( std::map&lt;std::string, std::string&gt; files) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>10</x><y>1430</y><w>340</w><h>380</h></coordinates><panel_attributes>&lt;&lt;OS Resource&gt;&gt;
++ setFiles( std::map&lt;std::string, std::string&gt; files) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>13</x><y>1859</y><w>442</w><h>494</h></coordinates><panel_attributes>&lt;&lt;OS Resource&gt;&gt;
 Socket
 --
 - port : unsigned int
@@ -70,7 +70,7 @@ Socket
 + getFd() : int
 + getPort() : unsigned int
 
-+ setPort(unsigned int port) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1510</x><y>1440</y><w>340</w><h>390</h></coordinates><panel_attributes>&lt;&lt;Data&gt;&gt;
++ setPort(unsigned int port) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1963</x><y>1872</y><w>442</w><h>507</h></coordinates><panel_attributes>&lt;&lt;Data&gt;&gt;
 HttpRequest
 --
 - method : std::string
@@ -96,7 +96,7 @@ HttpRequest
 + getBody() const : std::string
 
 + setStream(std::stringstream *request) : void
-</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1020</x><y>1440</y><w>340</w><h>390</h></coordinates><panel_attributes>&lt;&lt;Data&gt;&gt;
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1326</x><y>1872</y><w>442</w><h>507</h></coordinates><panel_attributes>&lt;&lt;Data&gt;&gt;
 HttpResponse
 --
 - version : std::string
@@ -120,7 +120,7 @@ HttpResponse
 + setStatusCode(std::string statusCode) : void
 + setStatusMsg(std::string statusMsg) : void
 + addHeader(std::string name, std::string value) : void
-+ setBody(std::string body) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>10</x><y>880</y><w>340</w><h>370</h></coordinates><panel_attributes>&lt;&lt;Resource Manager&gt;&gt;
++ setBody(std::string body) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>0</x><y>1144</y><w>455</w><h>481</h></coordinates><panel_attributes>&lt;&lt;Resource Manager&gt;&gt;
 SocketManager
 --
 - socketList : std::list&lt;Socket&gt;
@@ -138,7 +138,7 @@ SocketManager
 + deleteSocket(Socket&amp; socket) : void
 --
 Input: DataProcessor -&gt; String
-Manages: Socket events, creation, destruction and data</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>520</x><y>880</y><w>340</w><h>370</h></coordinates><panel_attributes>&lt;&lt;Adapter&gt;&gt;
+Manages: Socket events, creation, destruction and data</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>676</x><y>1144</y><w>442</w><h>481</h></coordinates><panel_attributes>&lt;&lt;Adapter&gt;&gt;
 DataAdapter
 --
 - buffer : std::string
@@ -155,7 +155,7 @@ DataAdapter
 --
 Input: SocketManager -&gt; String 
 Output: String -&gt; FileManager
-Manages: Data to http adaptation, logic hub</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1020</x><y>880</y><w>340</w><h>370</h></coordinates><panel_attributes>&lt;&lt;Resource Manager&gt;&gt;
+Manages: Data to http adaptation, logic hub</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1326</x><y>1144</y><w>442</w><h>481</h></coordinates><panel_attributes>&lt;&lt;Resource Manager&gt;&gt;
 FileManager
 --
 - request : HttpRequest
@@ -180,7 +180,7 @@ Output: HttpResponse -&gt; DataPAdapter
 Output2: HttpResponse -&gt; CgiProcessor
 
 Manage statusCode: 200, 201, 204, 400, 403, 404, 405, 409, 500, 501
-</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1510</x><y>880</y><w>340</w><h>370</h></coordinates><panel_attributes>&lt;&lt;Processor&gt;&gt;
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1963</x><y>1144</y><w>442</w><h>481</h></coordinates><panel_attributes>&lt;&lt;Processor&gt;&gt;
 CgiProcessor
 --
 - response : HttpResponse
@@ -192,18 +192,18 @@ CgiProcessor
 
 + recieveHttpResponse(HttpResponse&amp; Response) : void
 - processHttpResponse() : void
-- setEnviorment() : void
-- executeCGI();
+- setEnvironment() : void
+- executeCGI() : void
 --
 Input: FileManager -&gt; HttpResponse
 Output: HttpResponse -&gt; FileManager
 
 Manage cgi response modification
 
-</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>160</x><y>1240</y><w>50</w><h>210</h></coordinates><panel_attributes>lt=&lt;-
-m1=1..n</panel_attributes><additional_attributes>10;10;10;190</additional_attributes></element><element><id>Relation</id><coordinates><x>160</x><y>300</y><w>310</w><h>170</h></coordinates><panel_attributes>lt=&lt;-
-m1=1..n</panel_attributes><additional_attributes>270;10;270;100;10;100;10;150</additional_attributes></element><element><id>Relation</id><coordinates><x>420</x><y>300</y><w>290</w><h>170</h></coordinates><panel_attributes>lt=&lt;-
-m1=1..n</panel_attributes><additional_attributes>10;10;10;100;270;100;270;150</additional_attributes></element><element><id>Relation</id><coordinates><x>340</x><y>1030</y><w>200</w><h>30</h></coordinates><panel_attributes>lt=-</panel_attributes><additional_attributes>10;10;180;10</additional_attributes></element><element><id>Relation</id><coordinates><x>850</x><y>1030</y><w>190</w><h>30</h></coordinates><panel_attributes>lt=-</panel_attributes><additional_attributes>10;10;170;10</additional_attributes></element><element><id>Relation</id><coordinates><x>1350</x><y>1030</y><w>180</w><h>30</h></coordinates><panel_attributes>lt=-</panel_attributes><additional_attributes>10;10;160;10</additional_attributes></element><element><id>Relation</id><coordinates><x>1180</x><y>1240</y><w>480</w><h>220</h></coordinates><panel_attributes>lt=&lt;-
-m1=1..1</panel_attributes><additional_attributes>10;10;10;140;460;140;460;200</additional_attributes></element><element><id>Relation</id><coordinates><x>1180</x><y>1240</y><w>50</w><h>220</h></coordinates><panel_attributes>lt=&lt;-
-m1=1..1</panel_attributes><additional_attributes>10;10;10;200</additional_attributes></element><element><id>Relation</id><coordinates><x>1670</x><y>1240</y><w>50</w><h>220</h></coordinates><panel_attributes>lt=&lt;-
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>208</x><y>1612</y><w>65</w><h>273</h></coordinates><panel_attributes>lt=&lt;-
+m1=1..n</panel_attributes><additional_attributes>10;10;10;190</additional_attributes></element><element><id>Relation</id><coordinates><x>208</x><y>390</y><w>403</w><h>221</h></coordinates><panel_attributes>lt=&lt;-
+m1=1..n</panel_attributes><additional_attributes>270;10;270;100;10;100;10;150</additional_attributes></element><element><id>Relation</id><coordinates><x>546</x><y>390</y><w>377</w><h>221</h></coordinates><panel_attributes>lt=&lt;-
+m1=1..n</panel_attributes><additional_attributes>10;10;10;100;270;100;270;150</additional_attributes></element><element><id>Relation</id><coordinates><x>442</x><y>1339</y><w>260</w><h>39</h></coordinates><panel_attributes>lt=-</panel_attributes><additional_attributes>10;10;180;10</additional_attributes></element><element><id>Relation</id><coordinates><x>1105</x><y>1339</y><w>247</w><h>39</h></coordinates><panel_attributes>lt=-</panel_attributes><additional_attributes>10;10;170;10</additional_attributes></element><element><id>Relation</id><coordinates><x>1755</x><y>1339</y><w>234</w><h>39</h></coordinates><panel_attributes>lt=-</panel_attributes><additional_attributes>10;10;160;10</additional_attributes></element><element><id>Relation</id><coordinates><x>1534</x><y>1612</y><w>624</w><h>286</h></coordinates><panel_attributes>lt=&lt;-
+m1=1..1</panel_attributes><additional_attributes>10;10;10;140;460;140;460;200</additional_attributes></element><element><id>Relation</id><coordinates><x>1534</x><y>1612</y><w>65</w><h>286</h></coordinates><panel_attributes>lt=&lt;-
+m1=1..1</panel_attributes><additional_attributes>10;10;10;200</additional_attributes></element><element><id>Relation</id><coordinates><x>2171</x><y>1612</y><w>65</w><h>286</h></coordinates><panel_attributes>lt=&lt;-
 m1=1..1</panel_attributes><additional_attributes>10;10;10;200</additional_attributes></element></diagram>
