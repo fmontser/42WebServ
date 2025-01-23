@@ -8,11 +8,14 @@ class Server {
 		std::string	_name;
 		std::string	_host;
 		int			_port;
+
+		Server(const Server& src);
+		Server& operator=(const Server& src);
+		
 	public:
 		Server();
 		~Server();
-		Server(const Server& src);
-		Server& operator=(const Server& src);
+
 
 	std::string	getName() const;
 	std::string	getHost() const;

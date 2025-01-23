@@ -14,6 +14,9 @@ class Config {
 		std::map<std::string, Route>	_routes;
 		std::map<std::string, Server>	_servers;
 
+		Config(const Config& src);
+		Config& operator=(const Config& src);
+
 		void	setMaxPayload(std::vector<std::string>::iterator &it);
 		void	setRoutes(std::vector<std::string>::iterator &it);
 		void	setServers(std::vector<std::string>::iterator &it);
@@ -22,8 +25,6 @@ class Config {
 	public:
 		Config();
 		~Config();
-		Config(const Config& src);
-		Config& operator=(const Config& src);
 
 		int								getMaxPayload() const;
 		std::map<std::string, Route>&	getRoutes() const;

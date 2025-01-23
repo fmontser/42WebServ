@@ -13,7 +13,6 @@ private:
 	SocketManager& operator=(const SocketManager& src);
 
 	void	recieveData();
-
 public:
 	SocketManager();
 	~SocketManager();

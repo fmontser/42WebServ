@@ -13,7 +13,6 @@ private:
 	DataAdapter& operator=(const DataAdapter& src);
 
 	void	processRequest();
-
 public:
 	DataAdapter();
 	~DataAdapter();

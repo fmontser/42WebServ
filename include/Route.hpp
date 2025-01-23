@@ -9,11 +9,13 @@ class Route {
 		std::map<std::string, std::string>	_methods;
 		std::map<std::string, std::string>	_files;
 
+		Route(const Route& src);
+		Route& operator=(const Route& src);
+
 	public:
 		Route();
 		~Route();
-		Route(const Route& src);
-		Route& operator=(const Route& src);
+
 
 		std::string							getUrl() const;
 		std::map<std::string, std::string>	getMethods() const;

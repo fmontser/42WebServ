@@ -4,11 +4,12 @@ class Socket {
 	private:
 		unsigned int	_port;
 		int				_fd;
+		
+		Socket(const Socket& src);
+		Socket& operator=(const Socket& src);
 	public:
 		Socket();
 		~Socket();
-		Socket(const Socket& src);
-		Socket& operator=(const Socket& src);
 
 		void	configureSocket();
 

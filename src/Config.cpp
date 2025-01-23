@@ -6,41 +6,26 @@
 #define MIN_PAYLOAD 0
 #define MAX_PAYLOAD 67108864 //64Mb
 
-Config::Route::Route() {};
-Config::Route::~Route() {};
+Config::Config() {}
+Config::~Config() {}
+Config::Config(const Config& src) {}
+Config& Config::operator=(const Config& src) {}
 
-Config::Config(std::fstream &configFileStream) {
-	std::vector<std::string> tokenList;
-	std::vector<std::string>::iterator it;
-
-	configureOptions();
-	configureRules();
-	tokenize(configFileStream, tokenList);
-
-	for (it = tokenList.begin(); it != tokenList.end(); ++it){
-		if (_tokenMap.find(*it) != _tokenMap.end())
-			(this->*(_tokenMap[*it]))(it);
-	}
-	_webSocket = new WebSocket(_port);
-}
-
-Config::~Config() {
-	delete _webSocket;
-}
-
-void	Config::configureOptions() {
+/* void	Config::configureOptions() {
 	_tokenMap["port"] = &Config::setPort;
 	_tokenMap["maxPayload"] = &Config::setMaxPayload;
 	_tokenMap["route"] = &Config::setRoute;
 	_tokenMap["page404"] = &Config::setPage404;
-}
+} */
 
-void	Config::configureRules() {
+/* void	Config::configureRules() {
 	_tokenMap["methods"] = NULL;
 	_tokenMap["file"] = NULL;
-}
+} */
 
-void	Config::tokenize(std::fstream &configFileStream, std::vector<std::string> &tokenList){
+
+
+/* void	Config::tokenize(std::fstream &configFileStream, std::vector<std::string> &tokenList){
 	char		c;
 	std::string	token;
 	bool		flag = false;
@@ -63,7 +48,27 @@ void	Config::tokenize(std::fstream &configFileStream, std::vector<std::string> &
 	}
 	tokenList.push_back(token);
 	configFileStream.close();
+} */
+
+void	Config::loadConfig(std::fstream &configFileStream) {
+	
+/* 	std::vector<std::string> tokenList;
+	std::vector<std::string>::iterator it;
+
+	configureOptions();
+	configureRules();
+	tokenize(configFileStream, tokenList);
+
+	for (it = tokenList.begin(); it != tokenList.end(); ++it){
+		if (_tokenMap.find(*it) != _tokenMap.end())
+			(this->*(_tokenMap[*it]))(it);
+	}
+	_webSocket = new WebSocket(_port); */
+
 }
+
+
+
 
 void	Config::setPort(std::vector<std::string>::iterator &it) {
 	char	*err;

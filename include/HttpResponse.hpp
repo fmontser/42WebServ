@@ -12,16 +12,24 @@ class HttpResponse {
 		std::multimap<std::string, std::string>	_headers;
 		std::string								_body;
 
+		HttpResponse(const HttpResponse& src);
+		HttpResponse& operator=(const HttpResponse& src);
+
 	public:
 		HttpResponse();
 		~HttpResponse();
 
 		void	push(int socketFd);
+		std::string								getVersion() const;
+		std::string								getStatusCode() const;
+		std::string								getStatusMsg() const;
+		std::multimap<std::string, std::string>	getHeaders() const;
+		std::string								getBody() const;
 
-		void	setVersion(std::string version);
-		void	setStatusCode(std::string statusCode);
-		void	setStatusMsg(std::string statusMsg);
-		void	addHeader(std::string name, std::string value);
-		void	setBody(std::string body);
+		void	setVersion(const std::string version);
+		void	setStatusCode(const std::string statusCode);
+		void	setStatusMsg(const std::string statusMsg);
+		void	addHeader(const std::string name, std::string value);
+		void	setBody(const std::string body);
 };
 
