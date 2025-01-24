@@ -1,16 +1,10 @@
 #include <iostream>
 #include <fstream>
-#include "Config.hpp"
-#include "HttpRequest.hpp"
-#include "HttpResponse.hpp"
-#include "WebSocket.hpp"
 #include "WebServer.hpp"
 
+extern WebServer webServer;
 
 int main(int argc, char** argv) {
-
-	std::string	line;
-
 	if (argc < 2)
 		return(1);
 
@@ -18,6 +12,9 @@ int main(int argc, char** argv) {
 	if (!configFileStream.is_open())
 		return (1);
 
+	webServer.config = Config();
+	webServer.socketManager = SocketManager();
+	webServer.dataAdapter = DataAdapter();
 
 	return 0;
 }

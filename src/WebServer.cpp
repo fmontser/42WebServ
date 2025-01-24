@@ -1,5 +1,4 @@
-#include "WebServer.hpp"
-#include "colors.hpp"
+/* #include "WebServer.hpp"
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -184,4 +183,4 @@ void WebServer::sendErrorPage(HttpResponse& response, const std::string& statusC
     response.addHeader("Connection", "close");
     response.setBody(body);
     response.push(socketFd);
-}
+} */

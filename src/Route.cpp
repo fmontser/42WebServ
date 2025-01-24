@@ -3,15 +3,15 @@
 Route::Route() {}
 Route::~Route() {}
 Route::Route(const Route& src) {	
-		this->_url = src._url;
-		this->_methods = src._methods;
-		this->_files = src._files;
+	_url = src._url;
+	_methods = src._methods;
+	_files = src._files;
 }
 Route& Route::operator=(const Route& src) {
 	if (this != &src) {
-		this->_url = src._url;
-		this->_methods = src._methods;
-		this->_files = src._files;
+		_url = src._url;
+		_methods = src._methods;
+		_files = src._files;
 	}
 	return *this;
 }

@@ -9,16 +9,15 @@ private:
 	std::list<Socket&>	_socketList;
 	std::string			buffer;
 
-	SocketManager(const SocketManager& src);
-	SocketManager& operator=(const SocketManager& src);
-
 	void	recieveData();
 public:
 	SocketManager();
 	~SocketManager();
+	SocketManager(const SocketManager& src);
+	SocketManager& operator=(const SocketManager& src);
 
 	void	monitorSocket();
-	void	sendData();
+	void	sendData(const std::string& response);
 	void	addSocket(Socket& socket);
 	void	deleteSocket(Socket& socket);
 };

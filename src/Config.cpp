@@ -8,10 +8,18 @@
 Config::Config() {}
 Config::~Config() {}
 Config::Config(const Config& src) {
-	//TODO
+	_maxPayload = src._maxPayload;
+	_routes = src._routes;
+	_servers = src._servers;
 }
+
 Config& Config::operator=(const Config& src) {
-	//TODO
+	if (this != &src) {
+		_maxPayload = src._maxPayload;
+		_routes = src._routes;
+		_servers = src._servers;
+	}
+	return *this;
 }
 
 static std::map<std::string, void (Config::*)(std::vector<std::string>::iterator &it)>	_tokenMap;
