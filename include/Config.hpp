@@ -8,24 +8,23 @@
 
 class Config {
 	private:
-		int								_maxPayload;
-		std::map<std::string, Route>	_routes;
-		std::map<std::string, Server>	_servers;
+		static int								_maxPayload;
+		static std::map<std::string, Route>		_routes;
+		static std::map<std::string, Server>	_servers;
 
-		void	setMaxPayload(std::vector<std::string>::iterator &it);
-		void	addRoute(std::vector<std::string>::iterator &it);
-		void	addServer(std::vector<std::string>::iterator &it);
+		static void	setMaxPayload(std::vector<std::string>::iterator &it);
+		static void	addRoute(std::vector<std::string>::iterator &it);
+		static void	addServer(std::vector<std::string>::iterator &it);
 
-	public:
 		Config();
 		~Config();
 		Config(const Config& src);
 		Config& operator=(const Config& src);
+	public:
+		static void	loadConfig(std::fstream &configFileStream);
 
-		void	loadConfig(std::fstream &configFileStream);
-
-		int								getMaxPayload() const;
-		std::map<std::string, Route>&	getRoutes() const;
-		std::map<std::string, Server>&	getServers() const;
+		static int								getMaxPayload();
+		static std::map<std::string, Route>&	getRoutes();
+		static std::map<std::string, Server>&	getServers();
 };
 

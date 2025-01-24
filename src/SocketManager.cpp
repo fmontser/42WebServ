@@ -1,8 +1,54 @@
-/* #include "WebServer.hpp"
+#include "SocketManager.hpp"
+#include "TextFormat.hpp"
 #include <fstream>
 #include <sstream>
 #include <string>
 #include <vector>
+
+std::list<Socket>	SocketManager::_socketList;
+std::string			SocketManager::_buffer;
+
+SocketManager::SocketManager() {}
+SocketManager::~SocketManager() {}
+
+SocketManager::SocketManager(const SocketManager& src) {
+	_socketList = src._socketList;
+	_buffer = src._buffer;
+}
+
+SocketManager& SocketManager::operator=(const SocketManager& src) {
+	if (this != &src) {
+		_socketList = src._socketList;
+		_buffer = src._buffer;
+	}
+	return *this;
+}
+
+void	SocketManager::recieveData() {
+	//TODO	
+}
+
+void	SocketManager::monitorSockets() {
+	//TODO	
+}
+
+void	SocketManager::sendData(const std::string& response) {
+	//TODO	
+	(void)response;
+}
+
+void	SocketManager::addSocket(Socket& socket) {
+	//TODO	
+	(void)socket;
+}
+
+void	SocketManager::deleteSocket(Socket& socket) {
+	//TODO	
+	(void)socket;
+}
+
+
+/*
 
 #define TIMEOUT 10000
 #define BUFFER_SIZE 8192
@@ -100,7 +146,7 @@ void WebServer::processRequest(HttpRequest request){
 		HttpResponse response;
 		std::string body;
 		std::string sendErrorPage;
-	/* 	std::fstream  */
+		//std::fstream
 
 	if (request.getVersion() != HTTP_VERSION ) {
 		std::cerr << "Error: wrong version" << std::endl;

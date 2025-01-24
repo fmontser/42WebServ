@@ -67,7 +67,7 @@ Socket
 + Socket(const Socket&amp; src)
 + operator=(const Socket&amp; src) : const Socket&amp;
 
-+ configureSocket() : void
++ enableSocket() : void
 + getFd() : int
 + getPort() : unsigned int
 

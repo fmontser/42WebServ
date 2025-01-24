@@ -5,6 +5,10 @@
 #define MIN_PAYLOAD 0
 #define MAX_PAYLOAD 67108864 //64Mb
 
+int Config::_maxPayload;
+std::map<std::string, Route> Config::_routes;
+std::map<std::string, Server> Config::_servers;
+
 Config::Config() {}
 Config::~Config() {}
 Config::Config(const Config& src) {
@@ -22,7 +26,7 @@ Config& Config::operator=(const Config& src) {
 	return *this;
 }
 
-static std::map<std::string, void (Config::*)(std::vector<std::string>::iterator &it)>	_tokenMap;
+static std::map<std::string, void (*)(std::vector<std::string>::iterator &it)>	_tokenMap;
 
 static void	tokenize(std::fstream &configFileStream, std::vector<std::string> &tokenList){
 	char		c;
@@ -67,7 +71,7 @@ void	Config::loadConfig(std::fstream &configFileStream) {
 
 	for (it = tokenList.begin(); it != tokenList.end(); ++it){
 		if (_tokenMap.find(*it) != _tokenMap.end())
-			(this->*(_tokenMap[*it]))(it);
+			(_tokenMap[*it])(it);
 	}
 }
 
@@ -137,6 +141,6 @@ void	Config::addServer(std::vector<std::string>::iterator &it) {
 		_servers.insert(std::make_pair(server.getName(), server));
 }
 
-int								Config::getMaxPayload() const { return _maxPayload; }
-std::map<std::string, Route>&	Config::getRoutes() const { return (std::map<std::string, Route>&)_routes; }
-std::map<std::string, Server>&	Config::getServers() const { return (std::map<std::string, Server>&)_servers; }
+int								Config::getMaxPayload() { return _maxPayload; }
+std::map<std::string, Route>&	Config::getRoutes() { return (std::map<std::string, Route>&)_routes; }
+std::map<std::string, Server>&	Config::getServers() { return (std::map<std::string, Server>&)_servers; }

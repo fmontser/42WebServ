@@ -5,17 +5,17 @@
 #include <string>
 
 class DataAdapter {
-private:
-	std::string	_buffer;
-	HttpRequest	_request;
+	private:
+		static std::string	_buffer;
+		static HttpRequest	_request;
 
-	void	processRequest();
-public:
-	DataAdapter();
-	~DataAdapter();
-	DataAdapter(const DataAdapter& src);
-	DataAdapter& operator=(const DataAdapter& src);
+		DataAdapter();
+		~DataAdapter();
+		DataAdapter(const DataAdapter& src);
+		DataAdapter& operator=(const DataAdapter& src);
 
-	void	recieveData(std::string& request);
-	void	sendData(HttpResponse& response);
+		static void	processRequest();
+	public:
+		static void	recieveData(std::string& request);
+		static void	sendData(HttpResponse& response);
 };

@@ -3,19 +3,17 @@
 #include "HttpResponse.hpp"
 
 class CgiProcessor {
-private:
+	private:
+		static HttpResponse	_response;
 
-	HttpResponse	_response;
+		CgiProcessor();
+		~CgiProcessor();
+		CgiProcessor(const CgiProcessor& src);
+		CgiProcessor& operator=(const CgiProcessor& src);
 
-	CgiProcessor(const CgiProcessor& src);
-	CgiProcessor& operator=(const CgiProcessor& src);
-
-	void	processHttpResponse();
-	void	setEnvironment();
-	void	executeCgi();
-public:
-	CgiProcessor();
-	~CgiProcessor();
-
-	void	recieveHttpResponse(HttpResponse& response);
+		static void	processHttpResponse();
+		static void	setEnvironment();
+		static void	executeCgi();
+	public:
+		static void	recieveHttpResponse(HttpResponse& response);
 };

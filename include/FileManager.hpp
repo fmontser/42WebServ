@@ -4,22 +4,21 @@
 #include "HttpResponse.hpp"
 
 class FileManager {
-private:
-	HttpRequest		_request;
-	HttpResponse	_response;
+	private:
+		static HttpRequest	_request;
+		static HttpResponse	_response;
 
-	FileManager(const FileManager& src);
-	FileManager& operator=(const FileManager& src);
+		FileManager();
+		~FileManager();
+		FileManager(const FileManager& src);
+		FileManager& operator=(const FileManager& src);
 
-	void	processHttpRequest();
-	bool	searchFile();
-	bool	createFile();
-	bool	deleteFile();
-	bool	controlAccess();
-public:
-	FileManager();
-	~FileManager();
-
-	void	recieveHttpRequest(HttpRequest& request);
-	void	recieveHttpResponse(HttpResponse& response);
+		static void	processHttpRequest();
+		static bool	searchFile();
+		static bool	createFile();
+		static bool	deleteFile();
+		static bool	controlAccess();
+	public:
+		static void	recieveHttpRequest(HttpRequest& request);
+		static void	recieveHttpResponse(HttpResponse& response);
 };

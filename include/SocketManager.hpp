@@ -6,18 +6,18 @@
 
 class SocketManager {
 private:
-	std::list<Socket&>	_socketList;
-	std::string			buffer;
+	static std::list<Socket>	_socketList;
+	static std::string			_buffer;
 
-	void	recieveData();
-public:
 	SocketManager();
 	~SocketManager();
 	SocketManager(const SocketManager& src);
 	SocketManager& operator=(const SocketManager& src);
 
-	void	monitorSocket();
-	void	sendData(const std::string& response);
-	void	addSocket(Socket& socket);
-	void	deleteSocket(Socket& socket);
+	static void	recieveData();
+public:
+	static void	monitorSockets();
+	static void	sendData(const std::string& response);
+	static void	addSocket(Socket& socket);
+	static void	deleteSocket(Socket& socket);
 };

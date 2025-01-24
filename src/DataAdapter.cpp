@@ -1,9 +1,9 @@
 #include "DataAdapter.hpp"
-#include "WebServer.hpp"
+#include "SocketManager.hpp"
+#include "TextFormat.hpp"
 
-#define CRLF "\r\n"
-extern WebServer webServer;
-
+std::string	DataAdapter::_buffer;
+HttpRequest	DataAdapter::_request;
 
 DataAdapter::DataAdapter() {}
 DataAdapter::~DataAdapter() {}
@@ -82,5 +82,5 @@ void	DataAdapter::sendData(HttpResponse& response) {
 	buffer << CRLF;
 	buffer << _request.getBody();
 
-	webServer.socketManager.sendData(buffer.str());
+	SocketManager::sendData(buffer.str());
 }

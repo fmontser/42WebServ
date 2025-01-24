@@ -9,7 +9,7 @@ BIN_DIR			:=	bin/
 
 NAME			:=	webserv
 
-HDRS			:=	Config.hpp  Route.hpp Server.hpp HttpRequest.hpp HttpResponse.hpp Socket.hpp SocketManager.hpp DataAdapter.hpp CgiProcessor.hpp FileManager.hpp
+HDRS			:=	Config.hpp  Route.hpp Server.hpp HttpRequest.hpp HttpResponse.hpp Socket.hpp SocketManager.hpp DataAdapter.hpp CgiProcessor.hpp FileManager.hpp TextFormat.hpp
 SRCS			:=	main.cpp Config.cpp  Route.cpp Server.cpp HttpRequest.cpp HttpResponse.cpp Socket.cpp SocketManager.cpp DataAdapter.cpp CgiProcessor.cpp FileManager.cpp
 
 OBJS			:=	$(SRCS:.cpp=.o)
