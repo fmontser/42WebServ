@@ -97,6 +97,7 @@ void	WebServer::sendData(int newSocketFd) {
 }
 
 void WebServer::processRequest(HttpRequest request){
+
 		HttpResponse response;
 		std::string body;
 		std::string sendErrorPage;

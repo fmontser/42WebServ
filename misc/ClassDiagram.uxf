@@ -1,4 +1,5 @@
-<diagram program="umletino" version="15.1"><zoom_level>11</zoom_level><help_text>Space for diagram notes</help_text><element><id>UMLClass</id><coordinates><x>33</x><y>0</y><w>374</w><h>319</h></coordinates><panel_attributes>Config
+<diagram program="umletino" version="15.1"><zoom_level>9</zoom_level><help_text>Space for diagram notes</help_text><element><id>UMLClass</id><coordinates><x>387</x><y>54</y><w>306</w><h>279</h></coordinates><panel_attributes>&lt;&lt;Data&gt;&gt;
+Config
 --
 - maxPayLoad : unsigned int
 - servers : std::map&lt;std::string, Server&gt;
@@ -9,16 +10,18 @@
 + Config(const Config&amp; src)
 + operator=(const Config&amp; src) : const Config&amp;
 
-- loadConfig(file : std::fstream &amp;configFileStream) : void
++ loadConfig(std::fstream &amp;configFileStream) : void
+- tokenize(std::fstream &amp;configFileStream, std::vector&lt;std::string&gt; &amp;tokenList): void
 
 + getMaxPayload() : unsigned int
 + getServers() :  std::map&lt;std::string, Server&gt;
 + getRoutes() :  std::map&lt;std::string, Routes&gt;
 
-+ setMaxPayload(unsigned int maxPayload) : void
-+ setServers(std::map&lt;std::string, Server&gt; servers) : void
-+ setRoutes(std::map&lt;std::string, Route&gt; routes) : void
-</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>858</x><y>22</y><w>374</w><h>297</h></coordinates><panel_attributes>Server
++ setMaxPayload(std::vector&lt;std::string&gt;::iterator &amp;it) : void
++ addServer(std::vector&lt;std::string&gt;::iterator &amp;it) : void
++ addRoute(std::vector&lt;std::string&gt;::iterator &amp;it) : void
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>621</x><y>459</y><w>306</w><h>243</h></coordinates><panel_attributes>&lt;&lt;Data&gt;&gt;
+Server
 --
 - name : std::string
 - host : std::string
@@ -35,7 +38,8 @@
 
 + setName(const std::string&amp; name) : void
 + setHost(const std::string&amp; host) : void
-+ setPort(int port) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>440</x><y>22</y><w>374</w><h>297</h></coordinates><panel_attributes>Route
++ setPort(int port) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>153</x><y>459</y><w>306</w><h>243</h></coordinates><panel_attributes>&lt;&lt;Data&gt;&gt;
+Route
 --
 - url : std::string
 - methods : std::map&lt;std::string, std::string&gt; 
@@ -51,8 +55,9 @@
 + getFiles() : std::map&lt;std::string, std::string&gt;
 
 + setUrl(const std::string&amp; url) : void
-+ setMethods(std::map&lt;std::string, std::string&gt; methods) : void
-+ setFiles( std::map&lt;std::string, std::string&gt; files) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>22</x><y>374</y><w>374</w><h>253</h></coordinates><panel_attributes>Socket
++ addMethod(const std::pair&lt;std::string, std::string&gt;&amp; method) : void
++ addFile(const std::pair&lt;std::string, std::string&gt;&amp; file) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>162</x><y>1341</y><w>306</w><h>342</h></coordinates><panel_attributes>&lt;&lt;OS Resource&gt;&gt;
+Socket
 --
 - port : unsigned int
 - fd : int
@@ -66,7 +71,8 @@
 + getFd() : int
 + getPort() : unsigned int
 
-+ setPort(unsigned int port) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>451</x><y>396</y><w>407</w><h>407</h></coordinates><panel_attributes>HttpRequest
++ setPort(unsigned int port) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1512</x><y>1350</y><w>306</w><h>351</h></coordinates><panel_attributes>&lt;&lt;Data&gt;&gt;
+HttpRequest
 --
 - method : std::string
 - url : std::string
@@ -76,8 +82,8 @@
 --
 + HttpRequest() 
 + ~HttpRequest()
-+ HttpRequest(const HttpRequest&amp; src)
-+ operator=(const HttpRequest&amp; src) : const HttpRequest&amp;
+- HttpRequest(const HttpRequest&amp; src)
+- operator=(const HttpRequest&amp; src) : const HttpRequest&amp;
 
 - parseRequestLine() : void
 - parseHeaderFields() : void
@@ -90,8 +96,9 @@
 + getHeaders() cons : std::multimap&lt;std::string, std::string&gt;
 + getBody() const : std::string
 
-+ setStream(std::stringstream *request) : void
-</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>880</x><y>396</y><w>407</w><h>407</h></coordinates><panel_attributes>HttpResponse
++ populate(std::stringstream *data) : void
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1071</x><y>1350</y><w>306</w><h>351</h></coordinates><panel_attributes>&lt;&lt;Data&gt;&gt;
+HttpResponse
 --
 - version : std::string
 - statusCode : std::string
@@ -101,8 +108,8 @@
 --
 + HttpResponse() 
 + ~HttpResponse()
-+ HttpResponse(const HttpResponse&amp; src)
-+ operator=(const HttpResponse&amp; src) : const HttpResponse&amp;
+- HttpResponse(const HttpResponse&amp; src)
+- operator=(const HttpResponse&amp; src) : const HttpResponse&amp;
 
 + getVersion() const : std::string
 + getStatusCode() const : std::string
@@ -110,11 +117,12 @@
 + getHeaders() const : std::multimap&lt;std::string, std::string&gt;
 + getBody() const : std::string
 
-+ setVersion(std::string version) : void
-+ setStatusCode(std::string statusCode) : void
-+ setStatusMsg(std::string statusMsg) : void
-+ addHeader(std::string name, std::string value) : void
-+ setBody(std::string body) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>0</x><y>770</y><w>374</w><h>253</h></coordinates><panel_attributes>SocketManager
++ setVersion(const std::string version) : void
++ setStatusCode(const std::string statusCode) : void
++ setStatusMsg(const std::string statusMsg) : void
++ addHeader(const std::string name, std::string value) : void
++ setBody(const std::string body) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>153</x><y>846</y><w>315</w><h>333</h></coordinates><panel_attributes>&lt;&lt;Resource Manager&gt;&gt;
+SocketManager
 --
 - socketList : std::list&lt;Socket&gt;
 - buffer : std::string
@@ -128,15 +136,75 @@
 - recieveData() : void
 + sendData(std::string&amp; response) : void
 + addSocket(Socket&amp; socket) : void
-+ deleteSocket(Socket&amp; socket) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>440</x><y>869</y><w>374</w><h>253</h></coordinates><panel_attributes>DataProcessor
++ deleteSocket(Socket&amp; socket) : void
+--
+Input: DataProcessor -&gt; String
+Manages: Socket events, creation, destruction and data</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>621</x><y>846</y><w>306</w><h>333</h></coordinates><panel_attributes>&lt;&lt;Adapter&gt;&gt;
+DataAdapter
 --
 - buffer : std::string
+- request : HttpRequest
 --
-+ DataProcessor() 
-+ ~DataProcessor()
-- DataProcessor(const DataProcessor&amp; src)
-- operator=(const DataProcessor&amp; src) : const DataProcessor&amp;
++ DataAdapter() 
++ ~DataAdapter()
+- DataAdapter(const DataAdapter&amp; src)
+- operator=(const DataAdapter&amp; src) : const DataAdapter&amp;
 
 + recieveData(std::string&amp; request) : void
 - processRequest() : void
-+ sendData() : void</panel_attributes><additional_attributes></additional_attributes></element></diagram>
++ sendData(HttpResponse&amp; response) : void
+--
+Input: SocketManager -&gt; String 
+Output: String -&gt; FileManager
+Manages: Data to http adaptation, logic hub</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1071</x><y>846</y><w>306</w><h>333</h></coordinates><panel_attributes>&lt;&lt;Resource Manager&gt;&gt;
+FileManager
+--
+- request : HttpRequest
+- response : HttpResponse
+--
++ FileManager() 
++ ~FileManager()
+- FileManager(const FileManager&amp; src)
+- operator=(const FileManager&amp; src) : const FileManager&amp;
+
++ recieveHttpRequest(HttpRequest&amp; request) : void
++ recieveHttpResponse(HttpResponse&amp; response) : void
+- processHttpRequest() : void
+- searchFile() : bool
+- createFile() : bool
+- deleteFile() : bool
+- controlAccess() : bool
+--
+Input 1: DataAdapter -&gt; HttpRequest
+Input 2: CgiProcessor -&gt; HttpResponse
+Output: HttpResponse -&gt; DataPAdapter
+Output2: HttpResponse -&gt; CgiProcessor
+
+Manage statusCode: 200, 201, 204, 400, 403, 404, 405, 409, 500, 501
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1512</x><y>846</y><w>306</w><h>333</h></coordinates><panel_attributes>&lt;&lt;Processor&gt;&gt;
+CgiProcessor
+--
+- response : HttpResponse
+--
++ CgiProcessor() 
++ ~CgiProcessor()
+- CgiProcessor(const CgiProcessor&amp; src)
+- operator=(const CgiProcessor&amp; src) : const CgiProcessor&amp;
+
++ recieveHttpResponse(HttpResponse&amp; Response) : void
+- processHttpResponse() : void
+- setEnvironment() : void
+- executeCGI() : void
+--
+Input: FileManager -&gt; HttpResponse
+Output: HttpResponse -&gt; FileManager
+
+Manage cgi response modification
+
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>297</x><y>1170</y><w>45</w><h>189</h></coordinates><panel_attributes>lt=&lt;-
+m1=1..n</panel_attributes><additional_attributes>10;10;10;190</additional_attributes></element><element><id>Relation</id><coordinates><x>297</x><y>324</y><w>279</w><h>153</h></coordinates><panel_attributes>lt=&lt;-
+m1=1..n</panel_attributes><additional_attributes>270;10;270;100;10;100;10;150</additional_attributes></element><element><id>Relation</id><coordinates><x>531</x><y>324</y><w>261</w><h>153</h></coordinates><panel_attributes>lt=&lt;-
+m1=1..n</panel_attributes><additional_attributes>10;10;10;100;270;100;270;150</additional_attributes></element><element><id>Relation</id><coordinates><x>459</x><y>981</y><w>180</w><h>27</h></coordinates><panel_attributes>lt=-</panel_attributes><additional_attributes>10;10;180;10</additional_attributes></element><element><id>Relation</id><coordinates><x>918</x><y>981</y><w>171</w><h>27</h></coordinates><panel_attributes>lt=-</panel_attributes><additional_attributes>10;10;170;10</additional_attributes></element><element><id>Relation</id><coordinates><x>1368</x><y>981</y><w>162</w><h>27</h></coordinates><panel_attributes>lt=-</panel_attributes><additional_attributes>10;10;160;10</additional_attributes></element><element><id>Relation</id><coordinates><x>1215</x><y>1170</y><w>432</w><h>198</h></coordinates><panel_attributes>lt=&lt;-
+m1=1..1</panel_attributes><additional_attributes>10;10;10;140;460;140;460;200</additional_attributes></element><element><id>Relation</id><coordinates><x>1215</x><y>1170</y><w>45</w><h>198</h></coordinates><panel_attributes>lt=&lt;-
+m1=1..1</panel_attributes><additional_attributes>10;10;10;200</additional_attributes></element><element><id>Relation</id><coordinates><x>1656</x><y>1170</y><w>45</w><h>198</h></coordinates><panel_attributes>lt=&lt;-
+m1=1..1</panel_attributes><additional_attributes>10;10;10;200</additional_attributes></element></diagram>

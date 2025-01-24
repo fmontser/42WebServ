@@ -1,0 +1,43 @@
+#include "Server.hpp"
+#include <cstdlib>
+#include <iostream>
+
+#define MIN_PORT_NUMBER 0
+#define MAX_PORT_NUMBER 65536
+
+Server::Server() {}
+Server::~Server() {}
+Server::Server(const Server& src) {	
+		this->_name = src._name;
+		this->_host = src._host;
+		this->_port = src._port;
+	}
+
+Server& Server::operator=(const Server& src) {
+	if (this != &src) {
+		this->_name = src._name;
+		this->_host = src._host;
+		this->_port = src._port;
+	}
+	return *this;
+}
+
+std::string Server::getName() const {	return this->_name;}
+std::string Server::getHost() const {	return this->_host;}
+int Server::getPort() const {	return this->_port;}
+
+void Server::setName(const std::string& name) {	this->_name = name;}
+void Server::setHost(const std::string& host) {	this->_host = host;}
+
+void Server::setPort(const std::string& port) {
+	char	*err;
+	int		portNumber;
+	
+	portNumber = strtol(port.c_str(), &err, 10);
+	if (portNumber < MIN_PORT_NUMBER || portNumber > MAX_PORT_NUMBER || isalpha(*err)) {
+		std::cerr << "Config file error: Invalid port number." << std::endl;
+		exit(EXIT_FAILURE);
+	}
+	std::cout << "Server Port set as: " << portNumber << std::endl;
+	_port = portNumber;
+}

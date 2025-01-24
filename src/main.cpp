@@ -18,8 +18,6 @@ int main(int argc, char** argv) {
 	if (!configFileStream.is_open())
 		return (1);
 
-	Config config(configFileStream);
-	WebServer server(config);
 
 	return 0;
 }
