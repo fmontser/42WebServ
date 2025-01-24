@@ -10,25 +10,24 @@ class HttpRequest {
 		std::string								_version;
 		std::multimap<std::string, std::string>	_headers;
 		std::string								_body;
-
-		HttpRequest(const HttpRequest& src);
-		HttpRequest& operator=(const HttpRequest& src);
-
-		void	parseRequestLine();
-		void	parseHeaderFields();
-		void	parseBody();
-		void	trimToken(std::string& str);
+		std::stringstream						*_data; //TODO borrar?
 
 	public:
 		HttpRequest();
 		~HttpRequest();
+		HttpRequest(const HttpRequest& src);
+		HttpRequest& operator=(const HttpRequest& src);
+	
+		std::string									getMethod() const;
+		std::string									getUrl() const;
+		std::string									getVersion() const;
+		std::multimap<std::string, std::string>		getHeaders() const;
+		std::string									getBody() const;
 
-		std::string								getMethod() const;
-		std::string								getUrl() const;
-		std::string								getVersion() const;
-		std::multimap<std::string, std::string>	getHeaders() const;
-		std::string								getBody() const;
-
-		void									populate(std::stringstream *data);
+		void	setMethod(const std::string& method);
+		void	setUrl(const std::string& method);
+		void	setVersion(const std::string& method);
+		void	addHeader(std::pair<std::string, std::string>& header);
+		void	setBody(const std::string& method);
 };
 

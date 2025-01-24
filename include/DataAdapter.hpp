@@ -9,13 +9,12 @@ private:
 	std::string	_buffer;
 	HttpRequest	_request;
 
-	DataAdapter(const DataAdapter& src);
-	DataAdapter& operator=(const DataAdapter& src);
-
 	void	processRequest();
 public:
 	DataAdapter();
 	~DataAdapter();
+	DataAdapter(const DataAdapter& src);
+	DataAdapter& operator=(const DataAdapter& src);
 
 	void	recieveData(std::string& request);
 	void	sendData(HttpResponse& response);
