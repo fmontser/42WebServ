@@ -1,4 +1,6 @@
-/* #include "WebSocket.hpp"
+#include "WebSocket.hpp"
+#include <sys/socket.h>
+#include "colors.hpp"
 
 #define SOCKET_BUFFER_SIZE 65536
 #define SOCKET_LISTEN_QUEUE_SIZE 5
