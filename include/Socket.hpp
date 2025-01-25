@@ -1,20 +1,26 @@
 #pragma once
+#include <poll.h>
 
 class Socket {
 	private:
-		unsigned int		_port;
-		int					_fd;
+		unsigned int	_port;
+		int				_fd;
+		bool			_serverFlag;
+		struct pollfd	_pollfd;
 
 	public:
 		Socket();
 		~Socket();
 		Socket(const Socket& src);
 		Socket& operator=(const Socket& src);
+		bool operator==(const Socket& other);
 
-		void			enableSocket();
+		void					enableSocket(bool serverFlag);
 
-		int				getFd() const;
-		unsigned int	getPort() const;
+		unsigned int			getPort() const;
+		int						getFd() const;
+		const struct pollfd&	getPollFd() const;
+		bool					getServerFlag() const;
 		
-		void			setPort(unsigned int port);
+		void					setPort(unsigned int port);
 };

@@ -16,12 +16,12 @@ int main(int argc, char** argv) {
 	}
 
 	Config::loadConfig(configFileStream);
-
+	bool asServer = true;
 	for (std::map<std::string, Server>::iterator it = Config::getServers().begin();
 		it != Config::getServers().end(); ++it) {
 		Socket	newSocket;
 		newSocket.setPort((*it).second.getPort());
-		newSocket.enableSocket();
+		newSocket.enableSocket(asServer);
 		SocketManager::addSocket(newSocket);
 	}
 	SocketManager::monitorSockets();

@@ -1,13 +1,10 @@
-#include "TextFormat.hpp"
+#include "ServerConstants.hpp"
 #include "Socket.hpp"
 #include <iostream>
 #include <sys/socket.h>
 #include <cstdlib>
 #include <unistd.h>
 #include <netinet/in.h>
-
-#define SOCKET_BUFFER_SIZE 65536
-#define SOCKET_LISTEN_QUEUE_SIZE 5
 
 Socket::Socket() {}
 
@@ -28,11 +25,16 @@ Socket& Socket::operator=(const Socket& src) {
 	return *this;
 }
 
-void Socket::enableSocket() {
+bool Socket::operator==(const Socket& src) {
+	return _fd == src._fd;
+}
+
+void Socket::enableSocket(bool serverFlag) {
 	int optionEnable = 1;
 	int optionBufferSize = SOCKET_BUFFER_SIZE;
 	struct sockaddr_in address;
 
+	_serverFlag = serverFlag;
 	_fd = socket(AF_INET, SOCK_STREAM, 0);
 	if (_fd < 0) {
 		std::cerr << RED << "Error: opening socket" << END << std::endl;
@@ -60,16 +62,18 @@ void Socket::enableSocket() {
 		std::cerr << RED << "Error: socket listen failed" << END << std::endl;
 		exit(1);
 	}
+
+	_pollfd = pollfd();
+	_pollfd.fd = _fd;
+	_pollfd.events = POLLIN | POLLOUT;
+	_pollfd.revents = 0;
+
 	std::cout << GREEN << "Listening on port: " << _port <<  END << " 🚀" << std::endl;
 }
 
-int Socket::getFd() const {
-	return _fd;
-}
-unsigned int Socket::getPort() const {
-	return _port;
-}
+unsigned int Socket::getPort() const { return _port; }
+int Socket::getFd() const { return _fd; }
+const struct pollfd&	Socket::getPollFd() const {	return _pollfd; }
+bool					Socket::getServerFlag() const { return _serverFlag; }
 
-void Socket::setPort(unsigned int port) {
-	_port = port;
-}
+void Socket::setPort(unsigned int port) { _port = port; }

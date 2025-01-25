@@ -1,6 +1,6 @@
 #include "DataAdapter.hpp"
 #include "SocketManager.hpp"
-#include "TextFormat.hpp"
+#include "ServerConstants.hpp"
 
 std::string	DataAdapter::_buffer;
 HttpRequest	DataAdapter::_request;
@@ -68,7 +68,18 @@ void	DataAdapter::recieveData(std::string& request) {
 		bodyValue.append(std::string(1,'\n'));
 	}
 	_request.setBody(bodyValue);
-	processRequest();
+	//processRequest(); //TODO recuperar
+
+	//TEST FINAL RECICLAJE! HARCODED!
+
+	HttpResponse test;
+
+	test.setVersion(HTTP_VERSION);
+	test.setStatusCode("200");
+	test.setStatusMsg("OK");
+	test.addHeader(std::make_pair("Content-length", "21"));
+	test.setBody("<h1>Hello World!</h1>");
+	sendData(test);
 }
 
 void	DataAdapter::sendData(HttpResponse& response) {
@@ -82,5 +93,5 @@ void	DataAdapter::sendData(HttpResponse& response) {
 	buffer << CRLF;
 	buffer << _request.getBody();
 
-	SocketManager::sendData(buffer.str());
+	SocketManager::sendResponse(buffer.str());
 }

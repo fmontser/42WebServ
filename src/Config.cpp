@@ -1,9 +1,7 @@
 #include <iostream>
 #include <cstdlib>
+#include "ServerConstants.hpp"
 #include "Config.hpp"
-
-#define MIN_PAYLOAD 0
-#define MAX_PAYLOAD 67108864 //64Mb
 
 int Config::_maxPayload;
 std::map<std::string, Route> Config::_routes;
@@ -67,10 +65,10 @@ void	Config::loadConfig(std::fstream &configFileStream) {
 	_tokenMap["file"] = NULL;
 	_tokenMap["port"] = NULL;
 	_tokenMap["host"] = NULL;
-	_tokenMap["name"] = NULL;
+
 
 	for (it = tokenList.begin(); it != tokenList.end(); ++it){
-		if (_tokenMap.find(*it) != _tokenMap.end())
+		if (_tokenMap.find(*it) != _tokenMap.end() && _tokenMap[*it]) 
 			(_tokenMap[*it])(it);
 	}
 }
@@ -121,6 +119,7 @@ void	Config::addRoute(std::vector<std::string>::iterator &it) {
 void	Config::addServer(std::vector<std::string>::iterator &it) {
 	Server server;
 
+	server.setName(*(++it));
 	if (*(++it) == "{") {
 		while(*(++it) != "}") {
 			if (_tokenMap.find(*it) != _tokenMap.end()){

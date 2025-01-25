@@ -1,232 +1,112 @@
-#include "SocketManager.hpp"
-#include "TextFormat.hpp"
+#include <iostream>
 #include <fstream>
 #include <sstream>
 #include <string>
-#include <vector>
+#include <unistd.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <algorithm>
+#include "SocketManager.hpp"
+#include "ServerConstants.hpp"
+#include "Socket.hpp"
+#include "DataAdapter.hpp"
 
-std::list<Socket>	SocketManager::_socketList;
-std::string			SocketManager::_buffer;
+std::list<Socket *>	SocketManager::_socketList;
+int					SocketManager::_activeFd;
 
-SocketManager::SocketManager() {}
-SocketManager::~SocketManager() {}
-
-SocketManager::SocketManager(const SocketManager& src) {
-	_socketList = src._socketList;
-	_buffer = src._buffer;
-}
-
-SocketManager& SocketManager::operator=(const SocketManager& src) {
-	if (this != &src) {
-		_socketList = src._socketList;
-		_buffer = src._buffer;
-	}
-	return *this;
-}
-
-void	SocketManager::recieveData() {
-	//TODO	
-}
-
-void	SocketManager::monitorSockets() {
-	//TODO	
-}
-
-void	SocketManager::sendData(const std::string& response) {
-	//TODO	
-	(void)response;
-}
-
-void	SocketManager::addSocket(Socket& socket) {
-	//TODO	
-	(void)socket;
-}
-
-void	SocketManager::deleteSocket(Socket& socket) {
-	//TODO	
-	(void)socket;
-}
-
-
-/*
-
-#define TIMEOUT 10000
-#define BUFFER_SIZE 8192
-#define HTTP_VERSION "HTTP/1.1"
-
-WebServer::WebServer(Config& config) : _config(config) {
-
-	_pollSockets.push_back(new pollfd());
-
-	_pollSockets.back()->fd = _config.getWebSocket().getSocketFd();
-	_pollSockets.back()->events = POLLIN | POLLOUT | POLLERR;
-	_pollSockets.back()->revents = 0;
-
-	run();
-}
-
-WebServer::~WebServer() {
-	for (std::list<pollfd *>::iterator it = _pollSockets.begin(); it != _pollSockets.end(); ++it) {
-		close((*it)->fd);
-		delete *it;
-	}
-	_pollSockets.clear();
-}
-
-void WebServer::run() {
-	int		pollStatus;
-	int		newSocketFd;
-
-	while (true) {
-		size_t arraySize = 0;
-		pollfd socketArray[_pollSockets.size()];
-		for (std::list<pollfd *>::iterator it = _pollSockets.begin(); it != _pollSockets.end(); ++it) {
-			socketArray[arraySize++] = *(*it);
-		}
-		pollStatus = poll(socketArray, _pollSockets.size(), TIMEOUT);
-		if (pollStatus == -1) {
-			//TODO gestionar error de socket
-			std::cerr << RED << "Error: WebSocket error" << END << std::endl;
-		}
-		else if (pollStatus > 0) {
-			for (size_t i = 0; i < arraySize; i++)
-			{
-				if (socketArray[i].revents & POLLIN) {
-
-					if (socketArray[i].fd == _config.getWebSocket().getSocketFd()) {
-						newSocketFd = acceptConnection();
-						_pollSockets.push_back(new pollfd());
-						_pollSockets.back()->fd = newSocketFd;
-						_pollSockets.back()->events = POLLIN | POLLOUT | POLLERR | POLLHUP;
-						_pollSockets.back()->revents = 0;
-						recieveData(newSocketFd);
-					}
-					else
-						recieveData(socketArray[i].fd);
-				}
-			}
-		}
-	}
-}
-
-int	WebServer::acceptConnection() {
+static int	acceptConnection(Socket& serverSocket) {
 	sockaddr_in	client_addr;
 	socklen_t	client_addr_len = sizeof(client_addr);
 
-	int newSocketFd = accept(_config.getWebSocket().getSocketFd(), (sockaddr *)&client_addr, &client_addr_len);
+	int newSocketFd = accept(serverSocket.getFd(), (sockaddr *)&client_addr, &client_addr_len);
 	if (newSocketFd == -1) {
 		std::cerr << RED << "Error: connection failed " << END << "࣬࣬ 👾" << std::endl;
 	}
 	return newSocketFd;
 }
 
-void	WebServer::recieveData(int socketFd) {
-	char buf[BUFFER_SIZE] = {0};
+SocketManager::SocketManager() {}
+SocketManager::~SocketManager() {
+	for (std::list<Socket *>::iterator it = _socketList.begin(); it != _socketList.end(); ++it)
+		deleteSocket(*(*it));
+}
 
-	int len = recv(socketFd, buf, BUFFER_SIZE, 0);
+SocketManager::SocketManager(const SocketManager& src) {
+	_socketList = src._socketList;
+	_activeFd = src._activeFd;
+}
+
+SocketManager& SocketManager::operator=(const SocketManager& src) {
+	if (this != &src) {
+		_socketList = src._socketList;
+		_activeFd = src._activeFd;
+	}
+	return *this;
+}
+
+void	SocketManager::recieveData(Socket& socket) {
+	char		buffer[BUFFER_SIZE] = {0};
+	std::string	request;
+
+	int len = recv(socket.getFd(), buffer, BUFFER_SIZE, 0);
 	if (len == -1) {
-		std::cerr << RED << "Error: client error " << socketFd << END << std::endl;
+		std::cerr << RED << "Error: client error " << socket.getFd() << END << std::endl;
 	}
 	else if (len > 0) {
-		HttpRequest request;
-
-		std::stringstream sstream(buf);
-		request.pull(&sstream, socketFd);
-		processRequest(request);
+		request.clear();
+		request.append(buffer);
+		DataAdapter::recieveData(request);
 	}
 }
 
-void	WebServer::sendData(int newSocketFd) {
-	(void)newSocketFd;
-	//TODO send!
-}
+void	SocketManager::monitorSockets() {
+	int		pollStatus;
+	bool	asClient = false;
 
-void WebServer::processRequest(HttpRequest request){
+	while (true) {
 
-		HttpResponse response;
-		std::string body;
-		std::string sendErrorPage;
-		//std::fstream
-
-	if (request.getVersion() != HTTP_VERSION ) {
-		std::cerr << "Error: wrong version" << std::endl;
-		this->sendErrorPage(response, "400", "Bad Request", "../web/default.html", request.getSocket());
-	}
-
-	//TODO ahcer un map con funciones??
-
-	if (request.getMethod() == "GET"){
-		std::stringstream sstream;
-		std::fstream index("../web/index.html", std::ios::in);
-		std::fstream style("../web/style.css", std::ios::in);
-		std::fstream favicon("../web/favicon.ico", std::ios::in);
-
-		if (request.getUrl() == "/") {
-			if (!index) {
-				std::cerr << "File error: cannot access file" << std::endl; //TODO 404?
-				return;
-			}
-			body.assign((std::istreambuf_iterator<char>(index)), std::istreambuf_iterator<char>());
-			response.addHeader("Content-Type", "text/html");
+		//TODO @@@@@ megacagada... la informacion se pierde....ref/stack/puntero....al heap?
+		size_t arraySize = 0;
+		pollfd pollArray[_socketList.size()];
+		for (std::list<Socket *>::iterator it = _socketList.begin(); it != _socketList.end(); ++it) {
+			pollArray[arraySize++] = (*it)->getPollFd();
 		}
-		else if (request.getUrl() == "/style.css") {
-			if (!style) {
-				std::cerr << "File error: cannot access file" << std::endl; //TODO 404?
-				return;
-			}
-			body.assign((std::istreambuf_iterator<char>(style)), std::istreambuf_iterator<char>());
-			response.addHeader("Content-Type", "text/css");
-		} else {
-				this->sendErrorPage(response, "404", "Not Found", "../web/default.html", request.getSocket());
-				return;
+		pollStatus = poll(pollArray, _socketList.size(), TIMEOUT);
+		if (pollStatus == -1) {
+			//TODO gestionar error de socket
+			std::cerr << RED << "Server error: Server socket error" << END << std::endl;
 		}
-		
-		sstream << std::strlen(body.c_str());
-
-		response.setVersion(HTTP_VERSION);
-		response.setStatusCode("200");
-		response.setStatusMsg("OK");
-		response.addHeader("Content-Length", sstream.str());
-		response.addHeader("Connection", "keep-alive");
-		//response.addHeader("Date", "Fri, 17 Jan 2025 10:00:00 GMT"); //opcional!
-		response.setBody(body);
-		response.push(request.getSocket());
-	}
-	
-	else if (request.getMethod() == "PUT"){
-		//TODO
-	}
-	else if (request.getMethod() == "DELETE"){
-		//TODO
-	}
-	else {
-		this->sendErrorPage(response, "405", "Method Not Allowed", "../web/default.html", request.getSocket());
-		//TODO
-	}
-}
-
-void WebServer::sendErrorPage(HttpResponse& response, const std::string& statusCode, const std::string& statusMsg, const std::string& errorPagePath, int socketFd) {
-    std::string body;
-		if (!errorPagePath.empty()) {
-		std::ifstream errorFile(errorPagePath.c_str());
-				if (errorFile) {
-						body.assign((std::istreambuf_iterator<char>(errorFile)), std::istreambuf_iterator<char>());
-				} else {
-						body = "<html><body><h1>Error " + statusCode + ": " + statusMsg + "</h1><p>Default error page unavailable.</p></body></html>";
+		else if (pollStatus > 0) {
+			for (std::list<Socket *>::iterator it = _socketList.begin(); it != _socketList.end(); ++it) {
+				_activeFd = (*it)->getFd();
+				if ((*it)->getPollFd().revents & POLLIN) {
+					if ((*it)->getServerFlag()) {
+						Socket newSocket;
+						newSocket.setPort(acceptConnection(*(*it)));
+						newSocket.enableSocket(asClient);
+						addSocket(newSocket);
+						recieveData(newSocket);
+					}
+					else {
+						recieveData(*(*it));
+					}
 				}
-		} else {
-				body = "<html><body><h1>Error " + statusCode + ": " + statusMsg + "</h1><p>Default error page unavailable.</p></body></html>";
+			}
 		}
-  
-    std::stringstream sstream;
-    sstream << body.size();
+	}
+}
 
-    response.setVersion(HTTP_VERSION);
-    response.setStatusCode(statusCode);
-    response.setStatusMsg(statusMsg);
-    response.addHeader("Content-Type", "text/html");
-    response.addHeader("Content-Length", sstream.str());
-    response.addHeader("Connection", "close");
-    response.setBody(body);
-    response.push(socketFd);
-} */
+void	SocketManager::sendResponse(const std::string& response) {
+	if (send(_activeFd, response.c_str(), response.size(), 0) == -1) {
+		std::cerr << RED << "Send error: Server socket error" << END << std::endl;
+	}
+}
+
+void	SocketManager::addSocket(Socket& socket) {
+	_socketList.push_back(&socket);
+}
+
+void	SocketManager::deleteSocket(Socket& socket) {
+	close(socket.getFd());
+	_socketList.erase(std::find(_socketList.begin(),_socketList.end(), &socket)); //TODO check...
+}
