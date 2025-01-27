@@ -19,8 +19,10 @@ class Socket {
 
 		unsigned int			getPort() const;
 		int						getFd() const;
-		const struct pollfd&	getPollFd() const;
+		const struct pollfd&			getPollFd() const;
 		bool					getServerFlag() const;
 		
 		void					setPort(unsigned int port);
+		void					setFd(int fd);
+		void					updatePollFd(struct pollfd pfd);
 };

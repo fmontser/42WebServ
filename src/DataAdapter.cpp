@@ -54,7 +54,7 @@ void	DataAdapter::recieveData(std::string& request) {
 
 	while (std::getline(data, headerLine)) {
 		if (headerLine == "\r")
-			return ;
+			break ;
 		headerKey = headerLine.substr(0, headerLine.find(':'));
 		headerValue = headerLine.substr(headerLine.find(':') + 1 ,headerLine.size());
 		trimToken(headerKey);
@@ -70,6 +70,8 @@ void	DataAdapter::recieveData(std::string& request) {
 	_request.setBody(bodyValue);
 	//processRequest(); //TODO recuperar
 
+	//TODO continuar aqui!!!!! @@@@@@@@@@@@@@@@ dar paso al filemanager!
+
 	//TEST FINAL RECICLAJE! HARCODED!
 
 	HttpResponse test;
@@ -77,21 +79,22 @@ void	DataAdapter::recieveData(std::string& request) {
 	test.setVersion(HTTP_VERSION);
 	test.setStatusCode("200");
 	test.setStatusMsg("OK");
-	test.addHeader(std::make_pair("Content-length", "21"));
-	test.setBody("<h1>Hello World!</h1>");
+	test.addHeader(std::make_pair("Content-length", "54"));
+	test.setBody("<!DOCTYPE html><html><body>Hello, World!</body></html>");
 	sendData(test);
 }
 
 void	DataAdapter::sendData(HttpResponse& response) {
 	std::stringstream	buffer;
+	std::multimap<std::string, std::string> headers = response.getHeaders();
 	std::multimap<std::string, std::string>::iterator it;
 
 	buffer << response.getVersion() << " " << response.getStatusCode() << " " << response.getStatusMsg() << CRLF;
-	for ( it = _request.getHeaders().begin(); it != _request.getHeaders().end(); ++it) {
+	for ( it = headers.begin(); it != headers.end(); ++it) {
 		buffer << it->first << ": " << it->second << CRLF;
 	}
 	buffer << CRLF;
-	buffer << _request.getBody();
+	buffer << response.getBody();
 
 	SocketManager::sendResponse(buffer.str());
 }
