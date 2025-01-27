@@ -6,7 +6,7 @@
 
 class SocketManager {
 private:
-	static std::list<Socket *>	_socketList;
+	static std::list<Socket>	_socketList;
 	static int					_activeFd;
 
 	SocketManager();

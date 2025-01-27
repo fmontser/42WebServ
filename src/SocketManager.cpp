@@ -11,7 +11,7 @@
 #include "Socket.hpp"
 #include "DataAdapter.hpp"
 
-std::list<Socket *>	SocketManager::_socketList;
+std::list<Socket>	SocketManager::_socketList;
 int					SocketManager::_activeFd;
 
 static int	acceptConnection(Socket& serverSocket) {
@@ -27,8 +27,8 @@ static int	acceptConnection(Socket& serverSocket) {
 
 SocketManager::SocketManager() {}
 SocketManager::~SocketManager() {
-	for (std::list<Socket *>::iterator it = _socketList.begin(); it != _socketList.end(); ++it)
-		deleteSocket(*(*it));
+	for (std::list<Socket>::iterator it = _socketList.begin(); it != _socketList.end(); ++it)
+		deleteSocket(*it);
 }
 
 SocketManager::SocketManager(const SocketManager& src) {
@@ -64,12 +64,10 @@ void	SocketManager::monitorSockets() {
 	bool	asClient = false;
 
 	while (true) {
-
-		//TODO @@@@@ megacagada... la informacion se pierde....ref/stack/puntero....al heap?
 		size_t arraySize = 0;
 		pollfd pollArray[_socketList.size()];
-		for (std::list<Socket *>::iterator it = _socketList.begin(); it != _socketList.end(); ++it) {
-			pollArray[arraySize++] = (*it)->getPollFd();
+		for (std::list<Socket>::iterator it = _socketList.begin(); it != _socketList.end(); ++it) {
+			pollArray[arraySize++] = (*it).getPollFd();
 		}
 		pollStatus = poll(pollArray, _socketList.size(), TIMEOUT);
 		if (pollStatus == -1) {
@@ -77,18 +75,18 @@ void	SocketManager::monitorSockets() {
 			std::cerr << RED << "Server error: Server socket error" << END << std::endl;
 		}
 		else if (pollStatus > 0) {
-			for (std::list<Socket *>::iterator it = _socketList.begin(); it != _socketList.end(); ++it) {
-				_activeFd = (*it)->getFd();
-				if ((*it)->getPollFd().revents & POLLIN) {
-					if ((*it)->getServerFlag()) {
+			for (std::list<Socket>::iterator it = _socketList.begin(); it != _socketList.end(); ++it) {
+				_activeFd = (*it).getFd();
+				if ((*it).getPollFd().revents & POLLIN) {
+					if ((*it).getServerFlag()) {
 						Socket newSocket;
-						newSocket.setPort(acceptConnection(*(*it)));
+						newSocket.setPort(acceptConnection(*it));
 						newSocket.enableSocket(asClient);
 						addSocket(newSocket);
 						recieveData(newSocket);
 					}
 					else {
-						recieveData(*(*it));
+						recieveData(*it);
 					}
 				}
 			}
@@ -103,10 +101,10 @@ void	SocketManager::sendResponse(const std::string& response) {
 }
 
 void	SocketManager::addSocket(Socket& socket) {
-	_socketList.push_back(&socket);
+	_socketList.push_back(socket);
 }
 
 void	SocketManager::deleteSocket(Socket& socket) {
 	close(socket.getFd());
-	_socketList.erase(std::find(_socketList.begin(),_socketList.end(), &socket)); //TODO check...
+	_socketList.erase(std::find(_socketList.begin(),_socketList.end(), socket)); //TODO check...
 }

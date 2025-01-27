@@ -13,14 +13,18 @@ Socket::~Socket() {
 }
 
 Socket::Socket(const Socket& src) {
-		this->_port = src._port;
-		this->_fd = src._fd;
+		_port = src._port;
+		_fd = src._fd;
+		_serverFlag = src._serverFlag;
+		_pollfd = src._pollfd;
 }
 
 Socket& Socket::operator=(const Socket& src) {
 	if (this != &src) {
-		this->_port = src._port;
-		this->_fd = src._fd;
+		_port = src._port;
+		_fd = src._fd;
+		_serverFlag = src._serverFlag;
+		_pollfd = src._pollfd;
 	}
 	return *this;
 }
