@@ -5,9 +5,5 @@
 //TODO deberiamos repasar el tema de los constructores y deep/shallow copy...(Optional copy constructor .. I prefer the second one)
 //Socket::Socket(const Socket& src) : _port(src._port), _fd(src._fd) {}
 
-//TODO usar mas de un server no funciona!!
-
-/* server local43 {
-	host 10.12.13.3
-	port 8043
-} */
+//TODO routes pertenecen a cada server!
+//TODO cada server deberia tener su socket y su socketlist?
