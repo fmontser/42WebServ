@@ -129,6 +129,10 @@ void	SocketManager::deleteSocket(Socket& socket) {
 	//TODO comprobar que la eliminacion es correcta tras finalizar una conexion
 }
 
+std::list<Socket>&		SocketManager::getSocketList() {
+	return _socketList;
+}
+
 /*
 	Event types that can be polled for.  These bits may be set in `events'
 	to indicate the interesting event types; they will appear in `revents'
