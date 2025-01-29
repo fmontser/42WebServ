@@ -2,6 +2,7 @@
 #include <fstream>
 #include "Config.hpp"
 #include "SocketManager.hpp"
+#include "SignalManager.hpp"
 
 int main(int argc, char** argv) {
 	
@@ -10,6 +11,7 @@ int main(int argc, char** argv) {
 		return(1);
 	}
 
+	SignalManager::signalSetUp();
 	std::fstream configFileStream(argv[1]);
 	if (!configFileStream.is_open()) {
 		std::cerr << "Configuration error: cannot open config file" << std::endl;

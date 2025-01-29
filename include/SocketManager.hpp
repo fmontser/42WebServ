@@ -15,10 +15,12 @@ private:
 	SocketManager& operator=(const SocketManager& src);
 
 	static void	recieveData(Socket& socket);
+
 public:
 
 	static void	monitorSockets();
 	static void	sendResponse(const std::string& response);
 	static void	addSocket(Socket& socket);
 	static void	deleteSocket(Socket& socket);
+	static std::list<Socket>&	getSocketList();
 };
