@@ -7,3 +7,5 @@
 
 //TODO routes pertenecen a cada server!
 //TODO cada server deberia tener su socket y su socketlist?
+
+//TODO validacion previa del archico config.cfg, segfaults a saco!

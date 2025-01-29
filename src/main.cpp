@@ -19,6 +19,8 @@ int main(int argc, char** argv) {
 	}
 
 	Config::loadConfig(configFileStream);
+	std::map<std::string, Server>	test = Config::getServers();
+
 	bool asServer = true;
 	for (std::map<std::string, Server>::iterator it = Config::getServers().begin();
 		it != Config::getServers().end(); ++it) {

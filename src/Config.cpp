@@ -3,22 +3,17 @@
 #include "ServerConstants.hpp"
 #include "Config.hpp"
 
-int Config::_maxPayload;
-std::map<std::string, Route> Config::_routes;
-std::map<std::string, Server> Config::_servers;
+std::map<std::string, Server>	Config::_servers;
+Server							*Config::_actualServer = NULL;
 
 Config::Config() {}
 Config::~Config() {}
 Config::Config(const Config& src) {
-	_maxPayload = src._maxPayload;
-	_routes = src._routes;
 	_servers = src._servers;
 }
 
 Config& Config::operator=(const Config& src) {
 	if (this != &src) {
-		_maxPayload = src._maxPayload;
-		_routes = src._routes;
 		_servers = src._servers;
 	}
 	return *this;
@@ -58,35 +53,21 @@ void	Config::loadConfig(std::fstream &configFileStream) {
 	
 	tokenize(configFileStream, tokenList);
 
-	_tokenMap["maxPayload"] = &Config::setMaxPayload;
-	_tokenMap["route"] = &Config::addRoute;
+/* 	_tokenMap["route"] = &Config::addRoute;
 	_tokenMap["server"] = &Config::addServer;
 	_tokenMap["method"] = NULL;
+	_tokenMap["maxPayload"] = NULL;
 	_tokenMap["file"] = NULL;
 	_tokenMap["port"] = NULL;
-	_tokenMap["host"] = NULL;
-
+	_tokenMap["host"] = NULL; */
 
 	for (it = tokenList.begin(); it != tokenList.end(); ++it){
-		if (_tokenMap.find(*it) != _tokenMap.end() && _tokenMap[*it]) 
-			(_tokenMap[*it])(it);
+		if (*it == "server") 
+			addServer(it);
 	}
 }
 
-void	Config::setMaxPayload(std::vector<std::string>::iterator &it) {
-	char	*err;
-	int		payloadSize;
-	
-	++it;
-	payloadSize = strtol((*it).c_str(), &err, 10);
-	if (payloadSize < MIN_PAYLOAD || payloadSize > MAX_PAYLOAD || isalpha(*err)) {
-		std::cerr << "Config file error: Ivalid payload size." << std::endl;
-		exit(EXIT_FAILURE);
-	}
-	std::cout << "Payload size set as: " << payloadSize << " bytes." << std::endl;
-	_maxPayload = payloadSize;
-}
-
+//TODO cambiar lo del tokenmap!!
 //TODO if else meh... (hacer metodos estaticos y anadirlos al tokenmap??)
 void	Config::addRoute(std::vector<std::string>::iterator &it) {
 	Route route;
@@ -95,11 +76,8 @@ void	Config::addRoute(std::vector<std::string>::iterator &it) {
 	route.setUrl(*(++it));
 	if (*(++it) == "{") {
 		while(*(++it) != "}") {
-			if (_tokenMap.find(*it) != _tokenMap.end()){
-				key = *it;
-				++it;
-			}
-			value = *it;
+			key = *it;
+			value = *(++it);
 			if (key == "method")
 				route.addMethod(std::make_pair(key, value));
 			else if (key == "file")
@@ -107,39 +85,43 @@ void	Config::addRoute(std::vector<std::string>::iterator &it) {
 		}
 	}
 
-	if (_routes.find(route.getUrl()) != _routes.end()) {
+	if (_actualServer->getRoutes().find(route.getUrl()) != _actualServer->getRoutes().end()) {
 		std::cerr << "Config file error: Route " << route.getUrl()<< " is duplicated." << std::endl;
-		exit(1);
+		exit(1); //TODO terminate
 	}
 	else
-		_routes.insert(std::make_pair(route.getUrl(), route));
+		_actualServer->getRoutes().insert(std::make_pair(route.getUrl(), route));
 }
 
 //TODO if else meh...(hacer metodos estaticos y anadirlos al tokenmap??)
 void	Config::addServer(std::vector<std::string>::iterator &it) {
 	Server server;
+	_actualServer = &server;
 
 	server.setName(*(++it));
 	if (*(++it) == "{") {
 		while(*(++it) != "}") {
-			if (_tokenMap.find(*it) != _tokenMap.end()){
-				if (*it == "name")
+				if (*it == "maxPayload")
+					server.setMaxPayLoad(*(++it));
+				else if (*it == "name")
 					server.setName(*(++it));
 				else if (*it == "host")
 					server.setHost(*(++it));
 				else if (*it == "port")
 					server.setPort(*(++it));
-			}
+				else if (*it == "route")
+					addRoute(it);
 		}
 	}
+
 	if (_servers.find(server.getName()) != _servers.end()) {
 		std::cerr << "Config file error: server " << server.getName()<< " is duplicated." << std::endl;
-		exit(1);
+		exit(1); //TODO terminate
 	}
-	else
+	else {
 		_servers.insert(std::make_pair(server.getName(), server));
+		_actualServer = &(_servers[server.getName()]);
+	}
 }
 
-int								Config::getMaxPayload() { return _maxPayload; }
-std::map<std::string, Route>&	Config::getRoutes() { return (std::map<std::string, Route>&)_routes; }
 std::map<std::string, Server>&	Config::getServers() { return (std::map<std::string, Server>&)_servers; }
