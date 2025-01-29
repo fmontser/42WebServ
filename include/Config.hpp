@@ -3,16 +3,13 @@
 #include <map>
 #include <vector>
 #include <fstream>
-#include "Route.hpp"
 #include "Server.hpp"
 
 class Config {
 	private:
-		static int								_maxPayload;
-		static std::map<std::string, Route>		_routes;
 		static std::map<std::string, Server>	_servers;
+		static Server							*_actualServer;
 
-		static void	setMaxPayload(std::vector<std::string>::iterator &it);
 		static void	addRoute(std::vector<std::string>::iterator &it);
 		static void	addServer(std::vector<std::string>::iterator &it);
 
@@ -23,8 +20,6 @@ class Config {
 	public:
 		static void	loadConfig(std::fstream &configFileStream);
 
-		static int								getMaxPayload();
-		static std::map<std::string, Route>&	getRoutes();
 		static std::map<std::string, Server>&	getServers();
 };
 

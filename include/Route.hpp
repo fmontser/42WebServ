@@ -5,9 +5,9 @@
 
 class Route {
 	private:
-		std::string							_url;
-		std::map<std::string, std::string>	_methods;
-		std::map<std::string, std::string>	_files;
+		std::string								_url;
+		std::multimap<std::string, std::string>	_methods;
+		std::multimap<std::string, std::string>	_files;
 
 	public:
 		Route();
@@ -16,10 +16,10 @@ class Route {
 		Route& operator=(const Route& src);
 
 		std::string							getUrl() const;
-		std::map<std::string, std::string>	getMethods() const;
-		std::map<std::string, std::string>	getFiles() const;
+		std::multimap<std::string, std::string>	getMethods() const;
+		std::multimap<std::string, std::string>	getFiles() const;
 
 		void	setUrl(const std::string& url);
-		void	addMethod(const std::pair<std::string, std::string>& method);
-		void	addFile(const std::pair<std::string, std::string>& file);
+		void	addMethod(const std::pair<std::string, std::string> method);
+		void	addFile(const std::pair<std::string, std::string> file);
 };
