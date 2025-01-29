@@ -18,6 +18,7 @@ Socket::Socket(const Socket& src) {
 		_serverFlag = src._serverFlag;
 		_pollfd = src._pollfd;
 		_pollfd.fd = _fd;
+		_sendBuffer = src._sendBuffer;
 }
 
 Socket& Socket::operator=(const Socket& src) {
@@ -27,6 +28,7 @@ Socket& Socket::operator=(const Socket& src) {
 		_serverFlag = src._serverFlag;
 		_pollfd = src._pollfd;
 		_pollfd.fd = _fd;
+		_sendBuffer = src._sendBuffer;
 	}
 	return *this;
 }
@@ -74,9 +76,8 @@ void Socket::enableSocket(bool serverFlag) {
 
 	_pollfd = pollfd();
 	_pollfd.fd = _fd;
-	_pollfd.events = POLLIN; //TODO | POLLOUT | POLLERR | POLLHUP
+	_pollfd.events = POLLIN | POLLOUT;
 	_pollfd.revents = 0;
-
 }
 
 unsigned int	Socket::getPort() const { return _port; }

@@ -8,7 +8,6 @@ HttpRequest::HttpRequest(const HttpRequest& src) {
 	_version = src._version;
 	_headers = src._headers;
 	_body = src._body;
-	_data = src._data;
 }
 
 HttpRequest& HttpRequest::operator=(const HttpRequest& src) {
@@ -18,7 +17,6 @@ HttpRequest& HttpRequest::operator=(const HttpRequest& src) {
 		_version = src._version;
 		_headers = src._headers;
 		_body = src._body;
-		_data = src._data;
 	}
 	return *this;
 }

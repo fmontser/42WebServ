@@ -34,10 +34,6 @@ static void	trimToken(std::string& str) {
 	str = str.substr(start, end - start + 1);
 }
 
-void	DataAdapter::processRequest() {
-
-}
-
 void	DataAdapter::recieveData(std::string& request) {
 	std::stringstream data;
 	std::string requestLine, headerLine, headerKey, headerValue, bodyValue;
@@ -68,7 +64,6 @@ void	DataAdapter::recieveData(std::string& request) {
 		bodyValue.append(std::string(1,'\n'));
 	}
 	_request.setBody(bodyValue);
-	//processRequest(); //TODO recuperar
 
 	//TODO continuar aqui!!!!! @@@@@@@@@@@@@@@@ dar paso al filemanager!
 

@@ -21,12 +21,12 @@ int main(int argc, char** argv) {
 	for (std::map<std::string, Server>::iterator it = Config::getServers().begin();
 		it != Config::getServers().end(); ++it) {
 		Socket	newSocket;
-		newSocket.setPort((*it).second.getPort());
+		newSocket.setPort(it->second.getPort());
 		newSocket.enableSocket(asServer);
 		SocketManager::addSocket(newSocket);
 	}
 	SocketManager::monitorSockets();
-	
+
 	return 0;
 }
 

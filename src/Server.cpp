@@ -9,6 +9,9 @@ Server::Server(const Server& src) {
 	_name = src._name;
 	_host = src._host;
 	_port = src._port;
+	_maxPayload = src._maxPayload;
+	_routes = src._routes;
+
 }
 
 Server& Server::operator=(const Server& src) {
@@ -16,6 +19,8 @@ Server& Server::operator=(const Server& src) {
 	_name = src._name;
 	_host = src._host;
 	_port = src._port;
+	_maxPayload = src._maxPayload;
+	_routes = src._routes;
 	}
 	return *this;
 }

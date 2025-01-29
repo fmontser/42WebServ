@@ -21,16 +21,16 @@ static int pollSockets(std::list<Socket> &socketList) {
 		pollfd	pollArray[socketList.size()];
 		size_t	i = 0;
 		for (std::list<Socket>::iterator it = socketList.begin(); it != socketList.end(); ++it)
-			pollArray[i++] = (*it).getPollFd();
+			pollArray[i++] = it->getPollFd();
 		pollStatus = poll(pollArray, socketList.size(), TIMEOUT);
 		
 		i = 0;
 		for (std::list<Socket>::iterator it = socketList.begin(); it != socketList.end(); ++it)
-			(*it).updatePollFd(pollArray[i++]);
+			it->updatePollFd(pollArray[i++]);
 		return (pollStatus);
 }
 
-static void	acceptConnection(Socket& serverSocket) {
+static bool	acceptConnection(Socket& serverSocket) {
 	sockaddr_in	client_addr;
 	socklen_t	client_addr_len = sizeof(client_addr);
 	bool	asClient = false;
@@ -38,14 +38,14 @@ static void	acceptConnection(Socket& serverSocket) {
 	int newSocketFd = accept(serverSocket.getFd(), (sockaddr *)&client_addr, &client_addr_len);
 	if (newSocketFd == -1) {
 		std::cerr << RED << "Error: connection failed " << END << "࣬࣬ 👾" << std::endl;
-		//TODO manage error?
-		return ;
+		return (false);
 	}
 	Socket newSocket;
 	newSocket.setPort(serverSocket.getPort());
 	newSocket.setFd(newSocketFd);
 	newSocket.enableSocket(asClient);
 	SocketManager::addSocket(newSocket);
+	return (true);
 }
 
 SocketManager::SocketManager() {}
@@ -88,16 +88,15 @@ void	SocketManager::monitorSockets() {
 	while (true) {
 		pollStatus = pollSockets(_socketList);
 		if (pollStatus == -1) {
-			//TODO gestionar error de socket
+			//TODO gestionar error de socket ... error 500??
 			std::cerr << RED << "Server error: Server socket error" << END << std::endl;
 		}
 		else if (pollStatus > 0) {
 			std::list<Socket> cachedList(_socketList);
 			for (std::list<Socket>::iterator it = cachedList.begin(); it != cachedList.end(); ++it) {
-				_activeFd = (*it).getFd();
-				if ((*it).getPollFd().revents & POLLIN) {
-					if ((*it).getServerFlag()) {
-						acceptConnection(*it);
+				_activeFd = it->getFd();
+				if (it->getPollFd().revents & POLLIN) {
+					if (it->getServerFlag() && acceptConnection(*it)) {
 						_activeFd = _socketList.back().getFd();
 						recieveData(_socketList.back());
 					}
@@ -126,10 +125,9 @@ void	SocketManager::addSocket(Socket& socket) {
 
 void	SocketManager::deleteSocket(Socket& socket) {
 	close(socket.getFd());
-	_socketList.erase(std::find(_socketList.begin(),_socketList.end(), socket)); //TODO check...
+	_socketList.erase(std::find(_socketList.begin(),_socketList.end(), socket));
+	//TODO comprobar que la eliminacion es correcta tras finalizar una conexion
 }
-
-
 
 /*
 	Event types that can be polled for.  These bits may be set in `events'
@@ -157,5 +155,4 @@ void	SocketManager::deleteSocket(Socket& socket) {
 	#define POLLERR		0x008		 Error condition.
 	#define POLLHUP		0x010		 Hung up.
 	#define POLLNVAL	0x020		 Invalid polling request.
-
  */

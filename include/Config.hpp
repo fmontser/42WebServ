@@ -8,9 +8,10 @@
 
 class Config {
 	private:
-		static int								_maxPayload;
-		static std::map<std::string, Route>		_routes;
+/* 		static int								_maxPayload;
+		static std::map<std::string, Route>		_routes; */
 		static std::map<std::string, Server>	_servers;
+		
 
 		static void	setMaxPayload(std::vector<std::string>::iterator &it);
 		static void	addRoute(std::vector<std::string>::iterator &it);

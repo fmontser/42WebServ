@@ -13,8 +13,6 @@ class DataAdapter {
 		~DataAdapter();
 		DataAdapter(const DataAdapter& src);
 		DataAdapter& operator=(const DataAdapter& src);
-
-		static void	processRequest();
 	public:
 		static void	recieveData(std::string& request);
 		static void	sendData(HttpResponse& response);

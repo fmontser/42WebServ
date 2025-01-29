@@ -1,9 +1,8 @@
-<diagram program="umletino" version="15.1"><zoom_level>9</zoom_level><help_text>Space for diagram notes</help_text><element><id>UMLClass</id><coordinates><x>441</x><y>0</y><w>306</w><h>279</h></coordinates><panel_attributes>&lt;&lt;Data&gt;&gt;
+<diagram program="umletino" version="15.1"><zoom_level>8</zoom_level><help_text>Space for diagram notes</help_text><element><id>UMLClass</id><coordinates><x>208</x><y>128</y><w>272</w><h>272</h></coordinates><panel_attributes>&lt;&lt;Data&gt;&gt;
 Config
 --
 - maxPayLoad : unsigned int
 - servers : std::map&lt;std::string, Server&gt;
-- routes : std::map&lt;std::string, Route&gt;
 --
 + Config() 
 + ~Config()
@@ -15,17 +14,17 @@ Config
 
 + getMaxPayload() : unsigned int
 + getServers() :  std::map&lt;std::string, Server&gt;
-+ getRoutes() :  std::map&lt;std::string, Routes&gt;
 
 + setMaxPayload(std::vector&lt;std::string&gt;::iterator &amp;it) : void
 + addServer(std::vector&lt;std::string&gt;::iterator &amp;it) : void
-+ addRoute(std::vector&lt;std::string&gt;::iterator &amp;it) : void
-</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>675</x><y>405</y><w>306</w><h>243</h></coordinates><panel_attributes>&lt;&lt;Data&gt;&gt;
+
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>608</x><y>128</y><w>272</w><h>272</h></coordinates><panel_attributes>&lt;&lt;Data&gt;&gt;
 Server
 --
 - name : std::string
 - host : std::string
 - port : int
+- routes : std::map&lt;std::string, Route&gt;
 --
 + server() 
 + ~server()
@@ -35,10 +34,12 @@ Server
 + getName() const : std::string
 + getHost() const :  std::string
 + getPort() const : int
++ getRoutes() :  std::map&lt;std::string, Routes&gt;
 
 + setName(const std::string&amp; name) : void
 + setHost(const std::string&amp; host) : void
-+ setPort(int port) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>207</x><y>405</y><w>306</w><h>243</h></coordinates><panel_attributes>&lt;&lt;Data&gt;&gt;
++ setPort(int port) : void
++ addRoute(std::vector&lt;std::string&gt;::iterator &amp;it) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1000</x><y>128</y><w>272</w><h>272</h></coordinates><panel_attributes>&lt;&lt;Data&gt;&gt;
 Route
 --
 - url : std::string
@@ -56,7 +57,7 @@ Route
 
 + setUrl(const std::string&amp; url) : void
 + addMethod(const std::pair&lt;std::string, std::string&gt;&amp; method) : void
-+ addFile(const std::pair&lt;std::string, std::string&gt;&amp; file) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>216</x><y>1287</y><w>306</w><h>342</h></coordinates><panel_attributes>&lt;&lt;OS Resource&gt;&gt;
++ addFile(const std::pair&lt;std::string, std::string&gt;&amp; file) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>8</x><y>1272</y><w>272</w><h>304</h></coordinates><panel_attributes>&lt;&lt;OS Resource&gt;&gt;
 Socket
 --
 - port : unsigned int
@@ -71,7 +72,7 @@ Socket
 + getFd() : int
 + getPort() : unsigned int
 
-+ setPort(unsigned int port) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1566</x><y>1296</y><w>306</w><h>351</h></coordinates><panel_attributes>&lt;&lt;Data&gt;&gt;
++ setPort(unsigned int port) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1208</x><y>1280</y><w>272</w><h>312</h></coordinates><panel_attributes>&lt;&lt;Data&gt;&gt;
 HttpRequest
 --
 - method : std::string
@@ -95,7 +96,7 @@ HttpRequest
 + setUrl(const std::string&amp; url) : void
 + setVersion(const std::string&amp; version) : void
 + addHeader(std::pair&lt;std::string, std::string&gt;&amp; header) : void
-+ setBody(const std::string&amp; body) const : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1125</x><y>1296</y><w>306</w><h>351</h></coordinates><panel_attributes>&lt;&lt;Data&gt;&gt;
++ setBody(const std::string&amp; body) const : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>816</x><y>1280</y><w>272</w><h>312</h></coordinates><panel_attributes>&lt;&lt;Data&gt;&gt;
 HttpResponse
 --
 - version : std::string
@@ -119,7 +120,7 @@ HttpResponse
 + setStatusCode(const std::string statusCode) : void
 + setStatusMsg(const std::string statusMsg) : void
 + addHeader(const std::string name, std::string value) : void
-+ setBody(const std::string body) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>207</x><y>792</y><w>315</w><h>333</h></coordinates><panel_attributes>&lt;&lt;Resource Manager&gt;&gt;
++ setBody(const std::string body) : void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>0</x><y>832</y><w>280</w><h>296</h></coordinates><panel_attributes>&lt;&lt;Resource Manager&gt;&gt;
 SocketManager
 --
 - socketList : std::list&lt;Socket&gt;
@@ -137,7 +138,7 @@ SocketManager
 + deleteSocket(Socket&amp; socket) : void
 --
 Input: DataProcessor -&gt; String
-Manages: Socket events, creation, destruction and data</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>675</x><y>792</y><w>306</w><h>333</h></coordinates><panel_attributes>&lt;&lt;Adapter&gt;&gt;
+Manages: Socket events, creation, destruction and data</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>416</x><y>832</y><w>272</w><h>296</h></coordinates><panel_attributes>&lt;&lt;Adapter&gt;&gt;
 DataAdapter
 --
 - buffer : std::string
@@ -149,7 +150,6 @@ DataAdapter
 - operator=(const DataAdapter&amp; src) : const DataAdapter&amp;
 
 + recieveData(std::string&amp; request) : void
-- processRequest() : void
 + sendData(HttpResponse&amp; response) : void
 --
 Input: SocketManager -&gt; String 
@@ -158,7 +158,7 @@ Output: HttpRequest -&gt; FileManager
 Input2: FileManager -&gt; HttpResponse 
 Output2: string -&gt; SocketManager
 
-Manages: Data to http adaptation, logic hub</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1125</x><y>792</y><w>306</w><h>333</h></coordinates><panel_attributes>&lt;&lt;Resource Manager&gt;&gt;
+Manages: Data to http adaptation, logic hub</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>816</x><y>832</y><w>272</w><h>296</h></coordinates><panel_attributes>&lt;&lt;Resource Manager&gt;&gt;
 FileManager
 --
 - request : HttpRequest
@@ -183,7 +183,7 @@ Output: HttpResponse -&gt; DataPAdapter
 Output2: HttpResponse -&gt; CgiProcessor
 
 Manage statusCode: 200, 201, 204, 400, 403, 404, 405, 409, 500, 501
-</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1566</x><y>792</y><w>306</w><h>333</h></coordinates><panel_attributes>&lt;&lt;Processor&gt;&gt;
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1208</x><y>832</y><w>272</w><h>296</h></coordinates><panel_attributes>&lt;&lt;Processor&gt;&gt;
 CgiProcessor
 --
 - response : HttpResponse
@@ -203,10 +203,10 @@ Output: HttpResponse -&gt; FileManager
 
 Manage cgi response modification
 
-</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>351</x><y>1116</y><w>45</w><h>189</h></coordinates><panel_attributes>lt=&lt;-
-m1=1..n</panel_attributes><additional_attributes>10;10;10;190</additional_attributes></element><element><id>Relation</id><coordinates><x>351</x><y>270</y><w>279</w><h>153</h></coordinates><panel_attributes>lt=&lt;-
-m1=1..n</panel_attributes><additional_attributes>270;10;270;100;10;100;10;150</additional_attributes></element><element><id>Relation</id><coordinates><x>585</x><y>270</y><w>261</w><h>153</h></coordinates><panel_attributes>lt=&lt;-
-m1=1..n</panel_attributes><additional_attributes>10;10;10;100;270;100;270;150</additional_attributes></element><element><id>Relation</id><coordinates><x>513</x><y>927</y><w>180</w><h>27</h></coordinates><panel_attributes>lt=-</panel_attributes><additional_attributes>10;10;180;10</additional_attributes></element><element><id>Relation</id><coordinates><x>972</x><y>927</y><w>171</w><h>27</h></coordinates><panel_attributes>lt=-</panel_attributes><additional_attributes>10;10;170;10</additional_attributes></element><element><id>Relation</id><coordinates><x>1422</x><y>927</y><w>162</w><h>27</h></coordinates><panel_attributes>lt=-</panel_attributes><additional_attributes>10;10;160;10</additional_attributes></element><element><id>Relation</id><coordinates><x>1269</x><y>1116</y><w>432</w><h>198</h></coordinates><panel_attributes>lt=&lt;-
-m1=1..1</panel_attributes><additional_attributes>10;10;10;140;460;140;460;200</additional_attributes></element><element><id>Relation</id><coordinates><x>1269</x><y>1116</y><w>45</w><h>198</h></coordinates><panel_attributes>lt=&lt;-
-m1=1..1</panel_attributes><additional_attributes>10;10;10;200</additional_attributes></element><element><id>Relation</id><coordinates><x>1710</x><y>1116</y><w>45</w><h>198</h></coordinates><panel_attributes>lt=&lt;-
-m1=1..1</panel_attributes><additional_attributes>10;10;10;200</additional_attributes></element></diagram>
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>128</x><y>1120</y><w>40</w><h>168</h></coordinates><panel_attributes>lt=&lt;-
+m1=1..n</panel_attributes><additional_attributes>10;10;10;190</additional_attributes></element><element><id>Relation</id><coordinates><x>272</x><y>952</y><w>160</w><h>24</h></coordinates><panel_attributes>lt=-</panel_attributes><additional_attributes>10;10;180;10</additional_attributes></element><element><id>Relation</id><coordinates><x>680</x><y>952</y><w>152</w><h>24</h></coordinates><panel_attributes>lt=-</panel_attributes><additional_attributes>10;10;170;10</additional_attributes></element><element><id>Relation</id><coordinates><x>1080</x><y>952</y><w>144</w><h>24</h></coordinates><panel_attributes>lt=-</panel_attributes><additional_attributes>10;10;160;10</additional_attributes></element><element><id>Relation</id><coordinates><x>944</x><y>1120</y><w>384</w><h>176</h></coordinates><panel_attributes>lt=&lt;-
+m1=1..1</panel_attributes><additional_attributes>10;10;10;140;460;140;460;200</additional_attributes></element><element><id>Relation</id><coordinates><x>944</x><y>1120</y><w>40</w><h>176</h></coordinates><panel_attributes>lt=&lt;-
+m1=1..1</panel_attributes><additional_attributes>10;10;10;200</additional_attributes></element><element><id>Relation</id><coordinates><x>1336</x><y>1120</y><w>40</w><h>176</h></coordinates><panel_attributes>lt=&lt;-
+m1=1..1</panel_attributes><additional_attributes>10;10;10;200</additional_attributes></element><element><id>Relation</id><coordinates><x>472</x><y>240</y><w>152</w><h>32</h></coordinates><panel_attributes>lt=&lt;-
+m1=1..n</panel_attributes><additional_attributes>10;10;170;10</additional_attributes></element><element><id>Relation</id><coordinates><x>872</x><y>240</y><w>144</w><h>32</h></coordinates><panel_attributes>lt=&lt;-
+m1=1..n</panel_attributes><additional_attributes>10;10;160;10</additional_attributes></element></diagram>

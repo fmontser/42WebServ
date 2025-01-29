@@ -1,5 +1,6 @@
 #pragma once
 #include <poll.h>
+#include <string>
 
 class Socket {
 	private:
@@ -7,6 +8,7 @@ class Socket {
 		int				_fd;
 		bool			_serverFlag;
 		struct pollfd	_pollfd;
+		std::string		_sendBuffer;
 
 	public:
 		Socket();
@@ -19,7 +21,7 @@ class Socket {
 
 		unsigned int			getPort() const;
 		int						getFd() const;
-		const struct pollfd&			getPollFd() const;
+		const struct pollfd&	getPollFd() const;
 		bool					getServerFlag() const;
 		
 		void					setPort(unsigned int port);

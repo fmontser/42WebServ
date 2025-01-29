@@ -10,7 +10,6 @@ class HttpRequest {
 		std::string								_version;
 		std::multimap<std::string, std::string>	_headers;
 		std::string								_body;
-		std::stringstream						*_data; //TODO borrar?
 
 	public:
 		HttpRequest();
