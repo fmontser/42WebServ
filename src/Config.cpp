@@ -3,16 +3,22 @@
 #include "ServerConstants.hpp"
 #include "Config.hpp"
 
+int Config::_maxPayload;
+std::map<std::string, Route> Config::_routes;
 std::map<std::string, Server> Config::_servers;
 
 Config::Config() {}
 Config::~Config() {}
 Config::Config(const Config& src) {
+	_maxPayload = src._maxPayload;
+	_routes = src._routes;
 	_servers = src._servers;
 }
 
 Config& Config::operator=(const Config& src) {
 	if (this != &src) {
+		_maxPayload = src._maxPayload;
+		_routes = src._routes;
 		_servers = src._servers;
 	}
 	return *this;
@@ -78,7 +84,7 @@ void	Config::setMaxPayload(std::vector<std::string>::iterator &it) {
 		exit(EXIT_FAILURE);
 	}
 	std::cout << "Payload size set as: " << payloadSize << " bytes." << std::endl;
-	//_maxPayload = payloadSize;
+	_maxPayload = payloadSize;
 }
 
 //TODO if else meh... (hacer metodos estaticos y anadirlos al tokenmap??)

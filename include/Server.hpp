@@ -2,16 +2,12 @@
 
 #include <map>
 #include <string>
-#include <vector>
-#include "Route.hpp"
 
 class Server {
 	private:
-		std::string						_name;
-		std::string						_host;
-		int								_port;
-		int								_maxPayload;
-		std::map<std::string, Route>	_routes;
+		std::string	_name;
+		std::string	_host;
+		int			_port;
 	public:
 		Server();
 		~Server();
@@ -19,13 +15,12 @@ class Server {
 		Server& operator=(const Server& src);
 
 
-		std::string						getName() const;
-		std::string						getHost() const;
-		int								getPort() const;
-		std::map<std::string, Route>&	getRoutes();
+	std::string	getName() const;
+	std::string	getHost() const;
+	int					getPort() const;
 
-		void	setName(const std::string& name);
-		void	setHost(const std::string& host);
-		void	setPort(const std::string& port);
-		void	addRoute(std::vector<std::string>::iterator &it);
+
+	void	setName(const std::string& name);
+	void	setHost(const std::string& host);
+	void	setPort(const std::string& port);
 };

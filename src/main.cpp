@@ -26,7 +26,6 @@ int main(int argc, char** argv) {
 		SocketManager::addSocket(newSocket);
 	}
 	SocketManager::monitorSockets();
-
 	return 0;
 }
 
