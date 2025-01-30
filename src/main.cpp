@@ -27,10 +27,8 @@ int main(int argc, char** argv) {
 		Socket	newSocket;
 		newSocket.setPort(it->second.getPort());
 		newSocket.enableSocket(asServer);
-		SocketManager::addSocket(newSocket);
+		SocketManager::addSocket(it->second, newSocket);
 	}
 	SocketManager::monitorSockets();
 	return 0;
 }
-
-

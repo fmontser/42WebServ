@@ -2,7 +2,9 @@
 
 #include <map>
 #include <string>
+#include <list>
 #include "Route.hpp"
+#include "Socket.hpp"
 
 class Server {
 	private:
@@ -11,6 +13,8 @@ class Server {
 		int								_port;
 		int								_maxPayload;
 		std::map<std::string, Route>	_routes;
+		std::list<Socket>				_socketList;
+
 	public:
 		Server();
 		~Server();
@@ -22,6 +26,7 @@ class Server {
 	int								getPort() const;
 	int								getMaxPayload();
 	std::map<std::string, Route>&	getRoutes();
+	std::list<Socket>&				getSocketList();
 
 
 	void	setName(const std::string& name);

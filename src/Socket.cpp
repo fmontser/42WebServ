@@ -18,7 +18,7 @@ Socket::Socket(const Socket& src) {
 		_serverFlag = src._serverFlag;
 		_pollfd = src._pollfd;
 		_pollfd.fd = _fd;
-		_sendBuffer = src._sendBuffer;
+		sendBuffer = src.sendBuffer;
 }
 
 Socket& Socket::operator=(const Socket& src) {
@@ -28,7 +28,7 @@ Socket& Socket::operator=(const Socket& src) {
 		_serverFlag = src._serverFlag;
 		_pollfd = src._pollfd;
 		_pollfd.fd = _fd;
-		_sendBuffer = src._sendBuffer;
+		sendBuffer = src.sendBuffer;
 	}
 	return *this;
 }

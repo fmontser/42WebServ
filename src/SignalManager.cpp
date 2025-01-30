@@ -2,6 +2,7 @@
 #include <csignal>
 #include <cstdlib>
 #include <signal.h>
+#include "Config.hpp"
 #include "SignalManager.hpp"
 #include "ServerConstants.hpp"
 #include "SocketManager.hpp"
@@ -17,12 +18,14 @@ SignalManager& SignalManager::operator=(const SignalManager& src) {
 	return *this;
 }
 
-
-
 void SignalManager::signalHandler(int signal)
 {
- SocketManager::getSocketList().clear();//try with or without clear
- std::cerr << GREEN << "Signal " << signal << " received. Server shutting down." << END << std::endl;
+for (std::map<std::string, Server>::iterator servIt = Config::getServers().begin();
+			servIt != Config::getServers().end(); ++servIt) {
+		
+	servIt->second.getSocketList().clear();//try with or without clear
+	std::cerr << BLUE << "Signal " << signal << " received. Server shutting down." << END << std::endl;
+}
  std::exit(EXIT_SUCCESS);
 
 }

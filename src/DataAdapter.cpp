@@ -34,7 +34,7 @@ static void	trimToken(std::string& str) {
 	str = str.substr(start, end - start + 1);
 }
 
-void	DataAdapter::recieveData(std::string& request) {
+void	DataAdapter::recieveData(Socket& targetSocket, std::string& request) {
 	std::stringstream data;
 	std::string requestLine, headerLine, headerKey, headerValue, bodyValue;
 	std::pair<std::string, std::string> header;
@@ -76,10 +76,10 @@ void	DataAdapter::recieveData(std::string& request) {
 	test.setStatusMsg("OK");
 	test.addHeader(std::make_pair("Content-length", "54"));
 	test.setBody("<!DOCTYPE html><html><body>Hello, World!</body></html>");
-	sendData(test);
+	sendData(targetSocket, test);
 }
 
-void	DataAdapter::sendData(HttpResponse& response) {
+void	DataAdapter::sendData(Socket& targetSocket, HttpResponse& response) {
 	std::stringstream	buffer;
 	std::multimap<std::string, std::string> headers = response.getHeaders();
 	std::multimap<std::string, std::string>::iterator it;
@@ -91,5 +91,5 @@ void	DataAdapter::sendData(HttpResponse& response) {
 	buffer << CRLF;
 	buffer << response.getBody();
 
-	SocketManager::sendResponse(buffer.str());
+	SocketManager::recieveResponse(targetSocket, buffer.str());
 }

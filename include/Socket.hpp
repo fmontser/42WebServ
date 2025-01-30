@@ -8,9 +8,10 @@ class Socket {
 		int				_fd;
 		bool			_serverFlag;
 		struct pollfd	_pollfd;
-		std::string		_sendBuffer;
 
 	public:
+		std::string		sendBuffer;
+
 		Socket();
 		~Socket();
 		Socket(const Socket& src);

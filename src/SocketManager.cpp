@@ -6,15 +6,13 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <algorithm>
+#include <cstring>
+#include "Config.hpp"
 #include "SocketManager.hpp"
 #include "ServerConstants.hpp"
-#include "Socket.hpp"
 #include "DataAdapter.hpp"
 
-#include <cstring>
 
-std::list<Socket>	SocketManager::_socketList;
-int					SocketManager::_activeFd;
 
 static int pollSockets(std::list<Socket> &socketList) {
 		int		pollStatus;
@@ -30,7 +28,7 @@ static int pollSockets(std::list<Socket> &socketList) {
 		return (pollStatus);
 }
 
-static bool	acceptConnection(Socket& serverSocket) {
+static bool	acceptConnection(Server& server, Socket& serverSocket) {
 	sockaddr_in	client_addr;
 	socklen_t	client_addr_len = sizeof(client_addr);
 	bool	asClient = false;
@@ -44,41 +42,38 @@ static bool	acceptConnection(Socket& serverSocket) {
 	newSocket.setPort(serverSocket.getPort());
 	newSocket.setFd(newSocketFd);
 	newSocket.enableSocket(asClient);
-	SocketManager::addSocket(newSocket);
+	SocketManager::addSocket(server, newSocket);
 	return (true);
 }
 
 SocketManager::SocketManager() {}
 SocketManager::~SocketManager() {
-	for (std::list<Socket>::iterator it = _socketList.begin(); it != _socketList.end(); ++it)
-		deleteSocket(*it);
+	//TODO
+/* 	for (std::list<Socket>::iterator it = _socketList.begin(); it != _socketList.end(); ++it)
+		deleteSocket(*it); */
 }
 
-SocketManager::SocketManager(const SocketManager& src) {
-	_socketList = src._socketList;
-	_activeFd = src._activeFd;
-}
+SocketManager::SocketManager(const SocketManager& src) { (void)src; }
 
 SocketManager& SocketManager::operator=(const SocketManager& src) {
 	if (this != &src) {
-		_socketList = src._socketList;
-		_activeFd = src._activeFd;
+		(void)src;
 	}
 	return *this;
 }
 
 void	SocketManager::recieveData(Socket& socket) {
 	char		buffer[BUFFER_SIZE] = {0};
-	std::string	request;
+	std::string	requestData;
 
 	int len = recv(socket.getFd(), buffer, BUFFER_SIZE, 0);
 	if (len == -1) {
 		std::cerr << RED << "Error: client error " << socket.getFd() << END << std::endl;
 	}
 	else if (len > 0) {
-		request.clear();
-		request.append(buffer);
-		DataAdapter::recieveData(request);
+		requestData.clear();
+		requestData.append(buffer);
+		DataAdapter::recieveData(socket, requestData);
 	}
 }
 
@@ -86,52 +81,56 @@ void	SocketManager::monitorSockets() {
 	int		pollStatus;
 	
 	while (true) {
-		pollStatus = pollSockets(_socketList);
-		if (pollStatus == -1) {
-			//TODO gestionar error de socket ... error 500??
-			std::cerr << RED << "Server error: Server socket error" << END << std::endl;
-		}
-		else if (pollStatus > 0) {
-			std::list<Socket> cachedList(_socketList);
-			for (std::list<Socket>::iterator it = cachedList.begin(); it != cachedList.end(); ++it) {
-				_activeFd = it->getFd();
-				if (it->getPollFd().revents & POLLIN) {
-					if (it->getServerFlag() && acceptConnection(*it)) {
-						_activeFd = _socketList.back().getFd();
-						recieveData(_socketList.back());
+		for (std::map<std::string, Server>::iterator servIt = Config::getServers().begin();
+			servIt != Config::getServers().end(); ++servIt) {
+			pollStatus = pollSockets(servIt->second.getSocketList());
+			if (pollStatus == -1) {
+				//TODO gestionar error de socket ... error 500??
+				std::cerr << RED << "Server error: Server socket error" << END << std::endl;
+			}
+			else if (pollStatus > 0) {
+				std::list<Socket> cachedList(servIt->second.getSocketList());
+				for (std::list<Socket>::iterator it = cachedList.begin(); it != cachedList.end(); ++it) {
+					if (it->getPollFd().revents & POLLIN) {
+						if (it->getServerFlag() && acceptConnection(servIt->second, *it))
+							recieveData(servIt->second.getSocketList().back());
+						else
+							recieveData(*it);
 					}
-					else {
-						recieveData(*it);
+					else if (it->getPollFd().revents & POLLOUT) {
+						if (it->sendBuffer.size() > 0)
+							sendData(*it);
 					}
 				}
+				cachedList.clear();
 			}
-			cachedList.clear();
 		}
 	}
 }
 
-void	SocketManager::sendResponse(const std::string& response) {
-	std::string r =  response;
-	int	size = response.size();
+void	SocketManager::recieveResponse(Socket& socket, const std::string& response) {
+	socket.sendBuffer = response;
+}
 
-	if (send(_activeFd, response.c_str(), size, 0) == -1) {
+void	SocketManager::sendData(Socket& socket) {
+	if (send(socket.getFd(), socket.sendBuffer.c_str(), socket.sendBuffer.size(), 0) == -1) {
 		std::cerr << RED << "Send error: Server socket error" << END << std::endl;
+		//TODO log error or send error?
 	}
+	socket.sendBuffer.clear();
 }
 
-void	SocketManager::addSocket(Socket& socket) {
-	_socketList.push_back(socket);
+void	SocketManager::addSocket(Server& server, Socket& socket) {
+	server.getSocketList().push_back(socket);
 }
 
-void	SocketManager::deleteSocket(Socket& socket) {
+void	SocketManager::deleteSocket(Server& server,Socket& socket) {
 	close(socket.getFd());
-	_socketList.erase(std::find(_socketList.begin(),_socketList.end(), socket));
+	server.getSocketList().erase(std::find(server.getSocketList().begin(),server.getSocketList().end(), socket));
 	//TODO comprobar que la eliminacion es correcta tras finalizar una conexion
 }
 
-std::list<Socket>&		SocketManager::getSocketList() {
-	return _socketList;
-}
+
 
 /*
 	Event types that can be polled for.  These bits may be set in `events'
