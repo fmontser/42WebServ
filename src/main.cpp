@@ -19,16 +19,17 @@ int main(int argc, char** argv) {
 	}
 
 	Config::loadConfig(configFileStream);
-	std::map<std::string, Server>	test = Config::getServers();
 
 	bool asServer = true;
 	for (std::map<std::string, Server>::iterator it = Config::getServers().begin();
 		it != Config::getServers().end(); ++it) {
-		Socket	newSocket;
-		newSocket.setPort(it->second.getPort());
-		newSocket.enableSocket(asServer);
+		Socket	*newSocket = new Socket();
+		newSocket->setPort(it->second.getPort());
+		newSocket->setParentServer(&(it->second));
+		newSocket->enableSocket(asServer);
 		SocketManager::addSocket(it->second, newSocket);
 	}
+	std::map<std::string, Server> test =  Config::getServers();
 	SocketManager::monitorSockets();
 	return 0;
 }

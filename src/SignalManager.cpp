@@ -22,8 +22,11 @@ void SignalManager::signalHandler(int signal)
 {
 for (std::map<std::string, Server>::iterator servIt = Config::getServers().begin();
 			servIt != Config::getServers().end(); ++servIt) {
-		
-	servIt->second.getSocketList().clear();//try with or without clear
+	for (std::list<Socket *>::iterator it = servIt->second.getSocketList().begin();
+			it != servIt->second.getSocketList().end(); ++it) {
+				delete (*it);
+			}
+	servIt->second.getSocketList().clear();
 	std::cerr << BLUE << "Signal " << signal << " received. Server shutting down." << END << std::endl;
 }
  std::exit(EXIT_SUCCESS);

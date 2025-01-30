@@ -109,8 +109,13 @@ void	Config::addServer(std::vector<std::string>::iterator &it) {
 					server.setHost(*(++it));
 				else if (*it == "port")
 					server.setPort(*(++it));
+				else if (*it == "root")
+					server.setRoot(*(++it));
+				else if (*it == "default")
+					server.setDefault(*(++it));
 				else if (*it == "route")
 					addRoute(it);
+				
 		}
 	}
 

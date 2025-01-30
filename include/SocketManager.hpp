@@ -11,13 +11,13 @@ private:
 	SocketManager(const SocketManager& src);
 	SocketManager& operator=(const SocketManager& src);
 
-	static void	recieveData(Socket& socket);
-	static void	sendData(Socket& socket);
+	static void	recieveData(Socket *socket);
+	static void	sendData(Socket *socket);
 
 public:
 
 	static void	monitorSockets();
-	static void	recieveResponse(Socket& socket, const std::string& response);
-	static void	addSocket(Server& server, Socket& socket);
-	static void	deleteSocket(Server& server, Socket& socket);
+	static void	recieveResponse(Socket *socket, const std::string& response);
+	static void	addSocket(Server& server, Socket *socket);
+	static void	deleteSocket(Server& server, Socket *socket);
 };

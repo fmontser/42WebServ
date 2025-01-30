@@ -14,7 +14,8 @@ Socket::~Socket() {
 
 Socket::Socket(const Socket& src) {
 		_port = src._port;
-		_fd = dup(src._fd);
+		_fd = src._fd; //dup(src._fd);
+		_parentServer = src._parentServer;
 		_serverFlag = src._serverFlag;
 		_pollfd = src._pollfd;
 		_pollfd.fd = _fd;
@@ -24,7 +25,8 @@ Socket::Socket(const Socket& src) {
 Socket& Socket::operator=(const Socket& src) {
 	if (this != &src) {
 		_port = src._port;
-		_fd = dup(src._fd);
+		_fd = src._fd; //dup(src._fd);
+		_parentServer = src._parentServer;
 		_serverFlag = src._serverFlag;
 		_pollfd = src._pollfd;
 		_pollfd.fd = _fd;
@@ -39,7 +41,7 @@ bool Socket::operator==(const Socket& src) {
 
 void Socket::enableSocket(bool serverFlag) {
 	int optionEnable = 1;
-	int optionBufferSize = SOCKET_BUFFER_SIZE;
+	int optionBufferSize = SOCKET_BUFFER_SIZE; //TODO payload_
 	struct sockaddr_in address;
 
 	_serverFlag = serverFlag;
@@ -76,15 +78,17 @@ void Socket::enableSocket(bool serverFlag) {
 
 	_pollfd = pollfd();
 	_pollfd.fd = _fd;
-	_pollfd.events = POLLIN | POLLOUT;
+	_pollfd.events = POLLIN | POLLOUT | POLLHUP | POLLERR;
 	_pollfd.revents = 0;
 }
 
-unsigned int	Socket::getPort() const { return _port; }
-int				Socket::getFd() const { return _fd; }
+unsigned int			Socket::getPort() const { return _port; }
+int						Socket::getFd() const { return _fd; }
 const struct pollfd&	Socket::getPollFd() const {	return _pollfd; }
-bool			Socket::getServerFlag() const { return _serverFlag; }
+bool					Socket::getServerFlag() const { return _serverFlag; }
+Server					*Socket::getParentServer() const { return _parentServer; }
 
-void Socket::setPort(unsigned int port) { _port = port; }
-void Socket::setFd(int fd) { _fd = fd; }
-void Socket::updatePollFd(struct pollfd pfd) { _pollfd = pfd; }
+void					Socket::setPort(unsigned int port) { _port = port; }
+void					Socket::setFd(int fd) { _fd = fd; }
+void					Socket::setParentServer(Server *parentServer) { _parentServer = parentServer;}
+void					Socket::updatePollFd(struct pollfd pfd) { _pollfd = pfd; }

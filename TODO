@@ -1,11 +1,2 @@
-//TODO ocultar implementaciones secundarias con static
-
-//TODO gestionar señales de salida y FDs!!!
-
-//TODO deberiamos repasar el tema de los constructores y deep/shallow copy...(Optional copy constructor .. I prefer the second one)
-//Socket::Socket(const Socket& src) : _port(src._port), _fd(src._fd) {}
-
-//TODO routes pertenecen a cada server!
-//TODO cada server deberia tener su socket y su socketlist?
-
+//TODO gestionar cometarios en config.cfg??
 //TODO validacion previa del archico config.cfg, segfaults a saco!

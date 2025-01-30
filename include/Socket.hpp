@@ -2,11 +2,14 @@
 #include <poll.h>
 #include <string>
 
+class Server;
+
 class Socket {
 	private:
 		unsigned int	_port;
 		int				_fd;
 		bool			_serverFlag;
+		Server			*_parentServer;
 		struct pollfd	_pollfd;
 
 	public:
@@ -24,8 +27,11 @@ class Socket {
 		int						getFd() const;
 		const struct pollfd&	getPollFd() const;
 		bool					getServerFlag() const;
+		Server					*getParentServer() const;
 		
 		void					setPort(unsigned int port);
 		void					setFd(int fd);
+		void					setParentServer(Server *parentServer);
 		void					updatePollFd(struct pollfd pfd);
+		
 };

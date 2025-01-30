@@ -1,5 +1,6 @@
 #include "DataAdapter.hpp"
 #include "SocketManager.hpp"
+#include "FileManager.hpp"
 #include "ServerConstants.hpp"
 
 std::string	DataAdapter::_buffer;
@@ -34,7 +35,7 @@ static void	trimToken(std::string& str) {
 	str = str.substr(start, end - start + 1);
 }
 
-void	DataAdapter::recieveData(Socket& targetSocket, std::string& request) {
+void	DataAdapter::recieveData(Socket *targetSocket, std::string& request) {
 	std::stringstream data;
 	std::string requestLine, headerLine, headerKey, headerValue, bodyValue;
 	std::pair<std::string, std::string> header;
@@ -64,22 +65,10 @@ void	DataAdapter::recieveData(Socket& targetSocket, std::string& request) {
 		bodyValue.append(std::string(1,'\n'));
 	}
 	_request.setBody(bodyValue);
-
-	//TODO continuar aqui!!!!! @@@@@@@@@@@@@@@@ dar paso al filemanager!
-
-	//TEST FINAL RECICLAJE! HARCODED!
-
-	HttpResponse test;
-
-	test.setVersion(HTTP_VERSION);
-	test.setStatusCode("200");
-	test.setStatusMsg("OK");
-	test.addHeader(std::make_pair("Content-length", "54"));
-	test.setBody("<!DOCTYPE html><html><body>Hello, World!</body></html>");
-	sendData(targetSocket, test);
+	FileManager::recieveHttpRequest(targetSocket, _request);
 }
 
-void	DataAdapter::sendData(Socket& targetSocket, HttpResponse& response) {
+void	DataAdapter::sendData(Socket *targetSocket, HttpResponse& response) {
 	std::stringstream	buffer;
 	std::multimap<std::string, std::string> headers = response.getHeaders();
 	std::multimap<std::string, std::string>::iterator it;

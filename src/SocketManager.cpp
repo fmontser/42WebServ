@@ -14,44 +14,41 @@
 
 
 
-static int pollSockets(std::list<Socket> &socketList) {
+static int pollSockets(std::list<Socket *> &socketList) {
 		int		pollStatus;
 		pollfd	pollArray[socketList.size()];
 		size_t	i = 0;
-		for (std::list<Socket>::iterator it = socketList.begin(); it != socketList.end(); ++it)
-			pollArray[i++] = it->getPollFd();
+		for (std::list<Socket *>::iterator it = socketList.begin(); it != socketList.end(); ++it)
+			pollArray[i++] = (*it)->getPollFd();
 		pollStatus = poll(pollArray, socketList.size(), TIMEOUT);
 		
 		i = 0;
-		for (std::list<Socket>::iterator it = socketList.begin(); it != socketList.end(); ++it)
-			it->updatePollFd(pollArray[i++]);
+		for (std::list<Socket *>::iterator it = socketList.begin(); it != socketList.end(); ++it)
+			(*it)->updatePollFd(pollArray[i++]);
 		return (pollStatus);
 }
 
-static bool	acceptConnection(Server& server, Socket& serverSocket) {
+static bool	acceptConnection(Server& server, Socket *serverSocket) {
 	sockaddr_in	client_addr;
 	socklen_t	client_addr_len = sizeof(client_addr);
 	bool	asClient = false;
 
-	int newSocketFd = accept(serverSocket.getFd(), (sockaddr *)&client_addr, &client_addr_len);
+	int newSocketFd = accept(serverSocket->getFd(), (sockaddr *)&client_addr, &client_addr_len);
 	if (newSocketFd == -1) {
 		std::cerr << RED << "Error: connection failed " << END << "࣬࣬ 👾" << std::endl;
 		return (false);
 	}
-	Socket newSocket;
-	newSocket.setPort(serverSocket.getPort());
-	newSocket.setFd(newSocketFd);
-	newSocket.enableSocket(asClient);
+	Socket *newSocket = new Socket();
+	newSocket->setPort(serverSocket->getPort());
+	newSocket->setFd(newSocketFd);
+	newSocket->setParentServer(&server);
+	newSocket->enableSocket(asClient);
 	SocketManager::addSocket(server, newSocket);
 	return (true);
 }
 
 SocketManager::SocketManager() {}
-SocketManager::~SocketManager() {
-	//TODO
-/* 	for (std::list<Socket>::iterator it = _socketList.begin(); it != _socketList.end(); ++it)
-		deleteSocket(*it); */
-}
+SocketManager::~SocketManager() {}
 
 SocketManager::SocketManager(const SocketManager& src) { (void)src; }
 
@@ -62,13 +59,13 @@ SocketManager& SocketManager::operator=(const SocketManager& src) {
 	return *this;
 }
 
-void	SocketManager::recieveData(Socket& socket) {
+void	SocketManager::recieveData(Socket *socket) {
 	char		buffer[BUFFER_SIZE] = {0};
 	std::string	requestData;
 
-	int len = recv(socket.getFd(), buffer, BUFFER_SIZE, 0);
+	int len = recv(socket->getFd(), buffer, BUFFER_SIZE, 0);
 	if (len == -1) {
-		std::cerr << RED << "Error: client error " << socket.getFd() << END << std::endl;
+		std::cerr << RED << "Error: client error " << socket->getFd() << END << std::endl;
 	}
 	else if (len > 0) {
 		requestData.clear();
@@ -89,17 +86,27 @@ void	SocketManager::monitorSockets() {
 				std::cerr << RED << "Server error: Server socket error" << END << std::endl;
 			}
 			else if (pollStatus > 0) {
-				std::list<Socket> cachedList(servIt->second.getSocketList());
-				for (std::list<Socket>::iterator it = cachedList.begin(); it != cachedList.end(); ++it) {
-					if (it->getPollFd().revents & POLLIN) {
-						if (it->getServerFlag() && acceptConnection(servIt->second, *it))
+				std::list<Socket *> cachedList(servIt->second.getSocketList());
+				for (std::list<Socket *>::iterator it = cachedList.begin(); it != cachedList.end(); ++it) {
+					if ((*it)->getPollFd().revents & POLLIN) {
+						if ((*it)->getServerFlag() && acceptConnection(servIt->second, *it))
 							recieveData(servIt->second.getSocketList().back());
 						else
 							recieveData(*it);
 					}
-					else if (it->getPollFd().revents & POLLOUT) {
-						if (it->sendBuffer.size() > 0)
+					else if ((*it)->getPollFd().revents & POLLOUT) {
+						if ((*it)->sendBuffer.size() > 0)
 							sendData(*it);
+					}
+					else if ((*it)->getPollFd().revents & POLLHUP) {
+						//TODO NO FUNCIONA??
+						std::cout << "Deleted " << (*it)->getFd();
+						delete *it;
+					}
+					else if ((*it)->getPollFd().revents & POLLERR) {
+						//TODO NO FUNCIONA??
+						std::cout << "Poll error " << (*it)->getFd();
+						delete *it;
 					}
 				}
 				cachedList.clear();
@@ -108,24 +115,24 @@ void	SocketManager::monitorSockets() {
 	}
 }
 
-void	SocketManager::recieveResponse(Socket& socket, const std::string& response) {
-	socket.sendBuffer = response;
+void	SocketManager::recieveResponse(Socket *socket, const std::string& response) {
+	socket->sendBuffer = response;
 }
 
-void	SocketManager::sendData(Socket& socket) {
-	if (send(socket.getFd(), socket.sendBuffer.c_str(), socket.sendBuffer.size(), 0) == -1) {
+void	SocketManager::sendData(Socket *socket) {
+	if (send(socket->getFd(), socket->sendBuffer.c_str(), socket->sendBuffer.size(), 0) == -1) {
 		std::cerr << RED << "Send error: Server socket error" << END << std::endl;
 		//TODO log error or send error?
 	}
-	socket.sendBuffer.clear();
+	socket->sendBuffer.clear();
 }
 
-void	SocketManager::addSocket(Server& server, Socket& socket) {
+void	SocketManager::addSocket(Server& server, Socket *socket) {
 	server.getSocketList().push_back(socket);
 }
 
-void	SocketManager::deleteSocket(Server& server,Socket& socket) {
-	close(socket.getFd());
+void	SocketManager::deleteSocket(Server& server,Socket *socket) {
+	close(socket->getFd());
 	server.getSocketList().erase(std::find(server.getSocketList().begin(),server.getSocketList().end(), socket));
 	//TODO comprobar que la eliminacion es correcta tras finalizar una conexion
 }

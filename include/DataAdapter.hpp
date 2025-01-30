@@ -16,6 +16,6 @@ class DataAdapter {
 		DataAdapter(const DataAdapter& src);
 		DataAdapter& operator=(const DataAdapter& src);
 	public:
-		static void	recieveData(Socket& targetSocket, std::string& request);
-		static void	sendData(Socket& targetSocket, HttpResponse& response);
+		static void	recieveData(Socket *targetSocket, std::string& request);
+		static void	sendData(Socket *targetSocket, HttpResponse& response);
 };
