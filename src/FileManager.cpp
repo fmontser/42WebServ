@@ -76,3 +76,46 @@ void	FileManager::recieveHttpResponse(Socket *targetSocket, HttpResponse& respon
 	DataAdapter::sendData(targetSocket, _response);
 }
 
+bool FileManager::searchFile(Server& server, HttpRequest& _request) {
+	std::map<std::string, Route>::iterator it;
+	it = server.getRoutes().find(getRouteName(_request.getUrl()));
+	if ( it != server.getRoutes().end()) {
+		return true;
+	}
+	return false;
+}
+
+bool FileManager::createFile(Server& server, HttpRequest& _request) {
+	std::map<std::string, Route>::iterator it;
+	it = server.getRoutes().find(getRouteName(_request.getUrl()));
+	if ( it == server.getRoutes().end()) {
+		/* std::string fileName = getFileName(_request.getUrl());
+		std::ofstream file(fileName.c_str());
+		if (!file.is_open()) {
+			//TODO error 500
+			return false;
+		}
+		file.close(); */
+		return true;
+	}
+	return false;
+}
+
+bool FileManager::deleteFile(Server& server, HttpRequest& _request) {
+	std::map<std::string, Route>::iterator it;
+	it = server.getRoutes().find(getRouteName(_request.getUrl()));
+	if ( it != server.getRoutes().end()) {
+		return true;
+	}
+	return false;
+}
+
+bool FileManager::controlAccess(Server& server, HttpRequest& _request) {
+	std::map<std::string, Route>::iterator it;
+	it = server.getRoutes().find(getRouteName(_request.getUrl()));
+	if ( it != server.getRoutes().end() && it->second.getMethods().find(_request.getMethod()) != it->second.getMethods().end()) {
+		//server.getRoutes().erase(it);
+		return true;
+	}
+	return false;
+}
