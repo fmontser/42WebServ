@@ -26,7 +26,8 @@ class Server {
 	std::string						getName() const;
 	std::string						getHost() const;
 	int								getPort() const;
-	int								getMaxPayload();
+	std::string						getRoot() const;
+	int								getMaxPayload() const;
 	std::map<std::string, Route>&	getRoutes();
 	std::list<Socket *>&			getSocketList();
 

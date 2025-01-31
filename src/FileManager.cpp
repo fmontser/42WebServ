@@ -1,5 +1,6 @@
 #include <iostream>
-#include <fstream>
+#include <fcntl.h>
+#include <unistd.h>
 #include "FileManager.hpp"
 #include "DataAdapter.hpp"
 #include "ServerConstants.hpp"
@@ -23,11 +24,78 @@ FileManager& FileManager::operator=(const FileManager& src) {
 	return *this;
 }
 
+static bool isDirectory(const std::string& url) {
+	return (url.substr(url.size() - 1, 1) == "/") ? true : false;
+}
+
+
+void	FileManager::processHttpRequest(Server& server) {
+	std::string	target = server.getRoot().substr(0, server.getRoot().size() - 1).append(_request.getUrl());
+	std::string	body;
+	int			fd;
+	int			readSize;
+
+	if (_request.getMethod() == "GET") {
+		if (isDirectory(_request.getUrl()))
+			target.append("index.html"); //Default
+		fd = open(target.c_str(), O_RDONLY, 0644);
+		if (fd < 0) {
+			//TODO 404!!
+			std::cerr << "404!!!" << std::endl;
+		}
+
+		do {
+			char readBuffer[1] = {0};  //TODO cambiar buffer al buffer del servidor
+			readSize = read(fd, readBuffer, 1);  //TODO cambiar buffer al buffer del servidor
+			body.append(readBuffer);
+		} while (readSize > 0);
+		
+
+		
+		_response.setVersion(HTTP_VERSION);
+		_response.setStatusCode("200");
+		_response.setStatusMsg("OK");
+		_response.setBody(body);
+
+
+
+	}
+	else if (_request.getMethod() == "POST") {
+
+	}
+	else if (_request.getMethod() == "DELETE") {
+
+	}
+	else {
+		//TODO return method not suported.
+		//_response.setVersion(HTTP_VERSION);
+	}
+	close(fd);
+}
+
+
+void	FileManager::recieveHttpRequest(Socket *targetSocket, HttpRequest& request) {
+	_request = request;
+	processHttpRequest(*targetSocket->getParentServer());
+	DataAdapter::sendData(targetSocket, _response);
+}
+
+void	FileManager::recieveHttpResponse(Socket *targetSocket, HttpResponse& response) {
+	_response = response;
+	DataAdapter::sendData(targetSocket, _response);
+}
+
+
+/*
+
+
+
+
+
 static std::string getFileName(std::string url) {
 	return url.substr(1, url.size() - 1);
 }
 
-//TODO @@@@@@ routes : el ultimo slash /, ha de ser normalizado?? .....
 
 static std::string getRouteName(std::string url) {
 	return url.substr(0, url.find_last_of('/', 0) - 1);
@@ -44,34 +112,6 @@ static bool validateRoute(Server& server, HttpRequest& request) {
 }
 
 
-void	FileManager::processHttpRequest(Server& server) {
-	if (validateRoute(server, _request)) {
-		if (_request.getMethod() == "GET") {
-			
-			std::cout << "File is: " << getFileName(_request.getUrl()) << std::endl;
-		}
-		else if (_request.getMethod() == "POST") {
-
-		}
-		else if (_request.getMethod() == "DELETE") {
-
-		}
-		else {
-			//TODO return method not suported.
-			//_response.setVersion(HTTP_VERSION);
-		}
-	}
-}
 
 
-
-void	FileManager::recieveHttpRequest(Socket *targetSocket, HttpRequest& request) {
-	_request = request;
-	processHttpRequest(*targetSocket->getParentServer());
-	DataAdapter::sendData(targetSocket, _response);
-}
-
-void	FileManager::recieveHttpResponse(Socket *targetSocket, HttpResponse& response) {
-	_response = response;
-	DataAdapter::sendData(targetSocket, _response);
-}
+*/
