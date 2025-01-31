@@ -15,10 +15,10 @@ class FileManager {
 		FileManager& operator=(const FileManager& src);
 
 		static void	processHttpRequest(Server& server);
-		static bool	searchFile();
-		static bool	createFile();
-		static bool	deleteFile();
-		static bool	controlAccess();
+		static bool	searchFile(Server& server, HttpRequest& request);
+		static bool	createFile(Server& server, HttpRequest& _request);
+		static bool	deleteFile(Server& server, HttpRequest& _request);
+		static bool	controlAccess(Server& server, HttpRequest& _request);
 	public:
 		static void	recieveHttpRequest(Socket *targetSocket, HttpRequest& request);
 		static void	recieveHttpResponse(Socket *targetSocket, HttpResponse& response);
