@@ -32,10 +32,12 @@ Server& Server::operator=(const Server& src) {
 
 std::string						Server::getName() const { return this->_name; }
 std::string						Server::getHost() const { return this->_host; }
-int								Server::getPort() const { return this->_port; }
-int								Server::getMaxPayload() { return _maxPayload; }
+int										Server::getPort() const { return this->_port; }
+int										Server::getMaxPayload() { return _maxPayload; }
 std::map<std::string, Route>&	Server::getRoutes() { return (std::map<std::string, Route>&)_routes; }
 std::list<Socket *>&				Server::getSocketList() { return _socketList; }
+std::string						Server::getRoot() const { return _root; }
+std::string						Server::getDefault() const { return _default; }
 
 void	Server::setName(const std::string& name) { this->_name = name; }
 void	Server::setHost(const std::string& host) { this->_host = host; }
