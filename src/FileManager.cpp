@@ -75,5 +75,3 @@ void	FileManager::recieveHttpResponse(Socket *targetSocket, HttpResponse& respon
 	_response = response;
 	DataAdapter::sendData(targetSocket, _response);
 }
-
-//say hi Fran
