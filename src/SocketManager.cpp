@@ -89,9 +89,8 @@ void	SocketManager::monitorSockets() {
 				std::list<Socket *> cachedList(servIt->second.getSocketList());
 				for (std::list<Socket *>::iterator it = cachedList.begin(); it != cachedList.end(); ++it) {
 
-					//TODO @@@@@@@@@@@ se esta creando un socket para cada request!!!!, hay que identificar el lciente y mantener la conexion...
-
-
+					//TODO @@@@@@@@@@@ se esta creando un socket para cada request!!!!, hay que identificar el cliente y mantener la conexion...
+					
 					if ((*it)->getPollFd().revents & POLLIN) {
 						if ((*it)->getServerFlag() && acceptConnection(servIt->second, *it))
 							recieveData(servIt->second.getSocketList().back());

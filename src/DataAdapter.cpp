@@ -66,6 +66,7 @@ void	DataAdapter::recieveData(Socket *targetSocket, std::string& request) {
 	}
 	_request.setBody(bodyValue);
 	FileManager::recieveHttpRequest(targetSocket, _request);
+	_request.clear();
 }
 
 void	DataAdapter::sendData(Socket *targetSocket, HttpResponse& response) {

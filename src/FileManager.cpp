@@ -32,6 +32,8 @@ static bool isDirectory(const std::string& url) {
 void	FileManager::processHttpRequest(Server& server) {
 	std::string	target = server.getRoot().substr(0, server.getRoot().size() - 1).append(_request.getUrl());
 	std::string	body;
+	std::stringstream bodySize;
+	std::multimap<std::string, std::string>::iterator it;
 	int			fd;
 	int			readSize;
 
@@ -48,20 +50,27 @@ void	FileManager::processHttpRequest(Server& server) {
 			char readBuffer[1] = {0};  //TODO cambiar buffer al buffer del servidor
 			readSize = read(fd, readBuffer, 1);  //TODO cambiar buffer al buffer del servidor
 			body.append(readBuffer);
+
 		} while (readSize > 0);
-		
+		bodySize << body.size() - 1;
 
 		
 		_response.setVersion(HTTP_VERSION);
 		_response.setStatusCode("200");
 		_response.setStatusMsg("OK");
+		_response.addHeader(std::make_pair("Content-Length", bodySize.str()));
 		_response.setBody(body);
+		
 
 
 
+/* 		if (_request.getUrl() == "/favicon.png")
+			_response.addHeader(std::make_pair("Content-Type", "image/png")); */
+
+		//TODO @@@@@@ content-type usando un mapa por tipos de archivo??...
 	}
 	else if (_request.getMethod() == "POST") {
-
+		//TODO
 	}
 	else if (_request.getMethod() == "DELETE") {
 
@@ -78,11 +87,15 @@ void	FileManager::recieveHttpRequest(Socket *targetSocket, HttpRequest& request)
 	_request = request;
 	processHttpRequest(*targetSocket->getParentServer());
 	DataAdapter::sendData(targetSocket, _response);
+	_request.clear();
+	_response.clear();
 }
 
 void	FileManager::recieveHttpResponse(Socket *targetSocket, HttpResponse& response) {
 	_response = response;
 	DataAdapter::sendData(targetSocket, _response);
+	_request.clear();
+	_response.clear();
 }
 
 
