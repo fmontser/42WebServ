@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fcntl.h>
 #include <unistd.h>
+#include "Config.hpp"
 #include "FileManager.hpp"
 #include "DataAdapter.hpp"
 #include "ServerConstants.hpp"
@@ -28,12 +29,24 @@ static bool isDirectory(const std::string& url) {
 	return (url.substr(url.size() - 1, 1) == "/") ? true : false;
 }
 
-static int readFile(std::string rootUrl, HttpRequest& request, HttpResponse& response ) {
+static void chunkEncode(std::string& body, size_t maxPayload) {
+	std::stringstream	buffer;
+
+	while (body.size()) {
+		int	csize = body.size() >= maxPayload ? maxPayload : body.size();
+		buffer << std::hex << csize << CRLF;
+		buffer << body.substr(0, csize);
+		body = body.substr(csize, body.size());
+	}
+	buffer << CRLF << '0' << CRLF << CRLF;
+	body = buffer.str();
+}
+
+static int readFile(Server& server, HttpRequest& request, HttpResponse& response ) {
 	std::string			target, body; 
-	std::stringstream	bodySize;
 	int					fd, readSize;
 
-	target = rootUrl.substr(0, rootUrl.size() - 1).append(request.getUrl());
+	target = server.getRoot().substr(0, server.getRoot().size() - 1).append(request.getUrl());
 	if (isDirectory(request.getUrl()))
 		target.append("index.html"); //TODO respuesta default si se solicita un directorio, que pasa con index.php?
 	
@@ -49,9 +62,16 @@ static int readFile(std::string rootUrl, HttpRequest& request, HttpResponse& res
 		readSize = read(fd, readBuffer, READ_BUFFER);
 		body.append(readBuffer);
 	} while (readSize > 0);
-	bodySize << body.size() - 1;
 	
-	response.addHeader(std::make_pair("Content-Length", bodySize.str()));
+	if ((int)body.size() > server.getMaxPayload()){
+		response.addHeader(std::make_pair("Transfer-Encoding","chunked"));
+		chunkEncode(body, server.getMaxPayload());
+	}
+	else {
+		std::stringstream	bodySize;
+		bodySize << body.size() - 1;
+		response.addHeader(std::make_pair("Content-Length", bodySize.str()));
+	}
 	response.setBody(body);
 	return (fd);
 }
@@ -61,10 +81,12 @@ void	FileManager::processHttpRequest(Server& server) {
 
 	_response.setVersion(HTTP_VERSION);
 	if (_request.getMethod() == "GET") {
-		fd = readFile(server.getRoot(), _request, _response);
-		_response.setStatusCode("200");
-		_response.setStatusMsg("OK");
-		std::cout << BLUE << "Info: success 200 \"" << _request.getMethod() << "\", OK " << END << std::endl;
+		fd = readFile(server, _request, _response);
+		if (_response.getStatusCode().empty()) {
+			_response.setStatusCode("200");
+			_response.setStatusMsg("OK");
+			std::cout << BLUE << "Info: success 200 \"" << _request.getMethod() << "\", OK " << END << std::endl;
+		}
 	}
 	else if (_request.getMethod() == "POST") {
 		//TODO POST METHOD
@@ -80,7 +102,7 @@ void	FileManager::processHttpRequest(Server& server) {
 	}
 	else {
 		_request.setUrl("/default/501.html"); //TODO hardcoded, debe obtener la ruta del config.
-		fd = readFile(server.getRoot(), _request, _response);
+		fd = readFile(server, _request, _response);
 		_response.setStatusCode("501");
 		_response.setStatusMsg("METHOD_NOT_IMPLEMENTED");
 		std::cerr << YELLOW << "Warning: Error 501 \"" << _request.getMethod() << "\", METHOD_NOT_IMPLEMENTED " << END << std::endl;

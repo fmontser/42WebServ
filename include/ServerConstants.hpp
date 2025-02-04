@@ -7,8 +7,9 @@
 #define END		"\033[0m"
 
 #define CRLF	"\r\n"
+#define HTTP_BODY_START "\r\n\r\n"
 
-#define MIN_PAYLOAD 0
+#define MIN_PAYLOAD 1
 #define MAX_PAYLOAD 65536
 #define SOCKET_BUFFER_SIZE 65536
 #define SOCKET_LISTEN_QUEUE_SIZE 5

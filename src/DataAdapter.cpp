@@ -70,9 +70,10 @@ void	DataAdapter::recieveData(Socket *targetSocket, std::string& request) {
 }
 
 void	DataAdapter::sendData(Socket *targetSocket, HttpResponse& response) {
-	std::stringstream	buffer;
-	std::multimap<std::string, std::string> headers = response.getHeaders();
-	std::multimap<std::string, std::string>::iterator it;
+	std::stringstream									buffer;
+	std::multimap<std::string, std::string>				headers = response.getHeaders();
+	std::multimap<std::string, std::string>::iterator	it;
+	bool												hasChunks = false;
 
 	buffer << response.getVersion() << " " << response.getStatusCode() << " " << response.getStatusMsg() << CRLF;
 	for ( it = headers.begin(); it != headers.end(); ++it) {
@@ -81,5 +82,9 @@ void	DataAdapter::sendData(Socket *targetSocket, HttpResponse& response) {
 	buffer << CRLF;
 	buffer << response.getBody();
 
-	SocketManager::recieveResponse(targetSocket, buffer.str());
+	//TODO test chunks!
+	it = response.getHeaders().find("Transfer-Encoding");
+	if (it != response.getHeaders().end() && it->second == "chunked")
+		hasChunks = true;
+	SocketManager::recieveResponse(targetSocket, buffer.str(), hasChunks);
 }

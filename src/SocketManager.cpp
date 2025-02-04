@@ -112,14 +112,50 @@ void	SocketManager::monitorSockets() {
 	}
 }
 
-void	SocketManager::recieveResponse(Socket *socket, const std::string& response) {
+void	SocketManager::recieveResponse(Socket *socket, const std::string& response, bool hasChunks) {
+	socket->setChunkMode(hasChunks);
 	socket->sendBuffer = response;
 }
 
 void	SocketManager::sendData(Socket *socket) {
-	if (send(socket->getFd(), socket->sendBuffer.c_str(), socket->sendBuffer.size(), 0) == -1) {
+	std::string chunk;
+	static bool chunkHeadSent = false;
+
+	chunk.clear();
+	if (socket->getChunkMode()) {
+		if (socket->sendBuffer.find(HTTP_BODY_START) != std::string::npos && !chunkHeadSent)
+		{
+			size_t csize = socket->sendBuffer.find(HTTP_BODY_START) + 4;
+			chunk += socket->sendBuffer.substr(0, csize);
+			socket->sendBuffer = socket->sendBuffer.substr(chunk.size(), socket->sendBuffer.size());
+			chunkHeadSent = true;
+		}
+		if (socket->sendBuffer.find(CRLF) != std::string::npos) {
+			size_t csize = socket->sendBuffer.find(CRLF) + 2;
+
+			
+			
+			//TODO @@@@@@@@@@@@@@@@@@@@@@@ arreglar el calculo de caracteres con hex.
+
+
+			//csize += atoi(socket->sendBuffer.substr(0, csize).c_str()) + 2;
+			int test = std::strtol(socket->sendBuffer.substr(0, csize).c_str(), NULL, 16);
+			csize += test;
+
+			chunk += socket->sendBuffer.substr(0, csize);
+			socket->sendBuffer = socket->sendBuffer.substr(csize, socket->sendBuffer.size());
+		}	
+		if (socket->sendBuffer.empty()) {
+			socket->setChunkMode(false);
+			chunkHeadSent = false;
+		}
+		if (send(socket->getFd(), chunk.c_str(), chunk.size(), 0) == -1) {
+			std::cerr << RED << "Send error: Server socket error" << END << std::endl;
+		}
+		return ;
+	}
+	else if (send(socket->getFd(), socket->sendBuffer.c_str(), socket->sendBuffer.size(), 0) == -1) {
 		std::cerr << RED << "Send error: Server socket error" << END << std::endl;
-		//TODO log error or send error?
 	}
 	socket->sendBuffer.clear();
 }

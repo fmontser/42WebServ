@@ -17,6 +17,7 @@ Socket::Socket(const Socket& src) {
 		_fd = src._fd; //dup(src._fd);
 		_parentServer = src._parentServer;
 		_serverFlag = src._serverFlag;
+		_chunkMode = src._chunkMode;
 		_pollfd = src._pollfd;
 		_pollfd.fd = _fd;
 		sendBuffer = src.sendBuffer;
@@ -28,6 +29,7 @@ Socket& Socket::operator=(const Socket& src) {
 		_fd = src._fd; //dup(src._fd);
 		_parentServer = src._parentServer;
 		_serverFlag = src._serverFlag;
+		_chunkMode = src._chunkMode;
 		_pollfd = src._pollfd;
 		_pollfd.fd = _fd;
 		sendBuffer = src.sendBuffer;
@@ -45,6 +47,7 @@ void Socket::enableSocket(bool serverFlag) {
 	struct sockaddr_in address;
 
 	_serverFlag = serverFlag;
+	_chunkMode = false;
 	if (_serverFlag) {
 				_fd = socket(AF_INET, SOCK_STREAM, 0);
 		if (_fd < 0) {
@@ -86,9 +89,11 @@ unsigned int			Socket::getPort() const { return _port; }
 int						Socket::getFd() const { return _fd; }
 const struct pollfd&	Socket::getPollFd() const {	return _pollfd; }
 bool					Socket::getServerFlag() const { return _serverFlag; }
+bool					Socket::getChunkMode() const { return _chunkMode; }
 Server					*Socket::getParentServer() const { return _parentServer; }
 
 void					Socket::setPort(unsigned int port) { _port = port; }
 void					Socket::setFd(int fd) { _fd = fd; }
 void					Socket::setParentServer(Server *parentServer) { _parentServer = parentServer;}
+void					Socket::setChunkMode(bool value) { _chunkMode = value; }
 void					Socket::updatePollFd(struct pollfd pfd) { _pollfd = pfd; }
