@@ -40,7 +40,9 @@ static int readFile(std::string rootUrl, HttpRequest& request, HttpResponse& res
 	fd = open(target.c_str(), O_RDONLY, 0644);
 	if (fd < 0) {
 		fd = open("../web/default/404.html", O_RDONLY, 0644); //TODO hardcoded, debe obtener la ruta del config.
-		std::cerr << YELLOW << "Warning: Error 404 \"" << target << "\" not found " << END << std::endl;
+		response.setStatusCode("404");
+		response.setStatusMsg("NOT_FOUND");
+		std::cerr << YELLOW << "Warning: error 404 \"" << target << "\", NOT_FOUND " << END << std::endl;
 	}
 	do {
 		char readBuffer[READ_BUFFER] = {0};
@@ -62,30 +64,29 @@ void	FileManager::processHttpRequest(Server& server) {
 		fd = readFile(server.getRoot(), _request, _response);
 		_response.setStatusCode("200");
 		_response.setStatusMsg("OK");
-		std::cout << BLUE << "Info: success 200 \"" << _request.getMethod() << "\" ok " << END << std::endl;
+		std::cout << BLUE << "Info: success 200 \"" << _request.getMethod() << "\", OK " << END << std::endl;
 	}
 	else if (_request.getMethod() == "POST") {
 		//TODO POST METHOD
 		_response.setStatusCode("201");
 		_response.setStatusMsg("CREATED");
-		std::cout << BLUE << "Info: success 201 \"" << _request.getMethod() << "\" created " << END << std::endl;
+		std::cout << BLUE << "Info: success 201 \"" << _request.getMethod() << "\", CREATED " << END << std::endl;
 	}
 	else if (_request.getMethod() == "DELETE") {
 		//TODO DELETE METHOD
 		_response.setStatusCode("204");
 		_response.setStatusMsg("NO_CONTENT");
-		std::cout << BLUE << "Info: success 204 \"" << _request.getMethod() << "\" no content " << END << std::endl;
+		std::cout << BLUE << "Info: success 204 \"" << _request.getMethod() << "\", NO_CONTENT " << END << std::endl;
 	}
 	else {
 		_request.setUrl("/default/501.html"); //TODO hardcoded, debe obtener la ruta del config.
 		fd = readFile(server.getRoot(), _request, _response);
 		_response.setStatusCode("501");
 		_response.setStatusMsg("METHOD_NOT_IMPLEMENTED");
-		std::cerr << YELLOW << "Warning: Error 501 \"" << _request.getMethod() << "\" method not implemented " << END << std::endl;
+		std::cerr << YELLOW << "Warning: Error 501 \"" << _request.getMethod() << "\", METHOD_NOT_IMPLEMENTED " << END << std::endl;
 	}
 	close(fd);
 }
-
 
 void	FileManager::recieveHttpRequest(Socket *targetSocket, HttpRequest& request) {
 	_request = request;
