@@ -20,7 +20,7 @@ static int pollSockets(std::list<Socket *> &socketList) {
 		size_t	i = 0;
 		for (std::list<Socket *>::iterator it = socketList.begin(); it != socketList.end(); ++it)
 			pollArray[i++] = (*it)->getPollFd();
-		pollStatus = poll(pollArray, socketList.size(), TIMEOUT);
+		pollStatus = poll(pollArray, socketList.size(), 0);
 		
 		i = 0;
 		for (std::list<Socket *>::iterator it = socketList.begin(); it != socketList.end(); ++it)
@@ -60,10 +60,10 @@ SocketManager& SocketManager::operator=(const SocketManager& src) {
 }
 
 void	SocketManager::recieveData(Socket *socket) {
-	char		buffer[BUFFER_SIZE] = {0};
+	char		buffer[READ_BUFFER] = {0};
 	std::string	requestData;
 
-	int len = recv(socket->getFd(), buffer, BUFFER_SIZE, 0);
+	int len = recv(socket->getFd(), buffer, READ_BUFFER, 0);
 	if (len == -1) {
 		std::cerr << RED << "Error: client error " << socket->getFd() << END << std::endl;
 	}
@@ -88,9 +88,6 @@ void	SocketManager::monitorSockets() {
 			else if (pollStatus > 0) {
 				std::list<Socket *> cachedList(servIt->second.getSocketList());
 				for (std::list<Socket *>::iterator it = cachedList.begin(); it != cachedList.end(); ++it) {
-
-					//TODO @@@@@@@@@@@ se esta creando un socket para cada request!!!!, hay que identificar el cliente y mantener la conexion...
-					
 					if ((*it)->getPollFd().revents & POLLIN) {
 						if ((*it)->getServerFlag() && acceptConnection(servIt->second, *it))
 							recieveData(servIt->second.getSocketList().back());

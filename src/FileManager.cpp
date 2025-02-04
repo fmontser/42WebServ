@@ -28,56 +28,60 @@ static bool isDirectory(const std::string& url) {
 	return (url.substr(url.size() - 1, 1) == "/") ? true : false;
 }
 
+static int readFile(std::string rootUrl, HttpRequest& request, HttpResponse& response ) {
+	std::string			target, body; 
+	std::stringstream	bodySize;
+	int					fd, readSize;
+
+	target = rootUrl.substr(0, rootUrl.size() - 1).append(request.getUrl());
+	if (isDirectory(request.getUrl()))
+		target.append("index.html"); //TODO respuesta default si se solicita un directorio, que pasa con index.php?
+	
+	fd = open(target.c_str(), O_RDONLY, 0644);
+	if (fd < 0) {
+		fd = open("../web/default/404.html", O_RDONLY, 0644); //TODO hardcoded, debe obtener la ruta del config.
+		std::cerr << YELLOW << "Warning: Error 404 \"" << target << "\" not found " << END << std::endl;
+	}
+	do {
+		char readBuffer[READ_BUFFER] = {0};
+		readSize = read(fd, readBuffer, READ_BUFFER);
+		body.append(readBuffer);
+	} while (readSize > 0);
+	bodySize << body.size() - 1;
+	
+	response.addHeader(std::make_pair("Content-Length", bodySize.str()));
+	response.setBody(body);
+	return (fd);
+}
 
 void	FileManager::processHttpRequest(Server& server) {
-	std::string	target = server.getRoot().substr(0, server.getRoot().size() - 1).append(_request.getUrl());
-	std::string	body;
-	std::stringstream bodySize;
-	std::multimap<std::string, std::string>::iterator it;
-	int			fd;
-	int			readSize;
+	int	fd;
 
+	_response.setVersion(HTTP_VERSION);
 	if (_request.getMethod() == "GET") {
-		if (isDirectory(_request.getUrl()))
-			target.append("index.html"); //Default
-		fd = open(target.c_str(), O_RDONLY, 0644);
-		if (fd < 0) {
-			//TODO 404!!
-			std::cerr << "404!!!" << std::endl;
-		}
-
-		do {
-			char readBuffer[1] = {0};  //TODO cambiar buffer al buffer del servidor
-			readSize = read(fd, readBuffer, 1);  //TODO cambiar buffer al buffer del servidor
-			body.append(readBuffer);
-
-		} while (readSize > 0);
-		bodySize << body.size() - 1;
-
-		
-		_response.setVersion(HTTP_VERSION);
+		fd = readFile(server.getRoot(), _request, _response);
 		_response.setStatusCode("200");
 		_response.setStatusMsg("OK");
-		_response.addHeader(std::make_pair("Content-Length", bodySize.str()));
-		_response.setBody(body);
-		
-
-
-
-/* 		if (_request.getUrl() == "/favicon.png")
-			_response.addHeader(std::make_pair("Content-Type", "image/png")); */
-
-		//TODO @@@@@@ content-type usando un mapa por tipos de archivo??...
+		std::cout << BLUE << "Info: success 200 \"" << _request.getMethod() << "\" ok " << END << std::endl;
 	}
 	else if (_request.getMethod() == "POST") {
-		//TODO
+		//TODO POST METHOD
+		_response.setStatusCode("201");
+		_response.setStatusMsg("CREATED");
+		std::cout << BLUE << "Info: success 201 \"" << _request.getMethod() << "\" created " << END << std::endl;
 	}
 	else if (_request.getMethod() == "DELETE") {
-
+		//TODO DELETE METHOD
+		_response.setStatusCode("204");
+		_response.setStatusMsg("NO_CONTENT");
+		std::cout << BLUE << "Info: success 204 \"" << _request.getMethod() << "\" no content " << END << std::endl;
 	}
 	else {
-		//TODO return method not suported.
-		//_response.setVersion(HTTP_VERSION);
+		_request.setUrl("/default/501.html"); //TODO hardcoded, debe obtener la ruta del config.
+		fd = readFile(server.getRoot(), _request, _response);
+		_response.setStatusCode("501");
+		_response.setStatusMsg("METHOD_NOT_IMPLEMENTED");
+		std::cerr << YELLOW << "Warning: Error 501 \"" << _request.getMethod() << "\" method not implemented " << END << std::endl;
 	}
 	close(fd);
 }
@@ -100,8 +104,6 @@ void	FileManager::recieveHttpResponse(Socket *targetSocket, HttpResponse& respon
 
 
 /*
-
-
 
 
 
