@@ -35,10 +35,10 @@ static void chunkEncode(std::string& body, size_t maxPayload) {
 	while (body.size()) {
 		int	csize = body.size() >= maxPayload ? maxPayload : body.size();
 		buffer << std::hex << csize << CRLF;
-		buffer << body.substr(0, csize);
+		buffer << body.substr(0, csize) << CRLF;
 		body = body.substr(csize, body.size());
 	}
-	buffer << CRLF << '0' << CRLF << CRLF;
+	buffer << '0' << CRLF << CRLF;
 	body = buffer.str();
 }
 

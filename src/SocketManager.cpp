@@ -139,7 +139,7 @@ void	SocketManager::sendData(Socket *socket) {
 
 
 			//csize += atoi(socket->sendBuffer.substr(0, csize).c_str()) + 2;
-			int test = std::strtol(socket->sendBuffer.substr(0, csize).c_str(), NULL, 16);
+			int test = std::strtol(socket->sendBuffer.substr(0, csize).c_str(), NULL, 16) + 2;
 			csize += test;
 
 			chunk += socket->sendBuffer.substr(0, csize);
