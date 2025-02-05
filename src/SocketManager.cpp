@@ -132,16 +132,7 @@ void	SocketManager::sendData(Socket *socket) {
 		}
 		if (socket->sendBuffer.find(CRLF) != std::string::npos) {
 			size_t csize = socket->sendBuffer.find(CRLF) + 2;
-
-			
-			
-			//TODO @@@@@@@@@@@@@@@@@@@@@@@ arreglar el calculo de caracteres con hex.
-
-
-			//csize += atoi(socket->sendBuffer.substr(0, csize).c_str()) + 2;
-			int test = std::strtol(socket->sendBuffer.substr(0, csize).c_str(), NULL, 16) + 2;
-			csize += test;
-
+			csize += std::strtol(socket->sendBuffer.substr(0, csize).c_str(), NULL, 16) + 2;
 			chunk += socket->sendBuffer.substr(0, csize);
 			socket->sendBuffer = socket->sendBuffer.substr(csize, socket->sendBuffer.size());
 		}	
