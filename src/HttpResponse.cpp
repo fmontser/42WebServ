@@ -20,6 +20,15 @@ HttpResponse& HttpResponse::operator=(const HttpResponse& src) {
 	return *this;
 }
 
+void	HttpResponse::clear() {
+	_version.clear();
+	_statusCode.clear();
+	_statusMsg.clear();
+	_headers.clear();
+	_body.clear();
+}
+
+
 void	HttpResponse::setVersion(std::string version) { this->_version = version; }
 void	HttpResponse::setStatusCode(std::string statusCode) { this->_statusCode = statusCode; }
 void	HttpResponse::setStatusMsg(std::string statusMsg) { this->_statusMsg = statusMsg; }

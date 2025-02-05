@@ -115,7 +115,6 @@ void	Config::addServer(std::vector<std::string>::iterator &it) {
 					server.setDefault(*(++it));
 				else if (*it == "route")
 					addRoute(it);
-				
 		}
 	}
 

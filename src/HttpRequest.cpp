@@ -21,6 +21,14 @@ HttpRequest& HttpRequest::operator=(const HttpRequest& src) {
 	return *this;
 }
 
+void	HttpRequest::clear() {
+	_method.clear();
+	_url.clear();
+	_version.clear();
+	_headers.clear();
+	_body.clear();
+}
+
 std::string								HttpRequest::getMethod() const { return _method; }
 std::string								HttpRequest::getUrl() const { return _url;}
 std::string								HttpRequest::getVersion() const { return _version; }
