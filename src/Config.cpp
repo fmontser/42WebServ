@@ -25,9 +25,16 @@ static void	tokenize(std::fstream &configFileStream, std::vector<std::string> &t
 	char		c;
 	std::string	token;
 	bool		flag = false;
-	
+	bool		isComment = false;
+
 	token.clear();
 	while (configFileStream.get(c)) {
+		if (c == '#') 
+			isComment = true;
+		if (isComment && c == '\n')
+			isComment = false;
+		else if (isComment)
+			continue;
 		if (isspace(c)) {
 			if (flag){
 				flag = false;
