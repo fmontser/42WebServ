@@ -12,7 +12,7 @@ class Config {
 
 		static void	addRoute(std::vector<std::string>::iterator &it);
 		static void	addServer(std::vector<std::string>::iterator &it);
-
+		
 		Config();
 		~Config();
 		Config(const Config& src);
