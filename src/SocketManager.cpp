@@ -12,8 +12,6 @@
 #include "ServerConstants.hpp"
 #include "DataAdapter.hpp"
 
-
-
 static int pollSockets(std::list<Socket *> &socketList) {
 		int		pollStatus;
 		pollfd	pollArray[socketList.size()];
@@ -100,10 +98,11 @@ void	SocketManager::monitorSockets() {
 					}
 					else if ((*it)->getPollFd().revents & POLLHUP) {
 						//TODO NO FUNCIONA??
-
+						std::cout << "POLLHUP" << std::endl;
 					}
 					else if ((*it)->getPollFd().revents & POLLERR) {
 						//TODO NO FUNCIONA??
+						std::cout << "POLLERR" << std::endl;
 					}
 				}
 				cachedList.clear();
