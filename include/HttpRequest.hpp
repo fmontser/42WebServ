@@ -16,7 +16,9 @@ class HttpRequest {
 		~HttpRequest();
 		HttpRequest(const HttpRequest& src);
 		HttpRequest& operator=(const HttpRequest& src);
-	
+
+		void	clear();
+
 		std::string									getMethod() const;
 		std::string									getUrl() const;
 		std::string									getVersion() const;

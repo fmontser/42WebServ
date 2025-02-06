@@ -16,6 +16,8 @@ class HttpResponse {
 		HttpResponse(const HttpResponse& src);
 		HttpResponse& operator=(const HttpResponse& src);
 
+		void	clear();
+
 		std::string								getVersion() const;
 		std::string								getStatusCode() const;
 		std::string								getStatusMsg() const;

@@ -119,7 +119,6 @@ void	Config::addServer(std::vector<std::string>::iterator &it) {
 					std::cerr << RED << "Config file error: " << *it << " is not a valid server parameter." << END << std::endl;
 					exit(1); 
 				}
-				
 		}
 	}
 
