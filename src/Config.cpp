@@ -150,8 +150,116 @@ void	Config::addServer(std::vector<std::string>::iterator &it) {
 	}
 }
 
-/* void Config::addMethod(std::vector<std::string>::iterator &it) {
-	//TODO
-}
- */
 std::map<std::string, Server>&	Config::getServers() { return (std::map<std::string, Server>&)_servers; }
+
+std::string	Config::get400Page() {
+	try
+	{
+		if (_actualServer == NULL) {
+			throw std::runtime_error("Bad request");
+		}
+		std::size_t pos = _actualServer->getRoot().find("400");
+		if (pos != std::string::npos) {
+			return _actualServer->getRoot().substr(pos);
+		} else {
+			throw std::runtime_error("400 Bad Request");
+		}
+	}
+	catch(const std::exception& e)
+	{
+		std::cerr << e.what() << std::endl;
+	}
+	return "";
+}
+
+std::string	Config::get403Page() {
+	try
+	{
+		if (_actualServer == NULL) {
+			throw std::runtime_error("Forbidden");
+		}
+		std::size_t pos = _actualServer->getRoot().find("403");
+		if (pos != std::string::npos) {
+			return _actualServer->getRoot().substr(pos);
+		} else {
+			throw std::runtime_error("403 Forbidden");
+		}
+	}
+	catch(const std::exception& e)
+	{
+		std::cerr << e.what() << std::endl;
+	}
+	return "";
+}
+
+std::string	Config::get404Page() {
+	try
+	{
+		if (_actualServer == NULL) {
+			throw std::runtime_error("No actual server set");
+		}
+		std::size_t pos = _actualServer->getRoot().find("404");
+		if (pos != std::string::npos) {
+			return _actualServer->getRoot().substr(pos);
+		} else {
+			throw std::runtime_error("404 page not found");
+		}
+	}
+	catch(const std::exception& e)
+	{
+		std::cerr << e.what() << std::endl;
+	}
+	return "";
+}
+
+std::string	Config::get500Page() {
+	try {
+		if (_actualServer == NULL) {
+			throw std::runtime_error("No actual server set");
+		}
+		std::size_t pos = _actualServer->getRoot().find("500");
+		if (pos != std::string::npos) {
+			return _actualServer->getRoot().substr(pos);
+		} else {
+			throw std::runtime_error("500 Internal Server Error");
+		}
+	}
+	catch(const std::exception& e)
+	{
+		std::cerr << e.what() << std::endl;
+	}
+	return "";
+}
+
+std::string	Config::get501Page() {
+	try	{
+		if (_actualServer == NULL) {
+			throw std::runtime_error("No actual server set");
+		}
+		std::size_t pos = _actualServer->getRoot().find("501");
+		if (pos != std::string::npos) {
+			return _actualServer->getRoot().substr(pos);
+		} else {
+			throw std::runtime_error(YELLOW "501 Not Implemented" END);
+		}
+	}
+	catch(const std::exception& e)
+	{
+		std::cerr << e.what() << std::endl;
+	}
+	return "";
+}
+
+std::string	Config::getErrorPage(int errorCode) {
+	if (errorCode == 400)
+		return get400Page();
+	else if (errorCode == 403)
+		return get403Page();
+	else if (errorCode == 404)
+		return get404Page();
+	else if (errorCode == 500)
+		return get500Page();
+	else if (errorCode == 501)
+		return get501Page();
+	return "";
+}
