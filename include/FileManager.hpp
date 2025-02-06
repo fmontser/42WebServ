@@ -14,7 +14,7 @@ class FileManager {
 		FileManager(const FileManager& src);
 		FileManager& operator=(const FileManager& src);
 
-		static void	processHttpRequest(Server& server);
+		static void	processHttpRequest(Socket *targetSocket);
 	public:
 		static void	recieveHttpRequest(Socket *targetSocket, HttpRequest& request);
 		static void	recieveHttpResponse(Socket *targetSocket, HttpResponse& response);
