@@ -2,6 +2,8 @@
 //TODO validacion previa del archico config.cfg, segfaults a saco!
 
 
+//TODO es necesario implementar chunks de ENTRADA?? 
+
 //TODO el error 500 es un generico para cualquier cosa no prevista...
 
 //TODO 400 bad request es cuando se recibe una peticino mal formada...hay que hacer un validador de request para poder devolver esto!
@@ -21,6 +23,6 @@ std::cerr << YELLOW << "Warning: Error 405 \"" << _request.getMethod() << "\" me
 //TODO curl test con:
 /*
 
-curl -X PUT http://localhost:8042/
+curl -X GET http://localhost:8042/
 
 */

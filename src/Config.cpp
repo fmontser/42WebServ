@@ -122,6 +122,10 @@ void	Config::addServer(std::vector<std::string>::iterator &it) {
 					server.setDefault(*(++it));
 				else if (*it == "route")
 					addRoute(it);
+				else {
+					std::cerr << RED << "Config file error: " << *it << " is not a valid server parameter." << END << std::endl;
+					exit(1); 
+				}
 		}
 	}
 

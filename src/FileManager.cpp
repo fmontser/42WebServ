@@ -42,9 +42,10 @@ static void chunkEncode(std::string& body, size_t maxPayload) {
 	body = buffer.str();
 }
 
-static int readFile(Server& server, HttpRequest& request, HttpResponse& response ) {
+static int readFile(Socket *socket, HttpRequest& request, HttpResponse& response ) {
 	std::string			target, body; 
 	int					fd, readSize;
+	Server&	server = *socket->getParentServer();
 
 	target = server.getRoot().substr(0, server.getRoot().size() - 1).append(request.getUrl());
 	if (isDirectory(request.getUrl()))
@@ -76,12 +77,17 @@ static int readFile(Server& server, HttpRequest& request, HttpResponse& response
 	return (fd);
 }
 
-void	FileManager::processHttpRequest(Server& server) {
+/* static int writeFile(Socket *socket , HttpRequest& request, HttpResponse& response ) {
+	//TODO
+
+} */
+
+void	FileManager::processHttpRequest(Socket *socket) {
 	int	fd;
 
 	_response.setVersion(HTTP_VERSION);
 	if (_request.getMethod() == "GET") {
-		fd = readFile(server, _request, _response);
+		fd = readFile(socket, _request, _response);
 		if (_response.getStatusCode().empty()) {
 			_response.setStatusCode("200");
 			_response.setStatusMsg("OK");
@@ -89,7 +95,7 @@ void	FileManager::processHttpRequest(Server& server) {
 		}
 	}
 	else if (_request.getMethod() == "POST") {
-		//TODO POST METHOD
+		//fd = writeFile(socket, _request, _response); //TODO REACTIUVAR!!!!
 		_response.setStatusCode("201");
 		_response.setStatusMsg("CREATED");
 		std::cout << BLUE << "Info: success 201 \"" << _request.getMethod() << "\", CREATED " << END << std::endl;
@@ -102,7 +108,7 @@ void	FileManager::processHttpRequest(Server& server) {
 	}
 	else {
 		_request.setUrl("/default/501.html"); //TODO hardcoded, debe obtener la ruta del config.
-		fd = readFile(server, _request, _response);
+		fd = readFile(socket, _request, _response);
 		_response.setStatusCode("501");
 		_response.setStatusMsg("METHOD_NOT_IMPLEMENTED");
 		std::cerr << YELLOW << "Warning: Error 501 \"" << _request.getMethod() << "\", METHOD_NOT_IMPLEMENTED " << END << std::endl;
@@ -110,17 +116,17 @@ void	FileManager::processHttpRequest(Server& server) {
 	close(fd);
 }
 
-void	FileManager::recieveHttpRequest(Socket *targetSocket, HttpRequest& request) {
+void	FileManager::recieveHttpRequest(Socket *socket, HttpRequest& request) {
 	_request = request;
-	processHttpRequest(*targetSocket->getParentServer());
-	DataAdapter::sendData(targetSocket, _response);
+	processHttpRequest(socket);
+	DataAdapter::sendData(socket, _response);
 	_request.clear();
 	_response.clear();
 }
 
-void	FileManager::recieveHttpResponse(Socket *targetSocket, HttpResponse& response) {
+void	FileManager::recieveHttpResponse(Socket *socket, HttpResponse& response) {
 	_response = response;
-	DataAdapter::sendData(targetSocket, _response);
+	DataAdapter::sendData(socket, _response);
 	_request.clear();
 	_response.clear();
 }
