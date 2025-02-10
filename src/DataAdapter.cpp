@@ -2,6 +2,8 @@
 #include "SocketManager.hpp"
 #include "FileManager.hpp"
 #include "ServerConstants.hpp"
+#include <cstdio>
+#include <cstdlib>
 
 std::string	DataAdapter::_buffer;
 HttpRequest	DataAdapter::_request;
@@ -39,6 +41,7 @@ void	DataAdapter::recieveData(Socket *targetSocket, std::string& request) {
 	std::stringstream data;
 	std::string requestLine, headerLine, headerKey, headerValue, bodyValue;
 	std::pair<std::string, std::string> header;
+	std::string contentType; //created a variable to store content type 
 
 	data << request;
 	
@@ -56,17 +59,114 @@ void	DataAdapter::recieveData(Socket *targetSocket, std::string& request) {
 		headerValue = headerLine.substr(headerLine.find(':') + 1 ,headerLine.size());
 		trimToken(headerKey);
 		trimToken(headerValue);
+
+		if (headerKey == "Content-Type") //created a condition to store content type
+			contentType = headerValue;
+
 		header = std::make_pair(headerKey, headerValue);
 		_request.addHeader(header);
 	}
 
-	while (std::getline(data, bodyValue)) {
+
+	parseRequestBody(data, _request, contentType); //new function to parse body
+
+	/* //THE FOLLOWING BLOCK IS MOVED TO NEW FUNCTTION parseRequestBody:
+		while (std::getline(data, bodyValue)) {
 		bodyValue.append(bodyValue);
 		bodyValue.append(std::string(1,'\n'));
 	}
+
 	_request.setBody(bodyValue);
+ */
 	FileManager::recieveHttpRequest(targetSocket, _request);
 	_request.clear();
+}
+
+std::string decodeURLEncoded(const std::string& str) { //new helper-function to decode url encoded strings
+	std::string result;
+	char hex[3] = {0};
+
+	for (size_t i = 0; i < str.size(); i++) {
+		if (str[i] == '%') {
+			hex[0] = str[i + 1];
+			hex[1] = str[i + 2];
+			result += static_cast<char>(std::strtol(hex, NULL, 16));
+			i += 2;
+		} else if (str[i] == '+') {
+			result += ' ';
+		} else {
+			result += str[i];
+		}
+	}
+	return result;
+} 
+
+/* std::string DataAdapter::decodeURLEncoded(const std::string& str) { //new helper-function to decode url encoded strings
+DOES NOT WORK AS A STATIC FUNCTION.. ??
+	std::string result;
+	char hex[3] = {0};
+
+	for (size_t i = 0; i < str.size(); i++) {
+		if (str[i] == '%') {
+			hex[0] = str[i + 1];
+			hex[1] = str[i + 2];
+			result += static_cast<char>(std::strtol(hex, NULL, 16));
+			i += 2;
+		} else if (str[i] == '+') {
+			result += ' ';
+		} else {
+			result += str[i];
+		}
+	}
+	return result;
+} */
+
+std::string DataAdapter::extractBoundary(const std::string& contentType) { //new helper-function to extract boundary from content-type
+	std::size_t pos = contentType.find("boundary=");
+
+	if (pos != std::string::npos)
+		return contentType.substr(pos + 9);
+	return "";
+}
+
+std::string DataAdapter::parseMultipartData(const std::string& body, const std::string& boundary) { //new helper-function to parse multipart data
+	std::string parsed;
+	std::string line;
+	std::stringstream data(body);
+	std::string boundaryLine = "--" + boundary;
+	bool isBoundary = false;
+
+	while (std::getline(data, line)) {
+		if (line == boundaryLine) {
+			isBoundary = true;
+			continue;
+		}
+		if (isBoundary) {
+			parsed.append(line);
+			parsed.append(std::string(1,'\n'));
+		}
+	}
+	return parsed;
+}
+
+void DataAdapter::parseRequestBody(std::stringstream& data, HttpRequest& request, const std::string& contentType) {
+	std::string body;
+	std::string line;
+
+		while (std::getline(data, line)) {
+		body.append(line);
+		body.append(std::string(1,'\n'));
+	}
+	if (contentType.find("application/x-www-form-urlencoded") != std::string::npos) {
+		body = decodeURLEncoded(body);
+	} else if (contentType.find("multipart/form-data") != std::string::npos) {
+		std::string boundary = extractBoundary(contentType);
+		body = parseMultipartData(body, boundary);
+	} else if (contentType.find("application/json") != std::string::npos) {
+		//parse json here.. 
+	}
+
+	request.setBody(body);
 }
 
 void	DataAdapter::sendData(Socket *targetSocket, HttpResponse& response) {
