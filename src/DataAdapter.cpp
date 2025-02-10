@@ -83,19 +83,19 @@ void	DataAdapter::recieveData(Socket *targetSocket, std::string& request) {
 }
 
 std::string decodeURLEncoded(const std::string& str) { //new helper-function to decode url encoded strings
-	std::string result;
-	char hex[3] = {0};
+	std::string result;// std::string result created for storing the decoded string
+	char hex[3] = {0};// char array hex created to store the hex value	
 
 	for (size_t i = 0; i < str.size(); i++) {
-		if (str[i] == '%') {
-			hex[0] = str[i + 1];
-			hex[1] = str[i + 2];
-			result += static_cast<char>(std::strtol(hex, NULL, 16));
-			i += 2;
-		} else if (str[i] == '+') {
+		if (str[i] == '%') {//if the character is %, then the next two characters are hex values
+			hex[0] = str[i + 1];//first hex value stored in hex[0], str[i] should be %, so i+1 is the first hex value 
+			hex[1] = str[i + 2];//second hex value stored in hex[1], str[i+1] should be the first hex value, so i+2 is the second hex value
+			result += static_cast<char>(std::strtol(hex, NULL, 16));//hex values are converted to decimal and then to char and stored in result
+			i += 2;//increment i by 2 to skip the hex values
+		} else if (str[i] == '+') {//if the character is +, then it is a space
 			result += ' ';
 		} else {
-			result += str[i];
+			result += str[i];//if the character is not % or +, then it is a normal character and stored in result
 		}
 	}
 	return result;
@@ -125,7 +125,7 @@ std::string DataAdapter::extractBoundary(const std::string& contentType) { //new
 	std::size_t pos = contentType.find("boundary=");
 
 	if (pos != std::string::npos)
-		return contentType.substr(pos + 9);
+		return contentType.substr(pos + 9);//as boundary= is 9 characters long, we start from pos+9
 	return "";
 }
 
@@ -133,7 +133,7 @@ std::string DataAdapter::parseMultipartData(const std::string& body, const std::
 	std::string parsed;
 	std::string line;
 	std::stringstream data(body);
-	std::string boundaryLine = "--" + boundary;
+	std::string boundaryLine = "--" + boundary;//boundary line is --boundary; so we add -- to the boundary
 	bool isBoundary = false;
 
 	while (std::getline(data, line)) {
