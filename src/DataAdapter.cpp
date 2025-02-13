@@ -3,6 +3,12 @@
 #include "FileManager.hpp"
 #include "ServerConstants.hpp"
 
+struct ParsedHeader {
+	std::string mainValue;
+	std::map<std::string, std::string> params;
+};
+
+
 std::string	DataAdapter::_buffer;
 HttpRequest	DataAdapter::_request;
 
@@ -35,9 +41,45 @@ static void	trimToken(std::string& str) {
 	str = str.substr(start, end - start + 1);
 }
 
+std::string findSpecialChars(const std::string &str) {
+	const std::string specialChars = ",;=/-\"@<>[]{}& \t+.-_";
+	size_t pos = str.find_first_of(specialChars);
+	if (pos != std::string::npos)
+		return str.substr(0, pos);
+	return str;
+}
+
+ParsedHeader parsedHeaderValue(const std::string &headerValue){
+	ParsedHeader result;
+
+	size_t pos = headerValue.find(';');
+	if (pos != std::string::npos) {
+		result.mainValue = findSpecialChars(headerValue.substr(0, pos));
+	} else {
+		result.mainValue = findSpecialChars(headerValue);
+	}
+	if (pos != std::string::npos) {
+		std::string params = headerValue.substr(pos + 1);
+		std::stringstream paramsStream(params);
+		std::string param;
+
+		while (std::getline(paramsStream, param, ';')) {
+			size_t eqPos = param.find('=');
+			if (eqPos != std::string::npos) {
+				std::string key = param.substr(0, eqPos);
+				std::string value = param.substr(eqPos + 1);
+				trimToken(key);
+				trimToken(value);
+				result.params[key] = value;
+			}
+		}
+	}
+	return result;
+}
+
 void	DataAdapter::recieveData(Socket *targetSocket, std::string& request) {
 	std::stringstream data;
-	std::string requestLine, headerLine, headerKey, headerValue, bodyValue;
+	std::string requestLine, headerLine, headerKey, headerValue, bodyValue, processedHeaderValues;
 	std::pair<std::string, std::string> header;
 
 	data << request;
@@ -56,8 +98,15 @@ void	DataAdapter::recieveData(Socket *targetSocket, std::string& request) {
 		headerValue = headerLine.substr(headerLine.find(':') + 1 ,headerLine.size());
 		trimToken(headerKey);
 		trimToken(headerValue);
+		ParsedHeader parsedHeader = parsedHeaderValue(headerValue);
 		header = std::make_pair(headerKey, headerValue);
 		_request.addHeader(header);
+
+		for (std::map<std::string, std::string>::iterator it = parsedHeader.params.begin(); it != parsedHeader.params.end(); ++it) {
+			std::string key = headerKey + "-" + it->first;
+			header = std::make_pair(key, it->second);
+			_request.addHeader(header);
+		}
 	}
 
 	while (std::getline(data, bodyValue)) {
