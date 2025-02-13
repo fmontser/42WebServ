@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fcntl.h>
 #include <unistd.h>
+#include <cstdlib>
 #include "Config.hpp"
 #include "FileManager.hpp"
 #include "DataAdapter.hpp"
@@ -77,28 +78,58 @@ static int readFile(Socket *socket, HttpRequest& request, HttpResponse& response
 	return (fd);
 }
 
-/* static int writeFile(Socket *socket , HttpRequest& request, HttpResponse& response ) {
-	//TODO
+static int writeFile(Socket *socket , HttpRequest& request, HttpResponse& response ) {
+	//TODO @@@@@@@ implementar escritura del archivo...hayq que quitar las boundaries
+	(void)socket;
+	(void)request;
+	(void)response;
 
-} */
+	//envia el cliente todo por el mismo socket??? 
+	return 0;
+}
+
+void	FileManager::processMultiPart(Socket *socket) {
+	int fd;
+
+	if (socket->multiMode) {
+		_request.setBody(socket->recvBuffer);
+		socket->multiMode = false;
+	}
+	
+	fd = writeFile(socket, _request, _response);
+	if (fd < 0)
+		(void)socket; //TODO error 500!
+	_response.setStatusCode("201");
+	_response.setStatusMsg("CREATED");
+	std::cout << BLUE << "Info: success 201 \"" << _request.getMethod() << "\", CREATED " << END << std::endl;
+
+}
 
 void	FileManager::processHttpRequest(Socket *socket) {
 	int	fd;
 
 	_response.setVersion(HTTP_VERSION);
+	_response.addHeader(std::make_pair("Connection", "keep-alive"));
 	if (_request.getMethod() == "GET") {
 		fd = readFile(socket, _request, _response);
 		if (_response.getStatusCode().empty()) {
 			_response.setStatusCode("200");
 			_response.setStatusMsg("OK");
-			std::cout << BLUE << "Info: success 200 \"" << _request.getMethod() << "\", OK " << END << std::endl;
+			std::cout << BLUE << "Info: success 200 \"" << _request.getMethod() << "\", OK " << " FD: " << socket->getFd() << END << std::endl;
 		}
 	}
 	else if (_request.getMethod() == "POST") {
-		//fd = writeFile(socket, _request, _response); //TODO REACTIUVAR!!!!
-		_response.setStatusCode("201");
-		_response.setStatusMsg("CREATED");
-		std::cout << BLUE << "Info: success 201 \"" << _request.getMethod() << "\", CREATED " << END << std::endl;
+
+		//TODO set boundarie....hardcoded
+		if (socket->boundarie.empty()) {
+			std::string bound = _request.getHeaders().find("Content-Type")->second;
+			std::string len = _request.getHeaders().find("Content-Length")->second;
+			socket->contentLength = atoi(len.c_str());
+			socket->boundarie = bound.substr(bound.find('=') + 1, bound.size());
+			socket->multiMode = true;
+		}
+
+
 	}
 	else if (_request.getMethod() == "DELETE") {
 		//TODO DELETE METHOD
@@ -107,19 +138,22 @@ void	FileManager::processHttpRequest(Socket *socket) {
 		std::cout << BLUE << "Info: success 204 \"" << _request.getMethod() << "\", NO_CONTENT " << END << std::endl;
 	}
 	else {
-		_request.setUrl("/default/501.html"); //TODO hardcoded, debe obtener la ruta del config.
+/* 		_request.setUrl("/default/501.html"); //TODO hardcoded, debe obtener la ruta del config.
 		fd = readFile(socket, _request, _response);
 		_response.setStatusCode("501");
 		_response.setStatusMsg("METHOD_NOT_IMPLEMENTED");
-		std::cerr << YELLOW << "Warning: Error 501 \"" << _request.getMethod() << "\", METHOD_NOT_IMPLEMENTED " << END << std::endl;
+		std::cerr << YELLOW << "Warning: Error 501 \"" << _request.getMethod() << "\", METHOD_NOT_IMPLEMENTED " << END << std::endl; */
 	}
-	close(fd);
+	if (fd > 2)
+		close(fd);
 }
 
 void	FileManager::recieveHttpRequest(Socket *socket, HttpRequest& request) {
 	_request = request;
 	processHttpRequest(socket);
-	DataAdapter::sendData(socket, _response);
+	//TODO multipart no responde entre partes...
+ 	if (!socket->multiMode)
+		DataAdapter::sendData(socket, _response);
 	_request.clear();
 	_response.clear();
 }
@@ -130,32 +164,3 @@ void	FileManager::recieveHttpResponse(Socket *socket, HttpResponse& response) {
 	_request.clear();
 	_response.clear();
 }
-
-
-/*
-
-
-
-static std::string getFileName(std::string url) {
-	return url.substr(1, url.size() - 1);
-}
-
-
-static std::string getRouteName(std::string url) {
-	return url.substr(0, url.find_last_of('/', 0) - 1);
-}
-
-static bool validateRoute(Server& server, HttpRequest& request) {
-	std::map<std::string, Route>::iterator it;
-	it = server.getRoutes().find(getRouteName(request.getUrl()));
-	if ( it != server.getRoutes().end()) {
-		if (it->second.getMethods().find(request.getMethod()) != it->second.getMethods().end())
-			return true;
-	}
-	return false;
-}
-
-
-
-
-*/

@@ -1,8 +1,7 @@
 //TODO gestionar cometarios en config.cfg??
 //TODO validacion previa del archico config.cfg, segfaults a saco!
 
-
-//TODO es necesario implementar chunks de ENTRADA?? 
+//TODO chunked REQUEST -> NOT_IMPLEMENTED?
 
 //TODO el error 500 es un generico para cualquier cosa no prevista...
 
@@ -24,5 +23,6 @@ std::cerr << YELLOW << "Warning: Error 405 \"" << _request.getMethod() << "\" me
 /*
 
 curl -X GET http://localhost:8042/
+curl -F "file=@webserv" http://localhost:8042/
 
 */
