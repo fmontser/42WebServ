@@ -45,10 +45,10 @@ static bool isValidConfig(Server server){
 		std::cerr << RED << "Config file error: Server root is missing." << END << std::endl;
 		return false;
 	}
-	if (server.getRoutes().empty())  {
+/* 	if (server.getRoutes().empty())  {
 		std::cerr << RED << "Config file error: Server root is missing." << END << std::endl;
 		return false;
-	}
+	} */
 /* 	if (routes.empty() || routes.find(server.getDefault()) == routes.end()) {
 		std::cerr << RED << "Config file error: Server default route is missing." << END << std::endl;
 		return false;
