@@ -142,7 +142,7 @@ void	FileManager::processHttpRequest(Socket *socket) {
 /* 		_request.setUrl("/default/501.html"); //TODO hardcoded, debe obtener la ruta del config.
 		std::string errorPath = _config.getErrorPage(501);
 		_request.setUrl(errorPath); //TODO hardcoded, debe obtener la ruta del config.
-*/
+
 		fd = readFile(socket, _request, _response);
 		_response.setStatusCode("501");
 		_response.setStatusMsg("METHOD_NOT_IMPLEMENTED");

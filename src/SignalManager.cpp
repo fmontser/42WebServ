@@ -5,7 +5,7 @@
 #include "Config.hpp"
 #include "SignalManager.hpp"
 #include "ServerConstants.hpp"
-#include "SocketManager.hpp"
+#include "ConnectionManager.hpp"
 
 SignalManager::SignalManager() {}
 SignalManager::~SignalManager() {}
@@ -19,7 +19,7 @@ SignalManager& SignalManager::operator=(const SignalManager& src) {
 }
 
 void SignalManager::signalHandler(int signal) {
-for (std::map<std::string, Server>::iterator servIt = Config::getServers().begin();
+/* for (std::map<std::string, Server>::iterator servIt = Config::getServers().begin();
 			servIt != Config::getServers().end(); ++servIt) {
 	for (std::list<Socket *>::iterator it = servIt->second.getSocketList().begin();
 			it != servIt->second.getSocketList().end(); ++it) {
@@ -28,7 +28,8 @@ for (std::map<std::string, Server>::iterator servIt = Config::getServers().begin
 	servIt->second.getSocketList().clear();
 	std::cout << std::endl << BLUE << "Signal " << signal << " received. Server shutting down." << END << std::endl;
 }
- std::exit(EXIT_SUCCESS);
+std::exit(EXIT_SUCCESS); */
+(void)signal;
 }
 
 void SignalManager::signalSetUp() {

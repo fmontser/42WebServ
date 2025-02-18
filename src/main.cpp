@@ -1,8 +1,10 @@
 #include <iostream>
 #include <fstream>
 #include "Config.hpp"
-#include "SocketManager.hpp"
+#include "ConnectionManager.hpp"
 #include "SignalManager.hpp"
+#include "Socket.hpp"
+#include "Server.hpp"
 
 int main(int argc, char** argv) {
 	
@@ -27,9 +29,9 @@ int main(int argc, char** argv) {
 		newSocket->setPort(it->second.getPort());
 		newSocket->setParentServer(&(it->second));
 		newSocket->enableSocket(asServer);
-		SocketManager::addSocket(it->second, newSocket);
+		it->second.setSocketFd(newSocket->getFd());
 	}
 	std::map<std::string, Server> test =  Config::getServers();
-	SocketManager::monitorSockets();
+	ConnectionManager::monitorConnections();
 	return 0;
 }

@@ -1,5 +1,5 @@
 #include "DataAdapter.hpp"
-#include "SocketManager.hpp"
+#include "ConnectionManager.hpp"
 #include "FileManager.hpp"
 #include "ServerConstants.hpp"
 
@@ -124,6 +124,7 @@ void	DataAdapter::sendData(Socket *targetSocket, HttpResponse& response) {
 	std::multimap<std::string, std::string>::iterator	it;
 	bool												hasChunks = false;
 
+	(void)targetSocket; //TODO borrar
 	buffer << response.getVersion() << " " << response.getStatusCode() << " " << response.getStatusMsg() << CRLF;
 	for ( it = headers.begin(); it != headers.end(); ++it) {
 		buffer << it->first << ": " << it->second << CRLF;
@@ -135,5 +136,6 @@ void	DataAdapter::sendData(Socket *targetSocket, HttpResponse& response) {
 	it = response.getHeaders().find("Transfer-Encoding");
 	if (it != response.getHeaders().end() && it->second == "chunked")
 		hasChunks = true;
-	SocketManager::recieveResponse(targetSocket, buffer.str(), hasChunks);
+	(void)hasChunks;
+	//ConnectionManager::recieveResponse(targetSocket, buffer.str(), hasChunks); //TODO fix
 }
