@@ -3,11 +3,13 @@
 #include "HttpResponse.hpp"
 #include "Socket.hpp"
 #include "Server.hpp"
+#include "Config.hpp"
 
 class FileManager {
 	private:
 		static HttpRequest	_request;
 		static HttpResponse	_response;
+		static Config		_config;
 
 		FileManager();
 		~FileManager();
