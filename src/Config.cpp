@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cstdlib>
 #include "ServerConstants.hpp"
+#include <sys/stat.h>
 #include "Config.hpp"
 
 std::map<std::string, Server>	Config::_servers;
@@ -20,6 +21,58 @@ Config& Config::operator=(const Config& src) {
 }
 
 static std::map<std::string, void (*)(std::vector<std::string>::iterator &it)>	_tokenMap;
+
+static bool isValidConfig(Server server){
+	int port = server.getPort();
+	std::map<std::string, Route> routes = server.getRoutes();
+	if (server.getName().empty()) {
+		std::cerr << RED << "Config file error: Server name is missing." << END << std::endl;
+		return false;
+	}
+	if (server.getHost().empty()) {
+		std::cerr << RED << "Config file error: Server host is missing." << END << std::endl;
+		return false;
+	}
+	if (port == 0 || (port < 0 || port > 65535)) {
+		std::cerr << RED << "Config file error: Server port is missing." << END << std::endl;
+		return false;
+	}
+	if (server.getMaxPayload() == 0) {
+		std::cerr << RED << "Config file error: Server maxPayload is missing." << END << std::endl;
+		return false;
+	}
+	if (server.getRoot().empty()) {
+		std::cerr << RED << "Config file error: Server root is missing." << END << std::endl;
+		return false;
+	}
+	if (server.getRoutes().empty())  {
+		std::cerr << RED << "Config file error: Server root is missing." << END << std::endl;
+		return false;
+	}
+/* 	if (routes.empty() || routes.find(server.getDefault()) == routes.end()) {
+		std::cerr << RED << "Config file error: Server default route is missing." << END << std::endl;
+		return false;
+	} */
+/* 	for (std::map<std::string, Route>::iterator it = routes.begin(); it != routes.end(); ++it) {
+		std::string routePath = it->first;
+		std::string filePath = server.getRoot() + routePath;
+
+		struct stat buffer;
+		if (stat(filePath.c_str(), &buffer) != 0) {
+			std::cerr << RED << "Config file error: Route " << routePath << " file path is invalid." << END << std::endl;
+			return false;
+		}
+		if (it->second.getMethods().empty()) {
+			std::cerr << RED << "Config file error: Route " << it->first << " has no methods." << END << std::endl;
+			return false;
+		}
+		if (it->second.getFiles().empty()) {
+			std::cerr << RED << "Config file error: Route " << it->first << " has no files." << END << std::endl;
+			return false;
+		}
+	} */
+	return true;
+}
 
 static void	tokenize(std::fstream &configFileStream, std::vector<std::string> &tokenList){
 	char		c;
@@ -138,11 +191,15 @@ void	Config::addServer(std::vector<std::string>::iterator &it) {
 				}
 				
 		}
+		if (!isValidConfig(server)) {
+			std::cerr << RED << "Config file error: server " << server.getName()<< " is invalid." << END << std::endl;
+		//	exit(1);
+		}
 	}
 
 	if (_servers.find(server.getName()) != _servers.end()) {
 		std::cerr << "Config file error: server " << server.getName()<< " is duplicated." << std::endl;
-		exit(1); //TODO terminate
+		exit(1); 
 	}
 	else {
 		_servers.insert(std::make_pair(server.getName(), server));
