@@ -113,13 +113,6 @@ void	Config::loadConfig(std::fstream &configFileStream) {
 	
 	tokenize(configFileStream, tokenList);
 
-/* 	_tokenMap["route"] = &Config::addRoute;
-	_tokenMap["server"] = &Config::addServer;
-	_tokenMap["method"] = NULL;
-	_tokenMap["maxPayload"] = NULL;
-	_tokenMap["file"] = NULL;
-	_tokenMap["port"] = NULL;
-	_tokenMap["host"] = NULL; */
 
 	for (it = tokenList.begin(); it != tokenList.end(); ++it){
 		if (*it == "server") 
@@ -133,18 +126,36 @@ void	Config::addRoute(std::vector<std::string>::iterator &it) {
 	Route route;
 	std::string key, value;
 
-	route.setUrl(*(++it));
+	route.setUrl(*(++it));//TODO TODO TODO
 	if (*(++it) == "{") {
 		while(*(++it) != "}") {
 			key = *it;
 			value = *(++it);
-			if (key == "method")
-				route.addMethod(std::make_pair(key, value));
+			if (key == "methods") {
+				while (42) {
+					++it;
+					if (*it == "\n") {
+						--it;
+						break;
+					}
+					route.addMethod(std::make_pair("method", *it));
+				}
+				//route.addMethod(std::make_pair(key, value));
+			}
 			else if (key == "file")
 				route.addFile(std::make_pair(key, value));
+			else if (key == "autoindex") 
+				std::cout << "autoindex: " << value << std::endl;
+				//TODO
+			else if (key == "root") 
+				std::cout << "root: " << value << std::endl;
+				//TODO
+			else {
+				std::cerr << RED << "Config file error: unknown token " << key << END << std::endl;
+				exit(1);
+			}
 		}
 	}
-
 	if (_actualServer->getRoutes().find(route.getUrl()) != _actualServer->getRoutes().end()) {
 		std::cerr << "Config file error: Route " << route.getUrl()<< " is duplicated." << std::endl;
 		exit(1); //TODO terminate
@@ -209,21 +220,18 @@ void	Config::addServer(std::vector<std::string>::iterator &it) {
 
 std::map<std::string, Server>&	Config::getServers() { return (std::map<std::string, Server>&)_servers; }
 
+/* 
 std::string	Config::get400Page() {
 	try
 	{
-		if (_actualServer == NULL) {_tokenMap
-std::string	Config::get403Page() {
-	try
-	{
 		if (_actualServer == NULL) {
-			throw std::runtime_error("Forbidden");
+			throw std::runtime_error("Bad request");
 		}
-		std::size_t pos = _actualServer->getRoot().find("403");
+		std::size_t pos = _actualServer->getRoot().find("400");
 		if (pos != std::string::npos) {
 			return _actualServer->getRoot().substr(pos);
 		} else {
-			throw std::runtime_error("403 Forbidden");
+			throw std::runtime_error("400 Bad Request");
 		}
 	}
 	catch(const std::exception& e)
@@ -303,4 +311,4 @@ std::string	Config::getErrorPage(int errorCode) {
 	else if (errorCode == 501)
 		return get501Page();
 	return "";
-}
+} */

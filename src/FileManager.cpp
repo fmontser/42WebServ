@@ -146,7 +146,10 @@ void	FileManager::processHttpRequest(Socket *socket) {
 		fd = readFile(socket, _request, _response);
 		_response.setStatusCode("501");
 		_response.setStatusMsg("METHOD_NOT_IMPLEMENTED");
-		std::cerr << YELLOW << "Warning: Error 501 \"" << _request.getMethod() << "\", METHOD_NOT_IMPLEMENTED " << END << std::endl; */
+		std::cerr << YELLOW << "Warning: Error 501 \"" 
+				  << _request.getMethod() 
+				  << "\", METHOD_NOT_IMPLEMENTED " 
+				  << END << std::endl;
 	}
 	if (fd > 2)
 		close(fd);
