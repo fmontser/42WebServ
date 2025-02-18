@@ -78,9 +78,16 @@ static void	tokenize(std::fstream &configFileStream, std::vector<std::string> &t
 	char		c;
 	std::string	token;
 	bool		flag = false;
-	
+	bool		isComment = false;
+
 	token.clear();
 	while (configFileStream.get(c)) {
+		if (c == '#') 
+			isComment = true;
+		if (isComment && c == '\n')
+			isComment = false;
+		else if (isComment)
+			continue;
 		if (isspace(c)) {
 			if (flag){
 				flag = false;
@@ -168,9 +175,19 @@ void	Config::addServer(std::vector<std::string>::iterator &it) {
 					server.setDefault(*(++it));
 				else if (*it == "route")
 					addRoute(it);
+				else if (*it == "methods") {
+					while (42) {
+						++it;
+						if (*it == "}") {
+							--it;
+							break;
+						}
+						server.addConfigMethods(*it);
+					} 
+				}
 				else {
-					std::cerr << RED << "Config file error: " << *it << " is not a valid server parameter." << END << std::endl;
-					exit(1); 
+					std::cerr << RED << "Config file error: unknown token " << *it << END << std::endl;
+					exit(1);
 				}
 				
 		}
@@ -190,4 +207,8 @@ void	Config::addServer(std::vector<std::string>::iterator &it) {
 	}
 }
 
+/* void Config::addMethod(std::vector<std::string>::iterator &it) {
+	//TODO
+}
+ */
 std::map<std::string, Server>&	Config::getServers() { return (std::map<std::string, Server>&)_servers; }

@@ -8,14 +8,15 @@
 
 class Server {
 	private:
-		std::string						_name;
-		std::string						_host;
-		int								_port;
-		int								_maxPayload;
-		std::string						_root;
-		std::string						_default;
-		std::map<std::string, Route>	_routes;
-		std::list<Socket *>				_socketList;
+		std::string													_name;
+		std::string													_host;
+		int																	_port;
+		int																	_maxPayload;
+		std::string													_root;
+		std::string													_default;
+		std::map<std::string, Route>				_routes;
+		std::map<std::string, std::string>	_method;
+		std::list<Socket *>									_socketList;
 
 	public:
 		Server();
@@ -25,8 +26,9 @@ class Server {
 
 	std::string						getName() const;
 	std::string						getHost() const;
-	int										getPort() const;
-	int										getMaxPayload();
+	int								getPort() const;
+	std::string						getRoot() const;
+	int								getMaxPayload() const;
 	std::map<std::string, Route>&	getRoutes();
 	std::list<Socket *>&	getSocketList();
 	std::string						getRoot() const;
@@ -39,5 +41,5 @@ class Server {
 	void	setRoot(const std::string& root);
 	void	setDefault(const std::string& default_);
 	void	setMaxPayLoad(const std::string& maxPayLoad);
-
+	void	addConfigMethods(const std::string &method);
 };

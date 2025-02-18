@@ -12,15 +12,13 @@
 #include "ServerConstants.hpp"
 #include "DataAdapter.hpp"
 
-
-
 static int pollSockets(std::list<Socket *> &socketList) {
 		int		pollStatus;
 		pollfd	pollArray[socketList.size()];
 		size_t	i = 0;
 		for (std::list<Socket *>::iterator it = socketList.begin(); it != socketList.end(); ++it)
 			pollArray[i++] = (*it)->getPollFd();
-		pollStatus = poll(pollArray, socketList.size(), TIMEOUT);
+		pollStatus = poll(pollArray, socketList.size(), 0);
 		
 		i = 0;
 		for (std::list<Socket *>::iterator it = socketList.begin(); it != socketList.end(); ++it)
@@ -60,10 +58,10 @@ SocketManager& SocketManager::operator=(const SocketManager& src) {
 }
 
 void	SocketManager::recieveData(Socket *socket) {
-	char		buffer[BUFFER_SIZE] = {0};
+	char		buffer[READ_BUFFER] = {0};
 	std::string	requestData;
 
-	int len = recv(socket->getFd(), buffer, BUFFER_SIZE, 0);
+	int len = recv(socket->getFd(), buffer, READ_BUFFER, 0);
 	if (len == -1) {
 		std::cerr << RED << "Error: client error " << socket->getFd() << END << std::endl;
 	}
@@ -100,13 +98,11 @@ void	SocketManager::monitorSockets() {
 					}
 					else if ((*it)->getPollFd().revents & POLLHUP) {
 						//TODO NO FUNCIONA??
-						std::cout << "Deleted " << (*it)->getFd();
-						delete *it;
+						std::cout << "POLLHUP" << std::endl;
 					}
 					else if ((*it)->getPollFd().revents & POLLERR) {
 						//TODO NO FUNCIONA??
-						std::cout << "Poll error " << (*it)->getFd();
-						delete *it;
+						std::cout << "POLLERR" << std::endl;
 					}
 				}
 				cachedList.clear();
@@ -115,14 +111,41 @@ void	SocketManager::monitorSockets() {
 	}
 }
 
-void	SocketManager::recieveResponse(Socket *socket, const std::string& response) {
+void	SocketManager::recieveResponse(Socket *socket, const std::string& response, bool hasChunks) {
+	socket->setChunkMode(hasChunks);
 	socket->sendBuffer = response;
 }
 
 void	SocketManager::sendData(Socket *socket) {
-	if (send(socket->getFd(), socket->sendBuffer.c_str(), socket->sendBuffer.size(), 0) == -1) {
+	std::string chunk;
+	static bool chunkHeadSent = false;
+
+	chunk.clear();
+	if (socket->getChunkMode()) {
+		if (socket->sendBuffer.find(HTTP_BODY_START) != std::string::npos && !chunkHeadSent)
+		{
+			size_t csize = socket->sendBuffer.find(HTTP_BODY_START) + 4;
+			chunk += socket->sendBuffer.substr(0, csize);
+			socket->sendBuffer = socket->sendBuffer.substr(chunk.size(), socket->sendBuffer.size());
+			chunkHeadSent = true;
+		}
+		if (socket->sendBuffer.find(CRLF) != std::string::npos) {
+			size_t csize = socket->sendBuffer.find(CRLF) + 2;
+			csize += std::strtol(socket->sendBuffer.substr(0, csize).c_str(), NULL, 16) + 2;
+			chunk += socket->sendBuffer.substr(0, csize);
+			socket->sendBuffer = socket->sendBuffer.substr(csize, socket->sendBuffer.size());
+		}	
+		if (socket->sendBuffer.empty()) {
+			socket->setChunkMode(false);
+			chunkHeadSent = false;
+		}
+		if (send(socket->getFd(), chunk.c_str(), chunk.size(), 0) == -1) {
+			std::cerr << RED << "Send error: Server socket error" << END << std::endl;
+		}
+		return ;
+	}
+	else if (send(socket->getFd(), socket->sendBuffer.c_str(), socket->sendBuffer.size(), 0) == -1) {
 		std::cerr << RED << "Send error: Server socket error" << END << std::endl;
-		//TODO log error or send error?
 	}
 	socket->sendBuffer.clear();
 }

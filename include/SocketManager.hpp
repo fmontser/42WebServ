@@ -17,7 +17,7 @@ private:
 public:
 
 	static void	monitorSockets();
-	static void	recieveResponse(Socket *socket, const std::string& response);
+	static void	recieveResponse(Socket *socket, const std::string& response, bool hasChunks);
 	static void	addSocket(Server& server, Socket *socket);
 	static void	deleteSocket(Server& server, Socket *socket);
 };
