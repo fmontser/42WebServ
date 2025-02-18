@@ -18,6 +18,7 @@ class FileManager {
 
 		static void	processHttpRequest(Socket *targetSocket);
 	public:
+		static void processMultiPart(Socket * socket);
 		static void	recieveHttpRequest(Socket *targetSocket, HttpRequest& request);
 		static void	recieveHttpResponse(Socket *targetSocket, HttpResponse& response);
 };
