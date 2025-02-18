@@ -31,6 +31,7 @@ class Server {
 	int								getMaxPayload() const;
 	std::map<std::string, Route>&	getRoutes();
 	std::list<Socket *>&			getSocketList();
+	std::string						getDefault() const;
 
 
 	void	setName(const std::string& name);
