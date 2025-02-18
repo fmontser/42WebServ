@@ -14,6 +14,7 @@ Server::Server(const Server& src) {
 	_maxPayload = src._maxPayload;
 	_routes = src._routes;
 	_socketList = src._socketList;
+	_method = src._method;
 }
 
 Server& Server::operator=(const Server& src) {
@@ -26,6 +27,7 @@ Server& Server::operator=(const Server& src) {
 		_maxPayload = src._maxPayload;
 		_routes = src._routes;
 		_socketList = src._socketList;
+		_method = src._method;
 	}
 	return *this;
 }
@@ -35,13 +37,16 @@ std::string						Server::getHost() const { return this->_host; }
 int								Server::getPort() const { return this->_port; }
 std::string						Server::getRoot() const { return this->_root; }
 int								Server::getMaxPayload() const { return _maxPayload; }
+
 std::map<std::string, Route>&	Server::getRoutes() { return (std::map<std::string, Route>&)_routes; }
-std::list<Socket *>&				Server::getSocketList() { return _socketList; }
+std::list<Socket *>&			Server::getSocketList() { return _socketList; }
+std::string						Server::getDefault() const { return _default; }
 
 void	Server::setName(const std::string& name) { this->_name = name; }
 void	Server::setHost(const std::string& host) { this->_host = host; }
 void	Server::setRoot(const std::string& root) {_root = root; }
 void	Server::setDefault(const std::string& default_) {_default = default_; }
+void	Server::addConfigMethods(const std::string& method) {_method[method] = "allowed"; }
 
 void	Server::setPort(const std::string& port) {
 	char	*err;
