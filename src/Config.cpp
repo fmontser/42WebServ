@@ -212,23 +212,7 @@ std::map<std::string, Server>&	Config::getServers() { return (std::map<std::stri
 std::string	Config::get400Page() {
 	try
 	{
-		if (_actualServer == NULL) {
-			throw std::runtime_error("Bad request");
-		}
-		std::size_t pos = _actualServer->getRoot().find("400");
-		if (pos != std::string::npos) {
-			return _actualServer->getRoot().substr(pos);
-		} else {
-			throw std::runtime_error("400 Bad Request");
-		}
-	}
-	catch(const std::exception& e)
-	{
-		std::cerr << e.what() << std::endl;
-	}
-	return "";
-}
-
+		if (_actualServer == NULL) {_tokenMap
 std::string	Config::get403Page() {
 	try
 	{

@@ -177,6 +177,5 @@ void	SocketManager::deleteSocket(Socket *socket) {
 	Server *server = socket->getParentServer();
 	server->getSocketList().erase(std::find(server->getSocketList().begin(),server->getSocketList().end(), socket));
 	delete(socket);
-	//TODO comprobar que la eliminacion es correcta tras finalizar una conexion
 }
 
