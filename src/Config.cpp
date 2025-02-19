@@ -4,6 +4,16 @@
 #include <sys/stat.h>
 #include "Config.hpp"
 
+void	printError(std::string str) {
+	std::cout << RED << str <<  END << std::endl;
+	exit(1);
+}
+
+bool printFalse(std::string str) {
+	std::cout << RED << str <<  END << std::endl;
+	return false;
+}
+
 std::map<std::string, Server>	Config::_servers;
 Server							*Config::_actualServer = NULL;
 
@@ -25,15 +35,18 @@ static std::map<std::string, void (*)(std::vector<std::string>::iterator &it)>	_
 static bool isValidConfig(Server server){
 	int port = server.getPort();
 	std::map<std::string, Route> routes = server.getRoutes();
-	if (server.getName().empty()) {
+	if (server.getName().empty()) 
+		return printFalse("Config file error: Server name is missing.");
+/* 	{
 		std::cerr << RED << "Config file error: Server name is missing." << END << std::endl;
 		return false;
 	}
+ */	
 	if (server.getHost().empty()) {
 		std::cerr << RED << "Config file error: Server host is missing." << END << std::endl;
 		return false;
 	}
-	if (port == 0 || (port < 0 || port > 65535)) {
+	if (isalpha(port) || port == 0 || (port < 0 || port > 65535)) {
 		std::cerr << RED << "Config file error: Server port is missing." << END << std::endl;
 		return false;
 	}
@@ -41,36 +54,23 @@ static bool isValidConfig(Server server){
 		std::cerr << RED << "Config file error: Server maxPayload is missing." << END << std::endl;
 		return false;
 	}
+	//TODO	TODO y	TODO
+	if (server.getMaxPayload() < MIN_PAYLOAD || server.getMaxPayload() > MAX_PAYLOAD || isalpha(server.getMaxPayload())) {
+		std::cerr << RED << "Config file error: Server maxPayload is invalid." << END << std::endl;
+		return false;
+	}
 	if (server.getRoot().empty()) {
 		std::cerr << RED << "Config file error: Server root is missing." << END << std::endl;
 		return false;
 	}
-/* 	if (server.getRoutes().empty())  {
-		std::cerr << RED << "Config file error: Server root is missing." << END << std::endl;
-		return false;
-	} */
-/* 	if (routes.empty() || routes.find(server.getDefault()) == routes.end()) {
-		std::cerr << RED << "Config file error: Server default route is missing." << END << std::endl;
-		return false;
-	} */
-/* 	for (std::map<std::string, Route>::iterator it = routes.begin(); it != routes.end(); ++it) {
-		std::string routePath = it->first;
-		std::string filePath = server.getRoot() + routePath;
+/* 			else if (key == "maxPayload") {
+				char *end;
+				long maxPValue = strtol(value.c_str(), &end, 10);
+				if (maxPValue < MIN_PAYLOAD || maxPValue > MAX_PAYLOAD || !isalnum(maxPValue)) 
+					printError("Config file error: invalid maxPayload value " + value);
+			}
+ */
 
-		struct stat buffer;
-		if (stat(filePath.c_str(), &buffer) != 0) {
-			std::cerr << RED << "Config file error: Route " << routePath << " file path is invalid." << END << std::endl;
-			return false;
-		}
-		if (it->second.getMethods().empty()) {
-			std::cerr << RED << "Config file error: Route " << it->first << " has no methods." << END << std::endl;
-			return false;
-		}
-		if (it->second.getFiles().empty()) {
-			std::cerr << RED << "Config file error: Route " << it->first << " has no files." << END << std::endl;
-			return false;
-		}
-	} */
 	return true;
 }
 
@@ -143,21 +143,39 @@ void	Config::addRoute(std::vector<std::string>::iterator &it) {
 					++it;
 				}
 			}
-			else if (key == "file")
+			else if (key == "file") {
+				
 				route.addFile(std::make_pair(key, value));
-			else if (key == "autoindex") 
-				std::cout << "autoindex: " << value << std::endl;
-				//TODO
-			else if (key == "root") 
-				std::cout << "root: " << value << std::endl;
-				//TODO
-			else if (key == "redirect") 
-				std::cout << "redirect: " << value << std::endl;
-				//TODO
-			else {
-				std::cerr << RED << "Config file error: unknown token " << key << END << std::endl;
-				exit(1);
 			}
+			else if (key == "autoindex") {
+				if (value != "on" && value != "off") 
+					printError("Config file error: invalid autoindex value " + value);
+				route.setAutoIndex(std::make_pair(key, value));
+			}
+/* 			else if (key == "maxPayload") {
+				char *end;
+				long maxPValue = strtol(value.c_str(), &end, 10);
+				if (maxPValue < MIN_PAYLOAD || maxPValue > MAX_PAYLOAD || !isalnum(maxPValue)) 
+					printError("Config file error: invalid maxPayload value " + value);
+			}
+ */
+			else if (key == "root") {
+				if (value[0] != '.' && value[1] != '/') 
+					printError("Config file error: invalid root path " + value);
+
+				route.setRoot(std::make_pair(key, value));
+			}
+				//TODO
+			else if (key == "redirect") {
+				if (value[0] != '.' && value[1] != '/') 
+					printError("Config file error: invalid redirect path " + value);
+
+				route.setRedirect(std::make_pair(key, value));
+		}
+				//TODO
+			else
+				printError("Config file error: unknown token " + key);
+
 		}
 	}
 	if (_actualServer->getRoutes().find(route.getUrl()) != _actualServer->getRoutes().end()) {
@@ -172,7 +190,7 @@ void	Config::addRoute(std::vector<std::string>::iterator &it) {
 void	Config::addServer(std::vector<std::string>::iterator &it) {
 	Server server;
 	_actualServer = &server;
-
+	
 	server.setName(*(++it));
 	if (*(++it) == "{") {
 		while(*(++it) != "}") {
@@ -208,7 +226,7 @@ void	Config::addServer(std::vector<std::string>::iterator &it) {
 		}
 		if (!isValidConfig(server)) {
 			std::cerr << RED << "Config file error: server " << server.getName()<< " is invalid." << END << std::endl;
-		//	exit(1);
+			exit(1);
 		}
 	}
 
@@ -223,96 +241,3 @@ void	Config::addServer(std::vector<std::string>::iterator &it) {
 }
 
 std::map<std::string, Server>&	Config::getServers() { return (std::map<std::string, Server>&)_servers; }
-
-/* 
-std::string	Config::get400Page() {
-	try
-	{
-		if (_actualServer == NULL) {
-			throw std::runtime_error("Bad request");
-		}
-		std::size_t pos = _actualServer->getRoot().find("400");
-		if (pos != std::string::npos) {
-			return _actualServer->getRoot().substr(pos);
-		} else {
-			throw std::runtime_error("400 Bad Request");
-		}
-	}
-	catch(const std::exception& e)
-	{
-		std::cerr << e.what() << std::endl;
-	}
-	return "";
-}
-
-std::string	Config::get404Page() {
-	try
-	{
-		if (_actualServer == NULL) {
-			throw std::runtime_error("No actual server set");
-		}
-		std::size_t pos = _actualServer->getRoot().find("404");
-		if (pos != std::string::npos) {
-			return _actualServer->getRoot().substr(pos);
-		} else {
-			throw std::runtime_error("404 page not found");
-		}
-	}
-	catch(const std::exception& e)
-	{
-		std::cerr << e.what() << std::endl;
-	}
-	return "";
-}
-
-std::string	Config::get500Page() {
-	try {
-		if (_actualServer == NULL) {
-			throw std::runtime_error("No actual server set");
-		}
-		std::size_t pos = _actualServer->getRoot().find("500");
-		if (pos != std::string::npos) {
-			return _actualServer->getRoot().substr(pos);
-		} else {
-			throw std::runtime_error("500 Internal Server Error");
-		}
-	}
-	catch(const std::exception& e)
-	{
-		std::cerr << e.what() << std::endl;
-	}
-	return "";
-}
-
-std::string	Config::get501Page() {
-	try	{
-		if (_actualServer == NULL) {
-			throw std::runtime_error("No actual server set");
-		}
-		std::size_t pos = _actualServer->getRoot().find("501");
-		if (pos != std::string::npos) {
-			return _actualServer->getRoot().substr(pos);
-		} else {
-			throw std::runtime_error(YELLOW "501 Not Implemented" END);
-		}
-	}
-	catch(const std::exception& e)
-	{
-		std::cerr << e.what() << std::endl;
-	}
-	return "";
-}
-
-std::string	Config::getErrorPage(int errorCode) {
-	if (errorCode == 400)
-		return get400Page();
-	else if (errorCode == 403)
-		return get403Page();
-	else if (errorCode == 404)
-		return get404Page();
-	else if (errorCode == 500)
-		return get500Page();
-	else if (errorCode == 501)
-		return get501Page();
-	return "";
-} */
