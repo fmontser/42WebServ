@@ -19,17 +19,9 @@ SignalManager& SignalManager::operator=(const SignalManager& src) {
 }
 
 void SignalManager::signalHandler(int signal) {
-/* for (std::map<std::string, Server>::iterator servIt = Config::getServers().begin();
-			servIt != Config::getServers().end(); ++servIt) {
-	for (std::list<Socket *>::iterator it = servIt->second.getSocketList().begin();
-			it != servIt->second.getSocketList().end(); ++it) {
-				delete (*it);
-			}
-	servIt->second.getSocketList().clear();
+	//TODO probablemente haya que forzar la liempeza de los socketFD
 	std::cout << std::endl << BLUE << "Signal " << signal << " received. Server shutting down." << END << std::endl;
-}
-std::exit(EXIT_SUCCESS); */
-(void)signal;
+	std::exit(EXIT_SUCCESS);
 }
 
 void SignalManager::signalSetUp() {

@@ -22,16 +22,11 @@ int main(int argc, char** argv) {
 
 	Config::loadConfig(configFileStream);
 
-	bool asServer = true;
 	for (std::map<std::string, Server>::iterator it = Config::getServers().begin();
 		it != Config::getServers().end(); ++it) {
-		Socket	*newSocket = new Socket();
-		newSocket->setPort(it->second.getPort());
-		newSocket->setParentServer(&(it->second));
-		newSocket->enableSocket(asServer);
-		it->second.setSocketFd(newSocket->getFd());
+			it->second.listenSocket();
 	}
-	std::map<std::string, Server> test =  Config::getServers();
+	
 	ConnectionManager::monitorConnections();
 	return 0;
 }

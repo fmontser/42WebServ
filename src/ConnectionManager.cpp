@@ -14,7 +14,6 @@
 #include "DataAdapter.hpp"
 #include "Server.hpp"
 
-
 ConnectionManager::ConnectionManager() {}
 ConnectionManager::~ConnectionManager() {}
 
@@ -27,68 +26,68 @@ ConnectionManager& ConnectionManager::operator=(const ConnectionManager& src) {
 	return *this;
 }
 
-static int pollSockets(Server& server) {
-		int		pollStatus;
-		std::list<Connection *> connectionList;
-		pollfd	pollArray[connectionList.size() + 1];
-		size_t	i = 1;
-		
-		connectionList = server.getConnectionList();
-		pollArray[0].fd = server.getSocketFd();
-		for (std::list<Connection *>::iterator it = connectionList.begin(); it != connectionList.end(); ++it)
-			pollArray[i++] = (*it)->getPollFd();
-		pollStatus = poll(pollArray, connectionList.size(), 0);
+static int	pollSockets(Server& server) {
+	int						pollStatus;
+	std::list<Connection *>	connectionList;
+	size_t					i = 1;
+	
+	connectionList = server.getConnectionList();
+	pollfd	pollArray[connectionList.size() + 1];
+	pollArray[0] = server.getPollfd();
+	for (std::list<Connection *>::iterator it = connectionList.begin(); it != connectionList.end(); ++it)
+		pollArray[i++] = (*it)->getPollFd();
+	pollStatus = poll(pollArray, connectionList.size() + 1, 0);
 
-		//TODO @@@@@@@@ el server no tiene pollfd o no seactualiza... 
-		i = 1;
-		for (std::list<Connection *>::iterator it = connectionList.begin(); it != connectionList.end(); ++it)
-			(*it)->updatePollFd(pollArray[i++]);
-		return (pollStatus);
+	i = 1;
+	server.setPollfd(pollArray[0]);
+	for (std::list<Connection *>::iterator it = connectionList.begin(); it != connectionList.end(); ++it)
+		(*it)->updatePollFd(pollArray[i++]);
+	return (pollStatus);
 }
 
+static void	manageServerSocket(Server& server) {
+	if (server.hasPollIn()) {
+		Connection	*newConnection = new Connection(server);
+		ConnectionManager::addConnection(server, newConnection);
+	}
+}
+
+static void	manageServerConnections(Server& server) {
+	std::list<Connection *>&	conectionsList = server.getConnectionList();
+	for (std::list<Connection *>::iterator it = conectionsList.begin(); it != conectionsList.end(); ++it) {
+		Connection&	connection = *(*it);
+		if (connection.hasPollIn())
+			connection.recieveData();
+		else if (connection.hasPollOut())
+			connection.sendData();
+	}
+	//TODO manage closing connections...
+}
 
 void	ConnectionManager::monitorConnections() {
-	int		pollStatus;
+	int	pollStatus;
 	
 	while (true) {
-		for (std::map<std::string, Server>::iterator servIt = Config::getServers().begin();
-			servIt != Config::getServers().end(); ++servIt) {
-			pollStatus = pollSockets(servIt->second);
+		for (std::map<std::string, Server>::iterator it = Config::getServers().begin();
+			it != Config::getServers().end(); ++it) {
+			Server&	server = it->second;
+			pollStatus = pollSockets(server);
 			if (pollStatus == -1) {
 				std::cerr << RED << "Server error: Server connection error" << END << std::endl;
 			}
 			else if (pollStatus > 0) {
-				std::list<Connection *> cachedList(servIt->second.getConnectionList());
-				for (std::list<Connection *>::iterator it = cachedList.begin(); it != cachedList.end(); ++it) {
-					if ((*it)->hasPollIn()) {
-						//TODO recieve via connection
-					}
-					else if ((*it)->hasPollOut()) {
-						//TODO send via connection
-					}
-/* 					else if ((*it)->getPollFd().revents & POLLHUP) {
-						deleteConnection(*it);
-						std::cout << BLUE <<"Info: Client on connection fd " << (*it)->getFd() << " hang up" << END << std::endl;
-					}
-					else if ((*it)->getPollFd().revents & POLLERR) {
-						deleteConnection(*it);
-						std::cerr << RED <<"Error: Client error on connection fd " << (*it)->getFd() << END << std::endl;
-					} */
-				}
-				cachedList.clear();
+				manageServerSocket(server);
+				manageServerConnections(server);
 			}
 		}
 	}
 }
 
-
-
 void	ConnectionManager::addConnection(Server& server, Connection *connection) {
 	server.getConnectionList().push_back(connection);
 }
 
-void	ConnectionManager::deleteConnection(Connection *connection) {
-	Server server = connection->getServer();
+void	ConnectionManager::deleteConnection(Server& server, Connection *connection) {
 	server.getConnectionList().erase(std::find(server.getConnectionList().begin(),server.getConnectionList().end(), connection));
 	delete(connection);
 }

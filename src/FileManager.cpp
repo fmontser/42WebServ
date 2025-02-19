@@ -157,14 +157,18 @@ void	FileManager::recieveHttpRequest(Socket *socket, HttpRequest& request) {
 	processHttpRequest(socket);
 	//TODO multipart no responde entre partes...
  	if (!socket->multiMode)
-		DataAdapter::sendData(socket, _response);
+		(void)socket;
+		//TODO fix
+		//DataAdapter::sendData(socket, _response);
 	_request.clear();
 	_response.clear();
 }
 
 void	FileManager::recieveHttpResponse(Socket *socket, HttpResponse& response) {
 	_response = response;
-	DataAdapter::sendData(socket, _response);
+	(void)socket;
+	//TODO fix
+	//DataAdapter::sendData(socket, _response);
 	_request.clear();
 	_response.clear();
 }

@@ -19,5 +19,5 @@ public:
 	static void	monitorConnections();
 	static void	recieveResponse(Connection *connection, const std::string& response, bool hasChunks);
 	static void	addConnection(Server& server, Connection *connection);
-	static void	deleteConnection(Connection *connection);
+	static void	deleteConnection(Server& server, Connection *connection);
 };

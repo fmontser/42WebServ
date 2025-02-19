@@ -4,6 +4,7 @@
 #include <string>
 #include "ServerConstants.hpp"
 #include "Server.hpp"
+#include "DataAdapter.hpp"
 
 class Connection {
 	private:
@@ -11,10 +12,7 @@ class Connection {
 		Server&			_server;
 		int				_socketFd;
 		struct pollfd	_pollfd;
-
-		Connection& operator=(const Connection& src);
-
-		void	acceptConnection();
+		DataAdapter		*_dataAdapter;
 
 	public:
 
@@ -24,14 +22,15 @@ class Connection {
 
 		Connection(Server& server);
 		Connection(const Connection& src);
+		Connection& operator=(const Connection& src);
 		~Connection();
 
 		Server&			getServer() const;
 		struct pollfd	getPollFd() const;
-		bool			hasPollIn() const;
-		bool			hasPollOut() const;
 
 		void			recieveData();
 		void			sendData();
 		void			updatePollFd(struct pollfd pfd);
+		bool			hasPollIn() const;
+		bool			hasPollOut() const;
 };
