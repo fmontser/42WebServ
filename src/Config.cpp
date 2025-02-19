@@ -133,14 +133,15 @@ void	Config::addRoute(std::vector<std::string>::iterator &it) {
 			value = *(++it);
 			if (key == "methods") {
 				while (42) {
-					++it;
-					if (*it == "\n") {
+					if (*it == "GET" || *it == "POST" || *it == "PUT" || *it == "DELETE") {
+						route.addMethod(std::make_pair("method", *it));
+					}
+					else {
 						--it;
 						break;
 					}
-					route.addMethod(std::make_pair("method", *it));
+					++it;
 				}
-				//route.addMethod(std::make_pair(key, value));
 			}
 			else if (key == "file")
 				route.addFile(std::make_pair(key, value));
@@ -149,6 +150,9 @@ void	Config::addRoute(std::vector<std::string>::iterator &it) {
 				//TODO
 			else if (key == "root") 
 				std::cout << "root: " << value << std::endl;
+				//TODO
+			else if (key == "redirect") 
+				std::cout << "redirect: " << value << std::endl;
 				//TODO
 			else {
 				std::cerr << RED << "Config file error: unknown token " << key << END << std::endl;
