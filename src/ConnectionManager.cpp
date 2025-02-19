@@ -53,15 +53,15 @@ static void	manageServerSocket(Server& server) {
 }
 
 static void	manageServerConnections(Server& server) {
-	std::list<Connection *>&	conectionsList = server.getConnectionList();
-	for (std::list<Connection *>::iterator it = conectionsList.begin(); it != conectionsList.end(); ++it) {
+	std::list<Connection *>	cachedList(server.getConnectionList());
+	for (std::list<Connection *>::iterator it = cachedList.begin(); it != cachedList.end(); ++it) {
 		Connection&	connection = *(*it);
 		if (connection.hasPollIn())
 			connection.recieveData();
 		else if (connection.hasPollOut())
 			connection.sendData();
 	}
-	//TODO manage closing connections...
+	cachedList.clear();
 }
 
 void	ConnectionManager::monitorConnections() {

@@ -13,12 +13,15 @@ class DataAdapter {
 		HttpResponse	_response;
 		Connection		*_connection;
 
+		void	processResponse();
+
 	public:
 		DataAdapter(Connection *connection);
 		~DataAdapter();
 		DataAdapter(const DataAdapter& src);
 		DataAdapter& operator=(const DataAdapter& src);
-		
-		void	pushData(const std::string& recvBuffer);
 
+		HttpRequest&	getRequest();
+		HttpResponse&	getResponse();
+		void			processData();
 };

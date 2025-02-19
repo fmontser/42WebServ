@@ -41,9 +41,7 @@ Connection& Connection::operator=(const Connection& src) {
 }
 
 Connection::~Connection() {
-	//TODO comprobar que se libera el fd
 	close(_socketFd);
-
 }
 
 Server&			Connection::getServer() const { return _server; }
@@ -52,7 +50,7 @@ struct pollfd	Connection::getPollFd() const { return _pollfd; }
 void	Connection::recieveData() {
 
 	//TODO multipart mode!!!
-
+	DataAdapter adapter = DataAdapter(this);
 	char		buffer[READ_BUFFER] = {0};
 	int			len;
 
@@ -66,11 +64,23 @@ void	Connection::recieveData() {
 	else if (len > 0) {
 		recvBuffer.clear();
 		recvBuffer.append(buffer);
-		DataAdapter(this).pushData(recvBuffer);
+		adapter.processData();
 	}
 }
 
 void	Connection::sendData() {
+
+	//TODO borrar  envio completo temporal
+	if (sendBufferSize > 0 && send(_socketFd, sendBuffer.c_str(), sendBufferSize, 0) == -1)
+		std::cerr << RED << "Send error: Server connection error" << END << std::endl;
+	sendBufferSize = 0;
+	sendBuffer.clear();
+}
+
+void	Connection::updatePollFd(struct pollfd pfd) { _pollfd = pfd; }
+bool	Connection::hasPollIn() const { return _pollfd.revents & POLLIN; }
+bool	Connection::hasPollOut() const { return _pollfd.revents && POLLOUT; }
+
 /* 	std::string chunk;
 	static bool chunkHeadSent = false;
 
@@ -102,8 +112,3 @@ void	Connection::sendData() {
 		std::cerr << RED << "Send error: Server connection error" << END << std::endl;
 	}
 	connection->sendBuffer.clear(); */
-}
-
-void	Connection::updatePollFd(struct pollfd pfd) { _pollfd = pfd; }
-bool	Connection::hasPollIn() const { return _pollfd.revents & POLLIN; }
-bool	Connection::hasPollOut() const { return _pollfd.revents && POLLOUT; }

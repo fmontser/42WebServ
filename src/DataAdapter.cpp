@@ -3,11 +3,7 @@
 #include "FileManager.hpp"
 #include "ServerConstants.hpp"
 #include "Connection.hpp"
-
-struct ParsedHeader {
-	std::string mainValue;
-	std::map<std::string, std::string> params;
-};
+#include "RequestProcessor.hpp"
 
 
 DataAdapter::DataAdapter(Connection * connection) : _connection(connection) {}
@@ -26,14 +22,25 @@ DataAdapter& DataAdapter::operator=(const DataAdapter& src) {
 	return *this;
 }
 
-void	DataAdapter::pushData(const std::string& recvBuffer) { (void)recvBuffer; }
+static void	trimToken(std::string& str) {
+	size_t start = 0;
+	size_t end = str.length() - 1;
 
-/* void	DataAdapter::pushData(const std::string& recvBuffer) {
+	while (start <= end && std::isspace(str[start])) {
+		start++;
+	}
+	while (end >= start && (std::isspace(str[end]) || str[end] == '\r')) {
+		end--;
+	}
+	str = str.substr(start, end - start + 1);
+}
+
+void	DataAdapter::processData() {
 	std::stringstream data;
 	std::string requestLine, headerLine, headerKey, headerValue, bodyValue, processedHeaderValues;
 	std::pair<std::string, std::string> header;
 
-	data << request;
+	data << _connection->recvBuffer;
 	
 	std::getline(data, requestLine);
 	_request.setMethod(requestLine.substr(0, requestLine.find(' ')));
@@ -49,15 +56,9 @@ void	DataAdapter::pushData(const std::string& recvBuffer) { (void)recvBuffer; }
 		headerValue = headerLine.substr(headerLine.find(':') + 1 ,headerLine.size());
 		trimToken(headerKey);
 		trimToken(headerValue);
-		ParsedHeader parsedHeader = parsedHeaderValue(headerValue);
+		//TODO @@@@@ parsear headers completamente y estructurarlo (nuevas funciones)
 		header = std::make_pair(headerKey, headerValue);
 		_request.addHeader(header);
-
-		for (std::map<std::string, std::string>::iterator it = parsedHeader.params.begin(); it != parsedHeader.params.end(); ++it) {
-			std::string key = headerKey + "-" + it->first;
-			header = std::make_pair(key, it->second);
-			_request.addHeader(header);
-		}
 	}
 
 	while (std::getline(data, bodyValue)) {
@@ -65,10 +66,32 @@ void	DataAdapter::pushData(const std::string& recvBuffer) { (void)recvBuffer; }
 		bodyValue.append(std::string(1,'\n'));
 	}
 	_request.setBody(bodyValue);
-	//TODO fix!
-	//FileManager::recieveHttpRequest(targetConnection, _request);
+
+	HttpProcessor::processHttpRequest(*this);
+	processResponse();
 	_request.clear();
-} */
+	_response.clear();
+}
+
+void	DataAdapter::processResponse() {
+	std::stringstream									buffer;
+	std::multimap<std::string, std::string>				headers = _response.getHeaders();
+	std::multimap<std::string, std::string>::iterator	it;
+
+	buffer << _response.getVersion() << " " << _response.getStatusCode() << " " << _response.getStatusMsg() << CRLF;
+	for ( it = headers.begin(); it != headers.end(); ++it) {
+		buffer << it->first << ": " << it->second << CRLF;
+	}
+	buffer << CRLF;
+	buffer << _response.getBody();
+
+	_connection->sendBuffer = buffer.str();
+	_connection->sendBufferSize = _response.getBody().size();
+}
+
+
+HttpRequest& DataAdapter::getRequest() { return _request; }
+HttpResponse& DataAdapter::getResponse() { return _response; }
 
 /* void	DataAdapter::sendData(Connection *targetConnection, HttpResponse& response) {
 	std::stringstream									buffer;
@@ -95,18 +118,7 @@ void	DataAdapter::pushData(const std::string& recvBuffer) { (void)recvBuffer; }
  */
 /* 
 
-static void	trimToken(std::string& str) {
-	size_t start = 0;
-	size_t end = str.length() - 1;
 
-	while (start <= end && std::isspace(str[start])) {
-		start++;
-	}
-	while (end >= start && (std::isspace(str[end]) || str[end] == '\r')) {
-		end--;
-	}
-	str = str.substr(start, end - start + 1);
-}
 
 std::string findSpecialChars(const std::string &str) {
 	const std::string specialChars = ",;=/-\"@<>[]{}& \t+.-_";
