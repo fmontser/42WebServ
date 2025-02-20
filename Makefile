@@ -10,12 +10,14 @@ BIN_DIR			:=	bin/
 NAME			:=	webserv
 
 HDRS			:=	Config.hpp  Route.hpp Server.hpp HttpRequest.hpp HttpResponse.hpp\
-					Socket.hpp SocketManager.hpp DataAdapter.hpp CgiProcessor.hpp\
-					FileManager.hpp ServerConstants.hpp SignalManager.hpp
+					ConnectionManager.hpp DataAdapter.hpp CgiProcessor.hpp\
+					FileManager.hpp ServerConstants.hpp SignalManager.hpp Connection.hpp\
+					RequestProcessor.hpp
 
 SRCS			:=	main.cpp Config.cpp  Route.cpp Server.cpp HttpRequest.cpp\
-					HttpResponse.cpp Socket.cpp SocketManager.cpp DataAdapter.cpp\
-					CgiProcessor.cpp FileManager.cpp SignalManager.cpp
+					HttpResponse.cpp ConnectionManager.cpp DataAdapter.cpp\
+					CgiProcessor.cpp FileManager.cpp SignalManager.cpp Connection.cpp\
+					RequestProcessor.cpp
 
 OBJS			:=	$(SRCS:.cpp=.o)
 INPUT			:=	"../config/config.cfg"

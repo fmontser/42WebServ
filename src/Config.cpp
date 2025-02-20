@@ -208,12 +208,8 @@ void	Config::addServer(std::vector<std::string>::iterator &it) {
 }
 
 std::map<std::string, Server>&	Config::getServers() { return (std::map<std::string, Server>&)_servers; }
-
+/* 
 std::string	Config::get400Page() {
-	try
-	{
-		if (_actualServer == NULL) {_tokenMap
-std::string	Config::get403Page() {
 	try
 	{
 		if (_actualServer == NULL) {
@@ -303,4 +299,4 @@ std::string	Config::getErrorPage(int errorCode) {
 	else if (errorCode == 501)
 		return get501Page();
 	return "";
-}
+} */

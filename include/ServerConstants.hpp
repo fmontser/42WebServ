@@ -6,8 +6,10 @@
 #define BLUE	"\033[0;34m"
 #define END		"\033[0m"
 
-#define CRLF	"\r\n"
-#define HTTP_BODY_START "\r\n\r\n"
+#define CRLF					"\r\n"
+#define CRLF_OFFSET				2
+#define HTTP_BODY_START			"\r\n\r\n"
+#define HTTP_BODY_START_OFFSET	4
 
 #define MIN_PAYLOAD 1
 #define MAX_PAYLOAD 65536
