@@ -5,12 +5,12 @@
 #include "Config.hpp"
 
 void	printError(std::string str) {
-	std::cout << RED << str <<  END << std::endl;
+	std::cerr << RED << str <<  END << std::endl;
 	exit(1);
 }
 
 bool printFalse(std::string str) {
-	std::cout << RED << str <<  END << std::endl;
+	std::cerr << RED << str <<  END << std::endl;
 	return false;
 }
 
@@ -30,51 +30,33 @@ Config& Config::operator=(const Config& src) {
 	return *this;
 }
 
-static std::map<std::string, void (*)(std::vector<std::string>::iterator &it)>	_tokenMap;
+static std::map<std::string, 
+				void (*)(std::vector<std::string>::iterator &it)> _tokenMap;
 
-static bool isValidConfig(Server server){
+static bool isValidConfig(Server &server){
 	int port = server.getPort();
 	std::map<std::string, Route> routes = server.getRoutes();
 	if (server.getName().empty()) 
 		return printFalse("Config file error: Server name is missing.");
-/* 	{
-		std::cerr << RED << "Config file error: Server name is missing." << END << std::endl;
-		return false;
-	}
- */	
-	if (server.getHost().empty()) {
-		std::cerr << RED << "Config file error: Server host is missing." << END << std::endl;
-		return false;
-	}
-	if (isalpha(port) || port == 0 || (port < 0 || port > 65535)) {
-		std::cerr << RED << "Config file error: Server port is missing." << END << std::endl;
-		return false;
-	}
-	if (server.getMaxPayload() == 0) {
-		std::cerr << RED << "Config file error: Server maxPayload is missing." << END << std::endl;
-		return false;
-	}
-	//TODO	TODO y	TODO
-	if (server.getMaxPayload() < MIN_PAYLOAD || server.getMaxPayload() > MAX_PAYLOAD || isalpha(server.getMaxPayload())) {
-		std::cerr << RED << "Config file error: Server maxPayload is invalid." << END << std::endl;
-		return false;
-	}
-	if (server.getRoot().empty()) {
-		std::cerr << RED << "Config file error: Server root is missing." << END << std::endl;
-		return false;
-	}
-/* 			else if (key == "maxPayload") {
-				char *end;
-				long maxPValue = strtol(value.c_str(), &end, 10);
-				if (maxPValue < MIN_PAYLOAD || maxPValue > MAX_PAYLOAD || !isalnum(maxPValue)) 
-					printError("Config file error: invalid maxPayload value " + value);
-			}
- */
+
+	if (server.getMaxPayload() < MIN_PAYLOAD ||
+	server.getMaxPayload() > MAX_PAYLOAD || isalpha(server.getMaxPayload()))
+		return printFalse("Config file error: Server maxPayload is invalid.");
+
+	if (server.getHost().empty()) 
+		return printFalse("Config file error: Server host is missing.");
+
+	if (isalpha(port) || port == 0 || (port < 0 || port > 65535)) 
+		return printFalse("Config file error: Server port is invalid.");
+
+	if (server.getRoot().empty())
+		return printFalse("Config file error: Server root is missing.");
 
 	return true;
 }
 
-static void	tokenize(std::fstream &configFileStream, std::vector<std::string> &tokenList){
+static void	tokenize(std::fstream &configFileStream,
+	std::vector<std::string> &tokenList){
 	char		c;
 	std::string	token;
 	bool		flag = false;
@@ -120,8 +102,6 @@ void	Config::loadConfig(std::fstream &configFileStream) {
 	}
 }
 
-//TODO cambiar lo del tokenmap!!
-//TODO if else meh... (hacer metodos estaticos y anadirlos al tokenmap??)
 void	Config::addRoute(std::vector<std::string>::iterator &it) {
 	Route route;
 	std::string key, value;
@@ -152,41 +132,31 @@ void	Config::addRoute(std::vector<std::string>::iterator &it) {
 					printError("Config file error: invalid autoindex value " + value);
 				route.setAutoIndex(std::make_pair(key, value));
 			}
-/* 			else if (key == "maxPayload") {
-				char *end;
-				long maxPValue = strtol(value.c_str(), &end, 10);
-				if (maxPValue < MIN_PAYLOAD || maxPValue > MAX_PAYLOAD || !isalnum(maxPValue)) 
-					printError("Config file error: invalid maxPayload value " + value);
-			}
- */
 			else if (key == "root") {
 				if (value[0] != '.' && value[1] != '/') 
 					printError("Config file error: invalid root path " + value);
 
 				route.setRoot(std::make_pair(key, value));
 			}
-				//TODO
+
 			else if (key == "redirect") {
 				if (value[0] != '.' && value[1] != '/') 
 					printError("Config file error: invalid redirect path " + value);
 
 				route.setRedirect(std::make_pair(key, value));
 		}
-				//TODO
 			else
 				printError("Config file error: unknown token " + key);
 
 		}
 	}
-	if (_actualServer->getRoutes().find(route.getUrl()) != _actualServer->getRoutes().end()) {
-		std::cerr << "Config file error: Route " << route.getUrl()<< " is duplicated." << std::endl;
-		exit(1); //TODO terminate
-	}
+	if (_actualServer->getRoutes().find(route.getUrl()) !=
+	_actualServer->getRoutes().end()) 
+		printError("Config file error: Route " + route.getUrl() + " is duplicated.");
 	else
 		_actualServer->getRoutes().insert(std::make_pair(route.getUrl(), route));
 }
 
-//TODO if else meh...(hacer metodos estaticos y anadirlos al tokenmap??)
 void	Config::addServer(std::vector<std::string>::iterator &it) {
 	Server server;
 	_actualServer = &server;
@@ -194,18 +164,34 @@ void	Config::addServer(std::vector<std::string>::iterator &it) {
 	server.setName(*(++it));
 	if (*(++it) == "{") {
 		while(*(++it) != "}") {
-				if (*it == "maxPayload")
+				if (*it == "maxPayload") {
 					server.setMaxPayLoad(*(++it));
+					if (server.getMaxPayload() < MIN_PAYLOAD || server.getMaxPayload() >
+					MAX_PAYLOAD || isalpha(server.getMaxPayload()))
+						printError("Config file error: Server maxPayload is invalid.");
+				}
 				else if (*it == "name")
 					server.setName(*(++it));
-				else if (*it == "host")
+				else if (*it == "host") {
 					server.setHost(*(++it));
+					if (server.getHost() == "port")
+						printError("Config file error: Server host is missing.");
+				}
 				else if (*it == "port")
 					server.setPort(*(++it));
-				else if (*it == "root")
+				else if (*it == "root") {
 					server.setRoot(*(++it));
-				else if (*it == "default")
+					if (server.getRoot()[0] != '.')
+						printError("Config file error: Server root is missing.");
+				}
+				else if (*it == "default") {
 					server.setDefault(*(++it));
+					std::string defaultPage = server.getDefault();
+					if (defaultPage.size() < 5 || defaultPage.substr(defaultPage.size()
+					- 5) != ".html") {
+						printError("Config file error: Server default must end with .html");
+						}
+				}
 				else if (*it == "route")
 					addRoute(it);
 				else if (*it == "methods") {
@@ -218,26 +204,22 @@ void	Config::addServer(std::vector<std::string>::iterator &it) {
 						server.addConfigMethods(*it);
 					} 
 				}
-				else {
-					std::cerr << RED << "Config file error: unknown token " << *it << END << std::endl;
-					exit(1);
-				}
+				else 
+					printError("Config file error: unknown token " + *it);
 				
 		}
-		if (!isValidConfig(server)) {
-			std::cerr << RED << "Config file error: server " << server.getName()<< " is invalid." << END << std::endl;
-			exit(1);
-		}
+		 if (!isValidConfig(server)) 
+			printError("Config file error: server " + server.getName() + " is invalid.");
 	}
 
-	if (_servers.find(server.getName()) != _servers.end()) {
-		std::cerr << "Config file error: server " << server.getName()<< " is duplicated." << std::endl;
-		exit(1); 
-	}
+	if (_servers.find(server.getName()) != _servers.end()) 
+		printError("Config file error: server " + server.getName()
+			+ " is duplicated.");
 	else {
 		_servers.insert(std::make_pair(server.getName(), server));
 		_actualServer = &(_servers[server.getName()]);
 	}
 }
 
-std::map<std::string, Server>&	Config::getServers() { return (std::map<std::string, Server>&)_servers; }
+std::map<std::string, Server>&	Config::getServers() { 
+	return (std::map<std::string, Server>&)_servers; }
