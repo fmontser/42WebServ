@@ -35,19 +35,21 @@ static void	trimToken(std::string& str) {
 	str = str.substr(start, end - start + 1);
 }
 
-void	DataAdapter::processData() {
-	std::stringstream data;
-	std::string requestLine, headerLine, headerKey, headerValue, bodyValue, processedHeaderValues;
-	std::pair<std::string, std::string> header;
+static void	parseRequestLine(std::stringstream& data, HttpRequest& request) {
+	std::string	requestLine;
 
-	data << _connection->recvBuffer;
-	
 	std::getline(data, requestLine);
-	_request.setMethod(requestLine.substr(0, requestLine.find(' ')));
+	request.setMethod(requestLine.substr(0, requestLine.find(' ')));
 	requestLine =  requestLine.substr(requestLine.find(' ') + 1, requestLine.size());
-	_request.setUrl(requestLine.substr(0, requestLine.find(' ')));
+	request.setUrl(requestLine.substr(0, requestLine.find(' ')));
 	requestLine =  requestLine.substr(requestLine.find(' ') + 1, requestLine.size());
-	_request.setVersion(requestLine.substr(0, requestLine.find('\r')));
+	request.setVersion(requestLine.substr(0, requestLine.find('\r')));
+}
+
+//TODO full header parser
+static void	parseHeaders(std::stringstream& data, HttpRequest& request) {
+	std::string	headerLine, headerKey, headerValue;
+	std::pair<std::string, std::string> header;
 
 	while (std::getline(data, headerLine)) {
 		if (headerLine == "\r")
@@ -58,15 +60,27 @@ void	DataAdapter::processData() {
 		trimToken(headerValue);
 		//TODO @@@@@ parsear headers completamente y estructurarlo (nuevas funciones)
 		header = std::make_pair(headerKey, headerValue);
-		_request.addHeader(header);
+		request.addHeader(header);
 	}
+}
+
+static void	parseBody(std::stringstream& data, HttpRequest& request) {
+	std::string	bodyValue;
 
 	while (std::getline(data, bodyValue)) {
 		bodyValue.append(bodyValue);
 		bodyValue.append(std::string(1,'\n'));
 	}
-	_request.setBody(bodyValue);
+	request.setBody(bodyValue);
+}
 
+void	DataAdapter::processData() {
+	std::stringstream data;
+
+	data << _connection->recvBuffer;
+	parseRequestLine(data, _request);
+	parseHeaders(data, _request);
+	parseBody(data, _request);
 	HttpProcessor::processHttpRequest(*this);
 	processResponse();
 	_request.clear();
@@ -84,7 +98,6 @@ void	DataAdapter::processResponse() {
 	}
 	buffer << CRLF;
 	buffer << _response.getBody();
-
 	_connection->sendBuffer = buffer.str();
 }
 
