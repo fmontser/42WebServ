@@ -86,41 +86,15 @@ void	DataAdapter::processResponse() {
 	buffer << _response.getBody();
 
 	_connection->sendBuffer = buffer.str();
-	_connection->sendBufferSize = _response.getBody().size();
 }
 
-
+Connection	*DataAdapter::getConnection() const { return _connection; }
 HttpRequest& DataAdapter::getRequest() { return _request; }
 HttpResponse& DataAdapter::getResponse() { return _response; }
 
-/* void	DataAdapter::sendData(Connection *targetConnection, HttpResponse& response) {
-	std::stringstream									buffer;
-	std::multimap<std::string, std::string>				headers = response.getHeaders();
-	std::multimap<std::string, std::string>::iterator	it;
-	bool												hasChunks = false;
 
-	(void)targetConnection; //TODO borrar
-	buffer << response.getVersion() << " " << response.getStatusCode() << " " << response.getStatusMsg() << CRLF;
-	for ( it = headers.begin(); it != headers.end(); ++it) {
-		buffer << it->first << ": " << it->second << CRLF;
-	}
-	buffer << CRLF;
-	buffer << response.getBody();
-
-	//TODO test chunks!
-	it = response.getHeaders().find("Transfer-Encoding");
-	if (it != response.getHeaders().end() && it->second == "chunked")
-		hasChunks = true;
-	(void)hasChunks;
-	//TODO fix
-	//ConnectionManager::recieveResponse(targetConnection, buffer.str(), hasChunks); 
-}
- */
-/* 
-
-
-
-std::string findSpecialChars(const std::string &str) {
+//TODO header full parsing
+/* std::string findSpecialChars(const std::string &str) {
 	const std::string specialChars = ",;=/-\"@<>[]{}& \t+.-_";
 	size_t pos = str.find_first_of(specialChars);
 	if (pos != std::string::npos)
@@ -154,6 +128,4 @@ ParsedHeader parsedHeaderValue(const std::string &headerValue){
 		}
 	}
 	return result;
-}
-
- */
+} */

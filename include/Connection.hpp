@@ -18,7 +18,7 @@ class Connection {
 
 		std::string	recvBuffer;
 		std::string	sendBuffer;
-		int			sendBufferSize;
+		bool		isChunkedResponse;
 
 		Connection(Server& server);
 		Connection(const Connection& src);

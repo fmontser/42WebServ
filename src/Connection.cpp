@@ -2,6 +2,7 @@
 #include <sys/socket.h>
 #include <iostream>
 #include <unistd.h>
+#include <cstdlib>
 #include "Connection.hpp"
 #include "ConnectionManager.hpp"
 #include "DataAdapter.hpp"
@@ -15,6 +16,7 @@ Connection::Connection(Server& server) : _server(server) {
 		std::cerr << RED << "Error: client connection error " << END << std::endl;
 	}
 
+	isChunkedResponse = false;
 	_pollfd = pollfd();
 	_pollfd.fd = _socketFd;
 	_pollfd.events = POLLIN | POLLOUT | POLLHUP | POLLERR;
@@ -26,7 +28,6 @@ Connection::Connection(const Connection& src) : _server(src._server) {
 	_pollfd = src._pollfd;
 	recvBuffer = src.recvBuffer;
 	sendBuffer = src.sendBuffer;
-	sendBufferSize = src.sendBufferSize;
 }
 
 Connection& Connection::operator=(const Connection& src) {
@@ -35,7 +36,6 @@ Connection& Connection::operator=(const Connection& src) {
 		_pollfd = src._pollfd;
 		recvBuffer = src.recvBuffer;
 		sendBuffer = src.sendBuffer;
-		sendBufferSize = src.sendBufferSize;
 	}
 	return *this;
 }
@@ -69,46 +69,42 @@ void	Connection::recieveData() {
 }
 
 void	Connection::sendData() {
+	std::string chunk;
+	static bool chunkHeadSent = false;
 
-	//TODO borrar  envio completo temporal
-	if (sendBufferSize > 0 && send(_socketFd, sendBuffer.c_str(), sendBufferSize, 0) == -1)
+	chunk.clear();
+	if (isChunkedResponse) {
+		if (sendBuffer.find(HTTP_BODY_START) != std::string::npos && !chunkHeadSent)
+		{
+			size_t csize = sendBuffer.find(HTTP_BODY_START) + HTTP_BODY_START_OFFSET;
+			chunk += sendBuffer.substr(0, csize);
+			sendBuffer = sendBuffer.substr(chunk.size(), sendBuffer.size());
+			chunkHeadSent = true;
+		}
+		if (sendBuffer.find(CRLF) != std::string::npos) {
+			size_t csize = sendBuffer.find(CRLF) + CRLF_OFFSET;
+			csize += std::strtol(sendBuffer.substr(0, csize).c_str(), NULL, 16) + 2;
+			chunk += sendBuffer.substr(0, csize);
+			sendBuffer = sendBuffer.substr(csize, sendBuffer.size());
+		}	
+		if (sendBuffer.empty()) {
+			isChunkedResponse = false;
+			chunkHeadSent = false;
+			sendBuffer.clear();
+			recvBuffer.clear();
+		}
+		if (send(_socketFd, chunk.c_str(), chunk.size(), 0) == -1) {
+			std::cerr << RED << "Send error: Server connection error" << END << std::endl;
+		}
+		return ;
+	}
+	else if (send(_socketFd, sendBuffer.c_str(), sendBuffer.size(), 0) == -1) {
 		std::cerr << RED << "Send error: Server connection error" << END << std::endl;
-	sendBufferSize = 0;
+	}
 	sendBuffer.clear();
+	recvBuffer.clear();
 }
 
 void	Connection::updatePollFd(struct pollfd pfd) { _pollfd = pfd; }
 bool	Connection::hasPollIn() const { return _pollfd.revents & POLLIN; }
 bool	Connection::hasPollOut() const { return _pollfd.revents && POLLOUT; }
-
-/* 	std::string chunk;
-	static bool chunkHeadSent = false;
-
-	chunk.clear();
-	if (connection->chunkMode) {
-		if (connection->sendBuffer.find(HTTP_BODY_START) != std::string::npos && !chunkHeadSent)
-		{
-			size_t csize = connection->sendBuffer.find(HTTP_BODY_START) + 4;
-			chunk += connection->sendBuffer.substr(0, csize);
-			connection->sendBuffer = connection->sendBuffer.substr(chunk.size(), connection->sendBuffer.size());
-			chunkHeadSent = true;
-		}
-		if (connection->sendBuffer.find(CRLF) != std::string::npos) {
-			size_t csize = connection->sendBuffer.find(CRLF) + 2;
-			csize += std::strtol(connection->sendBuffer.substr(0, csize).c_str(), NULL, 16) + 2;
-			chunk += connection->sendBuffer.substr(0, csize);
-			connection->sendBuffer = connection->sendBuffer.substr(csize, connection->sendBuffer.size());
-		}	
-		if (connection->sendBuffer.empty()) {
-			connection->chunkMode = false;
-			chunkHeadSent = false;
-		}
-		if (send(connection->getFd(), chunk.c_str(), chunk.size(), 0) == -1) {
-			std::cerr << RED << "Send error: Server connection error" << END << std::endl;
-		}
-		return ;
-	}
-	else if (send(connection->getFd(), connection->sendBuffer.c_str(), connection->sendBuffer.size(), 0) == -1) {
-		std::cerr << RED << "Send error: Server connection error" << END << std::endl;
-	}
-	connection->sendBuffer.clear(); */

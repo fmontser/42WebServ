@@ -6,22 +6,16 @@
 #include "FileManager.hpp"
 #include "DataAdapter.hpp"
 #include "ServerConstants.hpp"
-
-HttpRequest		FileManager::_request;
-HttpResponse	FileManager::_response;
+#include "Connection.hpp"
 
 FileManager::FileManager() {}
 FileManager::~FileManager() {}
 
-FileManager::FileManager(const FileManager& src) {
-	_request = src._request;
-	_response = src._response;
-}
+FileManager::FileManager(const FileManager& src) { (void)src; }
 
 FileManager& FileManager::operator=(const FileManager& src) {
 	if (this != &src) {
-		_request = src._request;
-		_response = src._response;
+		(void)src;
 	}
 	return *this;
 }
@@ -43,14 +37,16 @@ static void chunkEncode(std::string& body, size_t maxPayload) {
 	body = buffer.str();
 }
 
-static int readFile(Socket *socket, HttpRequest& request, HttpResponse& response ) {
+void	FileManager::readFile(DataAdapter& dataAdapter) {
 	std::string			target, body; 
 	int					fd, readSize;
-	Server&	server = *socket->getParentServer();
-
+	Server&				server = dataAdapter.getConnection()->getServer();
+	HttpRequest&		request = dataAdapter.getRequest();
+	HttpResponse&		response = dataAdapter.getResponse();
+	
 	target = server.getRoot().substr(0, server.getRoot().size() - 1).append(request.getUrl());
 	if (isDirectory(request.getUrl()))
-		target.append("index.html"); //TODO respuesta default si se solicita un directorio, que pasa con index.php?
+		target.append("index.html"); //TODO hardcoded, obtener de config
 	
 	fd = open(target.c_str(), O_RDONLY, 0644);
 	if (fd < 0) {
@@ -71,37 +67,14 @@ static int readFile(Socket *socket, HttpRequest& request, HttpResponse& response
 	}
 	else {
 		std::stringstream	bodySize;
-		bodySize << body.size() - 1;
+		bodySize << body.size();
 		response.addHeader(std::make_pair("Content-Length", bodySize.str()));
+		bodySize.clear();
 	}
 	response.setBody(body);
-	return (fd);
+	close(fd);
 }
 
-static int writeFile(Socket *socket , HttpRequest& request, HttpResponse& response ) {
-	//TODO @@@@@@@ implementar escritura del archivo...hayq que quitar las boundaries
-	(void)socket;
-	(void)request;
-	(void)response;
-
-	//envia el cliente todo por el mismo socket??? 
-	return 0;
+void	FileManager::writeFile(DataAdapter& dataAdapter) {
+	(void)dataAdapter;
 }
-
-void	FileManager::processMultiPart(Socket *socket) {
-	int fd;
-
-	if (socket->multiMode) {
-		_request.setBody(socket->recvBuffer);
-		socket->multiMode = false;
-	}
-	
-	fd = writeFile(socket, _request, _response);
-	if (fd < 0)
-		(void)socket; //TODO error 500!
-	_response.setStatusCode("201");
-	_response.setStatusMsg("CREATED");
-	std::cout << BLUE << "Info: success 201 \"" << _request.getMethod() << "\", CREATED " << END << std::endl;
-
-}
-

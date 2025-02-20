@@ -10,12 +10,12 @@ BIN_DIR			:=	bin/
 NAME			:=	webserv
 
 HDRS			:=	Config.hpp  Route.hpp Server.hpp HttpRequest.hpp HttpResponse.hpp\
-					Socket.hpp ConnectionManager.hpp DataAdapter.hpp CgiProcessor.hpp\
+					ConnectionManager.hpp DataAdapter.hpp CgiProcessor.hpp\
 					FileManager.hpp ServerConstants.hpp SignalManager.hpp Connection.hpp\
 					RequestProcessor.hpp
 
 SRCS			:=	main.cpp Config.cpp  Route.cpp Server.cpp HttpRequest.cpp\
-					HttpResponse.cpp Socket.cpp ConnectionManager.cpp DataAdapter.cpp\
+					HttpResponse.cpp ConnectionManager.cpp DataAdapter.cpp\
 					CgiProcessor.cpp FileManager.cpp SignalManager.cpp Connection.cpp\
 					RequestProcessor.cpp
 

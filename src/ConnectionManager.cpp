@@ -30,7 +30,7 @@ static int	pollSockets(Server& server) {
 	int						pollStatus;
 	std::list<Connection *>	connectionList;
 	size_t					i = 1;
-	
+
 	connectionList = server.getConnectionList();
 	pollfd	pollArray[connectionList.size() + 1];
 	pollArray[0] = server.getPollfd();

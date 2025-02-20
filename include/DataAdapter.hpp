@@ -21,6 +21,8 @@ class DataAdapter {
 		DataAdapter(const DataAdapter& src);
 		DataAdapter& operator=(const DataAdapter& src);
 
+		Connection		*getConnection() const;
+
 		HttpRequest&	getRequest();
 		HttpResponse&	getResponse();
 		void			processData();

@@ -3,7 +3,6 @@
 #include "Config.hpp"
 #include "ConnectionManager.hpp"
 #include "SignalManager.hpp"
-#include "Socket.hpp"
 #include "Server.hpp"
 
 int main(int argc, char** argv) {
