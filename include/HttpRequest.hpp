@@ -2,13 +2,14 @@
 #include <string>
 #include <sstream>
 #include <map>
+#include "HttpHeader.hpp"
 
 class HttpRequest {
 	private:
 		std::string								_method;
 		std::string								_url;
 		std::string								_version;
-		std::multimap<std::string, std::string>	_headers;
+		HeaderList								_headers;
 		std::string								_body;
 
 	public:
@@ -22,13 +23,13 @@ class HttpRequest {
 		std::string									getMethod() const;
 		std::string									getUrl() const;
 		std::string									getVersion() const;
-		std::multimap<std::string, std::string>		getHeaders() const;
+		HeaderList&									getHeaders();
 		std::string									getBody() const;
 
 		void	setMethod(const std::string& method);
 		void	setUrl(const std::string& method);
 		void	setVersion(const std::string& method);
-		void	addHeader(std::pair<std::string, std::string>& header);
+		void	addHeader(HeaderEntry header);
 		void	setBody(const std::string& method);
 };
 

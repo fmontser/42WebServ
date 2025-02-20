@@ -12,12 +12,12 @@ NAME			:=	webserv
 HDRS			:=	Config.hpp  Route.hpp Server.hpp HttpRequest.hpp HttpResponse.hpp\
 					ConnectionManager.hpp DataAdapter.hpp CgiProcessor.hpp\
 					FileManager.hpp ServerConstants.hpp SignalManager.hpp Connection.hpp\
-					RequestProcessor.hpp
+					RequestProcessor.hpp HttpHeader.hpp
 
 SRCS			:=	main.cpp Config.cpp  Route.cpp Server.cpp HttpRequest.cpp\
 					HttpResponse.cpp ConnectionManager.cpp DataAdapter.cpp\
 					CgiProcessor.cpp FileManager.cpp SignalManager.cpp Connection.cpp\
-					RequestProcessor.cpp
+					RequestProcessor.cpp HttpHeader.cpp
 
 OBJS			:=	$(SRCS:.cpp=.o)
 INPUT			:=	"../config/config.cfg"
