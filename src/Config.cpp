@@ -16,6 +16,7 @@ bool printFalse(const std::string &str) {
 
 std::map<std::string, Server> Config::_servers;
 Server* Config::_actualServer = NULL; 
+/* bool isRoute = false; */
 
 Config::Config() {}
 Config::~Config() {}
@@ -53,6 +54,9 @@ bool Config::isValidConfig(const Server &server) {
 
     const std::map<std::string, Route>& _routes = server.getRoutes();
     for (std::map<std::string, Route>::const_iterator it = _routes.begin(); it != _routes.end(); ++it) {
+        
+        if (it->first.empty() || it->first[0] == '{')
+            return printFalse("Config file error: Route url is missing.");
         const Route& route = it->second;
 
         const std::multimap<std::string, std::string>& methods = route.getMethods();
@@ -67,7 +71,7 @@ bool Config::isValidConfig(const Server &server) {
                 return printFalse("Config file error: Invalid root path '" + fit->second + "' in route " + route.getUrl());
             if (fit->first == "redirect" && (fit->second[0] != '.' || fit->second[1] != '/'))
                 return printFalse("Config file error: Invalid redirect path '" + fit->second + "' in route " + route.getUrl());
-            if (fit->first == "autoindex" && (fit->second != "on" && fit->second != "off"))
+            if ((fit->first == "autoindex" && (fit->second != "on" && fit->second != "off"))/*  || !isRoute */)
                 return printFalse("Config file error: Invalid autoindex value " + fit->second );
         }
     }
@@ -123,15 +127,14 @@ void Config::addRoute(std::vector<std::string>::iterator &it) {
     std::string key, value;
  
     route.setUrl(*(++it));
-    if (*it == "{")
-        printError("Config file error: Route " + route.getUrl() + " is empty.");
+
     if (*(++it) == "{") {
         while (*(++it) != "}") {
             key = *it;
             value = *(++it);
             if (key == "methods") {
                 while (42) {
-                    if (*it == "GET" || *it == "POST" || *it == "PUT" || *it == "DELETE") {
+                    if (*it == "GET" || *it == "POST" || *it == "DELETE") {
                         route.addMethod(std::make_pair("method", *it));
                     }
                     else {
@@ -145,23 +148,18 @@ void Config::addRoute(std::vector<std::string>::iterator &it) {
                 route.addFile(std::make_pair(key, value));
             }
             else if (key == "root") {
-             /*    if (value[0] != '.' || value[1] != '/')
-                    printError("Config file error: invalid root path " + value); */
                 route.addFile(std::make_pair(key, value));
             }
             else if (key == "redirect") {
-/*                 if (value[0] != '.' || value[1] != '/')
-                    printError("Config file error: invalid redirect path " + value);
- */                route.addFile(std::make_pair(key, value));
+                route.addFile(std::make_pair(key, value));
             }
             else if (key == "autoindex") {
-/*                 if (value != "on" && value != "off")
-                    printError("Config file error: invalid autoindex value " + value);
- */                route.addFile(std::make_pair(key, value));
+                route.addFile(std::make_pair(key, value));
             }
             else {
                 printError("Config file error: unknown token " + key);
             }
+           /*  isRoute = false; */
         }
     }
 
@@ -197,6 +195,7 @@ void Config::addServer(std::vector<std::string>::iterator &it) {
                 server.setDefault(*(++it));
             }
             else if (*it == "route") {
+              /*   isRoute = true; */
                 addRoute(it);
             }
             else if (*it == "methods") {

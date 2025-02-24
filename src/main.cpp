@@ -6,7 +6,7 @@
 
 int main(int argc, char** argv) {
 	
-	//Config config;
+
 	if (argc < 2) {
 		std::cerr << "Argument error: Invalid number of arguments" << std::endl;
 		return(1);
