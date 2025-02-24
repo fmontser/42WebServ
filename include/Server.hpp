@@ -24,14 +24,14 @@ class Server {
 		Server(const Server& src);
 		Server& operator=(const Server& src);
 
-	std::string						getName() const;
-	std::string						getHost() const;
-	int								getPort() const;
-	std::string						getRoot() const;
-	int								getMaxPayload() const;
-	std::map<std::string, Route>&	getRoutes();
-	std::list<Socket *>&			getSocketList();
-	std::string						getDefault() const;
+	std::string										getName() const;
+	std::string										getHost() const;
+	int														getPort() const;
+	std::string										getRoot() const;
+	int														getMaxPayload() const;
+	std::map<std::string, Route>&	getRoutes() const;
+	std::list<Socket *>&					getSocketList();
+	std::string										getDefault() const;
 
 
 	void	setName(const std::string& name);

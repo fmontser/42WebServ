@@ -5,12 +5,12 @@
 
 class Route {
 	private:
-		std::string								_url;
+		std::string															_url;
 		std::multimap<std::string, std::string>	_methods;
 		std::multimap<std::string, std::string>	_files;
-		std::pair<std::string, std::string>		_autoIndex;
-		std::pair<std::string, std::string>		_root;
-		std::pair<std::string, std::string>		_redirect;
+		std::pair<std::string, std::string>			_autoIndex;
+		std::pair<std::string, std::string>			_root;
+		std::pair<std::string, std::string>			_redirect;
 
 	public:
 		Route();

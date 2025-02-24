@@ -34,11 +34,12 @@ Server& Server::operator=(const Server& src) {
 
 std::string						Server::getName() const { return this->_name; }
 std::string						Server::getHost() const { return this->_host; }
-int								Server::getPort() const { return this->_port; }
+int										Server::getPort() const { return this->_port; }
 std::string						Server::getRoot() const { return this->_root; }
-int								Server::getMaxPayload() const { return _maxPayload; }
+int										Server::getMaxPayload() const { return _maxPayload; }
 
-std::map<std::string, Route>&	Server::getRoutes() { return (std::map<std::string, Route>&)_routes; }
+std::map<std::string, Route>&	Server::getRoutes() const { 
+	return (std::map<std::string, Route>&) _routes; }
 std::list<Socket *>&			Server::getSocketList() { return _socketList; }
 std::string						Server::getDefault() const { return _default; }
 
@@ -53,10 +54,6 @@ void	Server::setPort(const std::string& port) {
 	int		portNumber;
 	
 	portNumber = strtol(port.c_str(), &err, 10);
-/* 	if (portNumber < MIN_PORT_NUMBER || portNumber > MAX_PORT_NUMBER || isalpha(*err)) {
-		std::cerr << "Config file error: Invalid port number." << std::endl;
-		exit(EXIT_FAILURE);
-	} */
 	_port = portNumber;
 }
 
@@ -65,9 +62,5 @@ void	Server::setMaxPayLoad(const std::string& maxPayLoad) {
 	int		payloadSize;
 	
 	payloadSize = strtol(maxPayLoad.c_str(), &err, 10);
-/* 	if (payloadSize < MIN_PAYLOAD || payloadSize > MAX_PAYLOAD || isalpha(*err)) {
-		std::cerr << "Config file error: Invalid payload size." << std::endl;
-		exit(EXIT_FAILURE); //TODO terminate
-	} */
 	_maxPayload = payloadSize;
 }
