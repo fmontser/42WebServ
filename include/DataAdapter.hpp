@@ -13,7 +13,6 @@ class DataAdapter {
 		HttpResponse	_response;
 		Connection		*_connection;
 
-		void	processResponse();
 
 	public:
 		DataAdapter(Connection *connection);
@@ -25,5 +24,6 @@ class DataAdapter {
 
 		HttpRequest&	getRequest();
 		HttpResponse&	getResponse();
-		void			processData();
+		void			deSerializeRequest();
+		void			serializeResponse();
 };

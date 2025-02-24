@@ -24,6 +24,10 @@ std::cerr << YELLOW << "Warning: Error 405 \"" << _request.getMethod() << "\" me
 //TODO curl test con:
 /*
 
+curl -X GET -H "SuperHeader: value1; prop0, value2; prop0; prop1" http://localhost:8042/
+
+
+
 curl -X GET http://localhost:8042/
 curl -F "file=@webserv" http://localhost:8042/
 

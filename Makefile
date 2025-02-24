@@ -9,20 +9,20 @@ BIN_DIR			:=	bin/
 
 NAME			:=	webserv
 
-HDRS			:=	Config.hpp  Route.hpp Server.hpp HttpRequest.hpp HttpResponse.hpp\
-					ConnectionManager.hpp DataAdapter.hpp CgiProcessor.hpp\
-					FileManager.hpp ServerConstants.hpp SignalManager.hpp Connection.hpp\
-					RequestProcessor.hpp HttpHeader.hpp
+HDRS			:=	ServerConstants.hpp	Config.hpp  Route.hpp Server.hpp HttpMessage.hpp HttpRequest.hpp\
+					HttpResponse.hpp ConnectionManager.hpp DataAdapter.hpp CgiProcessor.hpp\
+					FileManager.hpp  SignalManager.hpp Connection.hpp RequestProcessor.hpp HttpHeader.hpp\
+					HeaderValue.hpp HeaderProperty.hpp Utils.hpp
 
-SRCS			:=	main.cpp Config.cpp  Route.cpp Server.cpp HttpRequest.cpp\
-					HttpResponse.cpp ConnectionManager.cpp DataAdapter.cpp\
-					CgiProcessor.cpp FileManager.cpp SignalManager.cpp Connection.cpp\
-					RequestProcessor.cpp HttpHeader.cpp
+SRCS			:=	main.cpp			Config.cpp  Route.cpp Server.cpp HttpMessage.cpp HttpRequest.cpp\
+					HttpResponse.cpp ConnectionManager.cpp DataAdapter.cpp CgiProcessor.cpp\
+					FileManager.cpp SignalManager.cpp Connection.cpp RequestProcessor.cpp HttpHeader.cpp\
+					HeaderValue.cpp HeaderProperty.cpp Utils.cpp
 
 OBJS			:=	$(SRCS:.cpp=.o)
 INPUT			:=	"../config/config.cfg"
 
-CC				:= g++ #c++
+CC				:=	g++ #c++
 CC_FLAGS		:=	-Wall -Werror -Wextra -g -c -std=c++98
 CLEAN_TARGETS	:=	$(wildcard $(addprefix $(OBJ_DIR), $(OBJS) $(TEST_OBJS)))
 FCLEAN_TARGETS	:=	$(wildcard $(addprefix $(BIN_DIR), $(NAME) $(TEST_NAME)))\

@@ -6,6 +6,7 @@
 #include "Connection.hpp"
 #include "ConnectionManager.hpp"
 #include "DataAdapter.hpp"
+#include "RequestProcessor.hpp"
 
 Connection::Connection(Server& server) : _server(server) {
 	sockaddr_in	client_addr;
@@ -64,7 +65,9 @@ void	Connection::recieveData() {
 	else if (len > 0) {
 		recvBuffer.clear();
 		recvBuffer.append(buffer);
-		adapter.processData();
+		adapter.deSerializeRequest();
+		HttpProcessor::processHttpRequest(adapter);
+		adapter.serializeResponse();
 	}
 }
 
@@ -108,3 +111,4 @@ void	Connection::sendData() {
 void	Connection::updatePollFd(struct pollfd pfd) { _pollfd = pfd; }
 bool	Connection::hasPollIn() const { return _pollfd.revents & POLLIN; }
 bool	Connection::hasPollOut() const { return _pollfd.revents && POLLOUT; }
+
