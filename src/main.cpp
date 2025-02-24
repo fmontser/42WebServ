@@ -6,6 +6,7 @@
 
 int main(int argc, char** argv) {
 	
+	Config config;
 	if (argc < 2) {
 		std::cerr << "Argument error: Invalid number of arguments" << std::endl;
 		return(1);
@@ -18,7 +19,7 @@ int main(int argc, char** argv) {
 		return (1);
 	}
 
-	Config::loadConfig(configFileStream);
+	config.loadConfig(configFileStream);
 
 	bool asServer = true;
 	for (std::map<std::string, Server>::iterator it = Config::getServers().begin();
