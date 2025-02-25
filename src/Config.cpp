@@ -116,6 +116,7 @@ void Config::loadConfig(std::fstream &configFileStream) {
 
     tokenize(configFileStream, tokenList);
 
+
     for (it = tokenList.begin(); it != tokenList.end(); ++it) {
         if (*it == "server")
             addServer(it);
