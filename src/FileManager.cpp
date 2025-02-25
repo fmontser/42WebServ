@@ -70,6 +70,7 @@ void	FileManager::readFile(DataAdapter& dataAdapter) {
 		std::stringstream	contentLengthHeader;
 		contentLengthHeader << "Content-Length: " << body.size();
 		response.addHeader(contentLengthHeader.str());
+
 	}
 	response.body = body;
 	close(fd);

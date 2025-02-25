@@ -28,6 +28,7 @@ class Server {
 		Server(const Server& src);
 		Server& operator=(const Server& src);
 
+
 		std::string						getName() const;
 		std::string						getHost() const;
 		int								getPort() const;
@@ -52,5 +53,4 @@ class Server {
 		void	listenSocket();
 		bool	hasPollIn() const;
 		bool	hasPollOut() const;
-
 };
