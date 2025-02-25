@@ -25,8 +25,8 @@ void SignalManager::signalHandler(int signal) {
 }
 
 void SignalManager::signalSetUp() {
-		signal(SIGINT, signalHandler);
-		signal(SIGQUIT, signalHandler);
-		signal(SIGTERM, signalHandler);
-		signal(SIGTSTP, signalHandler);
+	signal(SIGINT, signalHandler);
+	signal(SIGQUIT, signalHandler);
+	signal(SIGTERM, signalHandler);
+	signal(SIGTSTP, signalHandler);
 }

@@ -2,6 +2,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <cstdlib>
+#include <sstream>
 #include "Config.hpp"
 #include "FileManager.hpp"
 #include "DataAdapter.hpp"
@@ -44,15 +45,15 @@ void	FileManager::readFile(DataAdapter& dataAdapter) {
 	HttpRequest&		request = dataAdapter.getRequest();
 	HttpResponse&		response = dataAdapter.getResponse();
 	
-	target = server.getRoot().substr(0, server.getRoot().size() - 1).append(request.getUrl());
-	if (isDirectory(request.getUrl()))
+	target = server.getRoot().substr(0, server.getRoot().size() - 1).append(request.url);
+	if (isDirectory(request.url))
 		target.append("index.html"); //TODO hardcoded, obtener de config
 	
 	fd = open(target.c_str(), O_RDONLY, 0644);
 	if (fd < 0) {
 		fd = open("../web/default/404.html", O_RDONLY, 0644); //TODO hardcoded, debe obtener la ruta del config.
-		response.setStatusCode("404");
-		response.setStatusMsg("NOT_FOUND");
+		response.statusCode = "404";
+		response.statusMsg = "NOT_FOUND";
 		std::cerr << YELLOW << "Warning: error 404 \"" << target << "\", NOT_FOUND " << END << std::endl;
 	}
 	do {
@@ -62,16 +63,15 @@ void	FileManager::readFile(DataAdapter& dataAdapter) {
 	} while (readSize > 0);
 	
 	if ((int)body.size() > server.getMaxPayload()){
-		response.addHeader(std::make_pair("Transfer-Encoding","chunked"));
+		response.addHeader("Transfer-Encoding: chunked");
 		chunkEncode(body, server.getMaxPayload());
 	}
 	else {
-		std::stringstream	bodySize;
-		bodySize << body.size();
-		response.addHeader(std::make_pair("Content-Length", bodySize.str()));
-		bodySize.clear();
+		std::stringstream	contentLengthHeader;
+		contentLengthHeader << "Content-Length: " << body.size();
+		response.addHeader(contentLengthHeader.str());
 	}
-	response.setBody(body);
+	response.body = body;
 	close(fd);
 }
 

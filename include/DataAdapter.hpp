@@ -13,7 +13,6 @@ class DataAdapter {
 		HttpResponse	_response;
 		Connection		*_connection;
 
-		void	processResponse();
 
 	public:
 		DataAdapter(Connection *connection);
@@ -23,7 +22,9 @@ class DataAdapter {
 
 		Connection		*getConnection() const;
 
-		HttpRequest&	getRequest();
-		HttpResponse&	getResponse();
-		void			processData();
+		HttpRequest&		getRequest();
+		HttpResponse&		getResponse();
+		void				deserializeRequest();
+		void				serializeResponse();
+		static HttpHeader	deserializeHeader(std::string header);
 };
