@@ -12,7 +12,7 @@ private:
 
     static void addRoute(std::vector<std::string>::iterator &it);
     static void addServer(std::vector<std::string>::iterator &it);
-    static bool isValidConfig(const Server &server);
+    static bool isValidConfig(Server &server);
 
     Config();
     ~Config();
