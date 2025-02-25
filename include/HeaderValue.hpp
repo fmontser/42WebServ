@@ -5,11 +5,14 @@
 #include "HeaderProperty.hpp"
 
 class HeaderValue {
+	private:
+		void*	operator new(size_t size);
+		void	operator delete(void* ptr);
 	public:
 		std::string					name;
 		std::vector<HeaderProperty>	properties;
 
-		HeaderValue(std::string name);
+		HeaderValue();
 		HeaderValue(const HeaderValue& src);
 		HeaderValue& operator=(const HeaderValue& src);
 		~HeaderValue();

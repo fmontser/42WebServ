@@ -18,9 +18,7 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter) {
 			std::cout << BLUE << "Info: success 200 \"" << _request.method << "\", OK " << END << std::endl;
 			std::cout << BLUE << "Connection fd: " << dataAdapter.getConnection()->getPollFd().fd << std::endl;
 		}
-		//TODO arreglar acceso al header.
-/* 		if (_response.getHeaders().find("Transfer-encoding")->second == "chunked")
-			dataAdapter.getConnection()->isChunkedResponse = true; */
+		dataAdapter.getConnection()->isChunkedResponse = _response.isChunked();
 	}
 	else if (_request.method == "POST") {
 		//TODO POST METHOD

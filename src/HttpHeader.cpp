@@ -1,10 +1,7 @@
 #include "HttpHeader.hpp"
 #include "HttpResponse.hpp"
 
-HttpHeader::HttpHeader(std::string name) {
-	this->name = name;
-	this->values = values;
-}
+HttpHeader::HttpHeader() {}
 
 HttpHeader::HttpHeader(const HttpHeader& src) {
 	this->name = src.name;
@@ -22,11 +19,9 @@ HttpHeader& HttpHeader::operator=(const HttpHeader& src) {
 HttpHeader::~HttpHeader() {}
 
 bool	HttpHeader::getValue(std::string name, HeaderValue *value) {
-	
-	(void)value;
 	for (std::vector<HeaderValue>::iterator it = values.begin(); it != values.end(); ++it) {
-		if (it->name == name) {
-			value = &(*it);
+		if (this->name == name) {
+			value->name = it->name;
 			return true;
 		}
 	}

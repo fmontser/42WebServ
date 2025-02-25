@@ -21,4 +21,5 @@ class HttpMessage {
 		std::string				body;
 
 		void	addHeader(HttpHeader header);
+		void	addHeader(std::string header);
 };

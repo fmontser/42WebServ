@@ -65,7 +65,7 @@ void	Connection::recieveData() {
 	else if (len > 0) {
 		recvBuffer.clear();
 		recvBuffer.append(buffer);
-		adapter.deSerializeRequest();
+		adapter.deserializeRequest();
 		HttpProcessor::processHttpRequest(adapter);
 		adapter.serializeResponse();
 	}

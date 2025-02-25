@@ -1,9 +1,6 @@
 #include "HeaderProperty.hpp"
 
-HeaderProperty::HeaderProperty(std::string name, std::string value) {
-	this->name = name;
-	this->value = value;
-}
+HeaderProperty::HeaderProperty() {}
 
 HeaderProperty::HeaderProperty(const HeaderProperty& src) {
 	this->name = src.name;

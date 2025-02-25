@@ -7,11 +7,14 @@
 class HttpResponse;
 
 class HttpHeader {
+	private:
+		void*	operator new(size_t size);
+		void	operator delete(void* ptr);
 	public:
 		std::string					name;
 		std::vector<HeaderValue>	values;
 
-		HttpHeader(std::string name);
+		HttpHeader();
 		HttpHeader(const HttpHeader& src);
 		HttpHeader& operator=(const HttpHeader& src);
 		~HttpHeader();

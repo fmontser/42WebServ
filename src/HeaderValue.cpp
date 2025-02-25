@@ -1,9 +1,6 @@
 #include "HeaderValue.hpp"
 
-HeaderValue::HeaderValue(std::string name) {
-	this->name = name;
-	this->properties = properties;
-}
+HeaderValue::HeaderValue() {}
 
 HeaderValue::HeaderValue(const HeaderValue& src) {
 	this->name = src.name;
@@ -21,10 +18,9 @@ HeaderValue& HeaderValue::operator=(const HeaderValue& src) {
 HeaderValue::~HeaderValue() {}
 
 bool	HeaderValue::getPropertie(std::string name, HeaderProperty *property) {
-	(void)property;
 	for (std::vector<HeaderProperty>::iterator it = properties.begin(); it != properties.end(); ++it) {
-		if (it->name == name) {
-			property = &(*it);
+		if (this->name == name) {
+			property->name = it->name;
 			return true;
 		}
 	}

@@ -22,8 +22,9 @@ class DataAdapter {
 
 		Connection		*getConnection() const;
 
-		HttpRequest&	getRequest();
-		HttpResponse&	getResponse();
-		void			deSerializeRequest();
-		void			serializeResponse();
+		HttpRequest&		getRequest();
+		HttpResponse&		getResponse();
+		void				deserializeRequest();
+		void				serializeResponse();
+		static HttpHeader	deserializeHeader(std::string header);
 };

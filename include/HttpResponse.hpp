@@ -10,4 +10,6 @@ class HttpResponse : public HttpMessage {
 		~HttpResponse();
 		HttpResponse(const HttpResponse& src);
 		HttpResponse& operator=(const HttpResponse& src);
+
+		bool	isChunked();
 };

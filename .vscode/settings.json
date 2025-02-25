@@ -94,6 +94,7 @@
 		"__node_handle": "cpp",
 		"__tuple": "cpp",
 		"csignal": "cpp",
-		"todo": "cpp"
+		"todo": "cpp",
+		"__memory": "cpp"
 	}
 }

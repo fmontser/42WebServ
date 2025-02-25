@@ -26,7 +26,7 @@ DataAdapter& DataAdapter::operator=(const DataAdapter& src) {
 	return *this;
 }
 
-static void	deSerializeRequestLine(std::stringstream& data, HttpRequest& request) {
+static void	deserializeRequestLine(std::stringstream& data, HttpRequest& request) {
 	std::string	line;
 
 	std::getline(data, line);
@@ -37,99 +37,88 @@ static void	deSerializeRequestLine(std::stringstream& data, HttpRequest& request
 	request.version = line.substr(0, line.find('\r'));
 }
 
-static void	deSerializeHeaders(std::stringstream& data, HttpRequest& request) {
+
+
+static void	deserializeHeaders(std::stringstream& data, HttpRequest& request) {
 	std::string	line;
 
 	while (std::getline(data, line)) {
-		
 		if (line == "\r")
 			break ;
-		//Nombre de header
-		HttpHeader newHeader(line.substr(0, line.find(':')));
-		line = line.substr(line.find(':') + SPLIT_CHR_SZ, line.size());
-		Utils::trimString(line);
-
-
-		//Valores
-		std::vector<std::string> values = Utils::splitString(line, ',');
-		for (std::vector<std::string>::iterator vit = values.begin(); vit != values.end(); ++vit) {
-			std::string v = *vit;
-			Utils::trimString(v);
-
-
-			std::vector<std::string> properties = Utils::splitString(v, ';');
-			for (std::vector<std::string>::iterator pit = properties.begin(); pit != properties.end(); ++pit) {
-				if (pit == properties.begin()) {
-
-					//TODO @@@@@@@@ hayque sacar value de aqui para poder asignarle props!
-					HeaderValue value(*pit);
-					newHeader.addValue(value);
-				}
-				else {
-					std::string p = *pit;
-					Utils::trimString(p);
-
-					std::vector<std::string> properties = Utils::splitString(p, '=');
-					//TODO @@@@@@@@ asignar props a value!
-					//value
-				}
-
-
-			}
-
-		
-		}
-
-/* 		//Valores
-		while (line.size()) {
-			std::string value = line.substr(0, line.find(','));
-			HeaderValue newValue(value);
-
-			//Propiedades
-			if (value.c {
-				while (value.size()) {
-					std::string propertie = line.substr(0, line.find(';'));
-					HeaderProperty newPropertie(propertie.substr(0, propertie.find('='))
-					, propertie.substr(propertie.find('=') + SPLIT_CHR_SZ, propertie.size()));
-					newValue.addProperty(newPropertie);
-					value = value.substr(propertie.size(), value.size());
-				}
-			}
-			newHeader.addValue(newValue);
-			line = line.substr(value.size(), line.size());
-		} */
-
+		request.addHeader(DataAdapter::deserializeHeader(line));
 	}
-
-	(void)request;
 }
 
-static void	deSerializeBody(std::stringstream& data, HttpRequest& request) {
+static void	deserializeBody(std::stringstream& data, HttpRequest& request) {
 	std::string	bodyValue;
-
-	while (std::getline(data, bodyValue)) {
+	//TODO irrelevante???? simplemente body = data.str()?
+/* 	while (std::getline(data, bodyValue)) {
 		bodyValue.append(bodyValue);
 		bodyValue.append(std::string(1,'\n'));
 	}
-	request.body = bodyValue;
+	request.body = bodyValue; */
+	request.body = data.str();
 }
 
-void	DataAdapter::deSerializeRequest() {
+HttpHeader	DataAdapter::deserializeHeader(std::string data) {
+	HttpHeader newHeader;
+	newHeader.name = data.substr(0, data.find(':'));
+	data = data.substr(data.find(':') + SPLIT_CHR_SZ, data.size());
+	Utils::trimString(data);
+	std::vector<std::string> values = Utils::splitString(data, ',');
+	for (std::vector<std::string>::iterator valueIt = values.begin(); valueIt != values.end(); ++valueIt) {
+		std::string val = *valueIt;
+		Utils::trimString(val);
+		HeaderValue newValue;
+		std::vector<std::string> properties = Utils::splitString(val, ';');
+		for (std::vector<std::string>::iterator propertyIt = properties.begin(); propertyIt != properties.end(); ++propertyIt) {
+			if (propertyIt == properties.begin())
+				newValue.name = *propertyIt;
+			else {
+				std::string prop = *propertyIt;
+				Utils::trimString(prop);
+				HeaderProperty newProperty;
+				std::vector<std::string> properties = Utils::splitString(prop, '=');
+				newProperty.name = properties.front();
+				if (properties.size() == 2)
+					newProperty.value = properties.back();
+				newValue.addProperty(newProperty);
+			}
+		}
+		newHeader.addValue(newValue);
+	}
+	return newHeader;
+}
+
+void	DataAdapter::deserializeRequest() {
 	std::stringstream data;
 
 	data << _connection->recvBuffer;
-	deSerializeRequestLine(data, _request);
-	deSerializeHeaders(data, _request);
-	deSerializeBody(data, _request);
+	deserializeRequestLine(data, _request);
+	deserializeHeaders(data, _request);
+	deserializeBody(data, _request);
 }
-
 
 static void	serializeHeaders(std::stringstream& buffer, HttpResponse& response) {
-	(void)buffer;
-	(void)response;
-	//TODO
+	for (std::vector<HttpHeader>::iterator headerIt = response.headers.begin(); headerIt != response.headers.end(); ++headerIt) {
+		buffer << headerIt->name << ": ";
+		for (std::vector<HeaderValue>::iterator valueIt = headerIt->values.begin(); valueIt != headerIt->values.end(); ++valueIt) {
+			buffer << valueIt->name;
+			if (valueIt->properties.size() > 0) {
+				for (std::vector<HeaderProperty>::iterator properyIt = valueIt->properties.begin(); properyIt != valueIt->properties.end(); ++properyIt) {
+					buffer << "; ";
+					buffer << properyIt->name;
+					if (properyIt->value != "")
+						buffer << "=" << properyIt->value;
+				}
+			}
+			if (valueIt + 1 != headerIt->values.end())
+				buffer << ", ";
+		}
+		buffer << CRLF;
+	}
+	buffer << CRLF;
 }
-
 
 void	DataAdapter::serializeResponse() {
 	std::stringstream	buffer;
@@ -137,43 +126,10 @@ void	DataAdapter::serializeResponse() {
 
 	buffer << _response.version << " " << _response.statusCode << " " << _response.statusMsg << CRLF;
 	serializeHeaders(buffer, _response);
-	buffer << CRLF;
 	buffer << _response.body;
 	_connection->sendBuffer = buffer.str();
 }
 
-Connection	*DataAdapter::getConnection() const { return _connection; }
-HttpRequest& DataAdapter::getRequest() { return _request; }
-HttpResponse& DataAdapter::getResponse() { return _response; }
-
-
-/* */
-
-//TODO @@@@@@@@@@@@@@@@@@@@@@00000000 ALGO NO COMPILA RELACIONADO CON STD::PAIR
-
-
-//TODO churrificar
-/*
-void			HttpHeader::appendHeaders(std::stringstream& buffer, HttpResponse& response) {
-	//HeaderList&			headers = response.getHeaders();
-	(void)response;
-	(void)buffer;
-
-	//TODO @@@@@@@22222 necesita testing, no esta bien fijo!
-
- 	for (HeaderList::iterator header = headers.begin(); header != headers.end(); ++header) {
-
-		buffer << header->first << ": ";
-		for (ValueMap::iterator value = header->second.begin(); value != header->second.end(); ++value) {
-			buffer << value->first;
-			if (value->second.empty())
-				buffer << ", ";
-			else {
-				for (PropertyMap::iterator property = value->second.begin(); property != value->second.end(); ++property)
-					buffer << "; " << property->first << "=" << property->second;
-			}
-		}
-		buffer << CRLF;
-	}
-}
-*/
+Connection		*DataAdapter::getConnection() const { return _connection; }
+HttpRequest&	DataAdapter::getRequest() { return _request; }
+HttpResponse&	DataAdapter::getResponse() { return _response; }

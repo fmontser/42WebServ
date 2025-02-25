@@ -63,16 +63,13 @@ void	FileManager::readFile(DataAdapter& dataAdapter) {
 	} while (readSize > 0);
 	
 	if ((int)body.size() > server.getMaxPayload()){
-		//TODO anadir header
-		//response.addHeader(std::make_pair("Transfer-Encoding","chunked"));
+		response.addHeader("Transfer-Encoding: chunked");
 		chunkEncode(body, server.getMaxPayload());
 	}
 	else {
-		std::stringstream	bodySize;
-		bodySize << body.size();
-		//TODO anadir headeer
-		//response.addHeader(std::make_pair("Content-Length", bodySize.str()));
-		bodySize.clear();
+		std::stringstream	contentLengthHeader;
+		contentLengthHeader << "Content-Length: " << body.size();
+		response.addHeader(contentLengthHeader.str());
 	}
 	response.body = body;
 	close(fd);

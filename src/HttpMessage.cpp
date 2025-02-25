@@ -1,4 +1,5 @@
 #include "HttpMessage.hpp"
+#include "DataAdapter.hpp"
 
 HttpMessage::HttpMessage() {}
 
@@ -21,4 +22,8 @@ HttpMessage::~HttpMessage() {}
 
 void	HttpMessage::addHeader(HttpHeader header) {
 	headers.push_back(header);
+}
+
+void	HttpMessage::addHeader(std::string header) {
+	headers.push_back(DataAdapter::deserializeHeader(header));
 }
