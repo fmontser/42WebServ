@@ -77,5 +77,6 @@ void	FileManager::readFile(DataAdapter& dataAdapter) {
 }
 
 void	FileManager::writeFile(DataAdapter& dataAdapter) {
+	//TODO implementar
 	(void)dataAdapter;
 }

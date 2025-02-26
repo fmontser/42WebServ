@@ -19,6 +19,9 @@ class Connection {
 		std::string	recvBuffer;
 		std::string	sendBuffer;
 		bool		isChunkedResponse;
+		bool		isMultipartUpload;
+		std::string	boundarie;
+		size_t		contentLength;
 
 		Connection(Server& server);
 		Connection(const Connection& src);

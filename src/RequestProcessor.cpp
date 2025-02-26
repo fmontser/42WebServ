@@ -6,37 +6,53 @@
 
 void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter) {
 
-	HttpRequest& _request = dataAdapter.getRequest();
-	HttpResponse& _response = dataAdapter.getResponse();
+	HttpRequest&	request = dataAdapter.getRequest();
+	HttpResponse&	response = dataAdapter.getResponse();
+	Connection		*connection = dataAdapter.getConnection();
 
-	_response.version = HTTP_VERSION;
-	if (_request.method == "GET") {
+	response.version = HTTP_VERSION;
+	if (request.method == "GET") {
 		FileManager::readFile(dataAdapter);
-		if (_response.statusCode.empty()) {
-			_response.statusCode = "200";
-			_response.statusMsg = "OK";
-			std::cout << BLUE << "Info: success 200 \"" << _request.method << "\", OK " << END << std::endl;
-			std::cout << BLUE << "Connection fd: " << dataAdapter.getConnection()->getPollFd().fd << std::endl;
+		if (response.statusCode.empty()) {
+			response.statusCode = "200";
+			response.statusMsg = "OK";
+			std::cout << BLUE << "Info: success 200 \"" << request.method << "\", OK " << END << std::endl;
+			std::cout << BLUE << "Connection fd: " << connection->getPollFd().fd << std::endl;
 		}
-		dataAdapter.getConnection()->isChunkedResponse = _response.isChunked();
+		connection->isChunkedResponse = response.isChunked();
 	}
-	else if (_request.method == "POST") {
-		//TODO POST METHOD
+	else if (request.method == "POST") {
+
+		//TODO POST METHOD / MULTIPART UPLOAD
+		/* 
+			Content-Type: multipart/form-data; boundary=---------------------------1234567890123456789012345\r\n
+			Content-Length: 5452\r\n
+		*/
+
+		if (request.handleMultipart(connection))
+			return ;
+		FileManager::writeFile(dataAdapter); //TODO write unimplemented
+		if (response.statusCode.empty()) {
+			response.statusCode = "201";
+			response.statusMsg = "CREATED";
+			std::cout << BLUE << "Info: success 201 \"" << request.method << "\", CREATED " << END << std::endl;
+			std::cout << BLUE << "Connection fd: " << connection->getPollFd().fd << std::endl;
+		}
 	}
-	else if (_request.method == "DELETE") {
+	else if (request.method == "DELETE") {
 		//TODO DELETE METHOD
-		_response.statusCode = "204";
-		_response.statusMsg = "NO_CONTENT";
-		std::cout << BLUE << "Info: success 204 \"" << _request.method << "\", NO_CONTENT " << END << std::endl;
+		response.statusCode = "204";
+		response.statusMsg = "NO_CONTENT";
+		std::cout << BLUE << "Info: success 204 \"" << request.method << "\", NO_CONTENT " << END << std::endl;
 	}
 	else {
 
- 		_request.url = "/default/501.html"; //TODO hardcoded, debe obtener la ruta del config.
+ 		request.url = "/default/501.html"; //TODO hardcoded, debe obtener la ruta del config.
 
 		FileManager::readFile(dataAdapter);
-		_response.statusCode = "501";
-		_response.statusMsg = "METHOD_NOT_IMPLEMENTED";
-		std::cerr << YELLOW << "Warning: Error 501 \"" << _request.method << "\", METHOD_NOT_IMPLEMENTED " << END << std::endl;
+		response.statusCode = "501";
+		response.statusMsg = "METHOD_NOT_IMPLEMENTED";
+		std::cerr << YELLOW << "Warning: Error 501 \"" << request.method << "\", METHOD_NOT_IMPLEMENTED " << END << std::endl;
 	}
 }
 

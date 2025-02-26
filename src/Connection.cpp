@@ -7,6 +7,7 @@
 #include "ConnectionManager.hpp"
 #include "DataAdapter.hpp"
 #include "RequestProcessor.hpp"
+#include "Utils.hpp"
 
 Connection::Connection(Server& server) : _server(server) {
 	sockaddr_in	client_addr;
@@ -18,6 +19,10 @@ Connection::Connection(Server& server) : _server(server) {
 	}
 
 	isChunkedResponse = false;
+	isMultipartUpload = false;
+	boundarie.clear();
+	contentLength = 0;
+
 	_pollfd = pollfd();
 	_pollfd.fd = _socketFd;
 	_pollfd.events = POLLIN | POLLOUT | POLLHUP | POLLERR;
@@ -29,6 +34,10 @@ Connection::Connection(const Connection& src) : _server(src._server) {
 	_pollfd = src._pollfd;
 	recvBuffer = src.recvBuffer;
 	sendBuffer = src.sendBuffer;
+	isChunkedResponse = src.isChunkedResponse;
+	isMultipartUpload = src.isMultipartUpload;
+	boundarie = src.boundarie;
+	contentLength = src.contentLength;
 }
 
 Connection& Connection::operator=(const Connection& src) {
@@ -37,6 +46,10 @@ Connection& Connection::operator=(const Connection& src) {
 		_pollfd = src._pollfd;
 		recvBuffer = src.recvBuffer;
 		sendBuffer = src.sendBuffer;
+		isChunkedResponse = src.isChunkedResponse;
+		isMultipartUpload = src.isMultipartUpload;
+		boundarie = src.boundarie;
+		contentLength = src.contentLength;
 	}
 	return *this;
 }
@@ -51,6 +64,8 @@ struct pollfd	Connection::getPollFd() const { return _pollfd; }
 void	Connection::recieveData() {
 
 	//TODO multipart mode!!!
+
+
 	DataAdapter adapter = DataAdapter(this);
 	char		buffer[READ_BUFFER] = {0};
 	int			len;
@@ -86,7 +101,7 @@ void	Connection::sendData() {
 		}
 		if (sendBuffer.find(CRLF) != std::string::npos) {
 			size_t csize = sendBuffer.find(CRLF) + CRLF_OFFSET;
-			csize += std::strtol(sendBuffer.substr(0, csize).c_str(), NULL, 16) + 2;
+			csize += Utils::strHexToUint(sendBuffer.substr(0, csize).c_str()) + CRLF_OFFSET;
 			chunk += sendBuffer.substr(0, csize);
 			sendBuffer = sendBuffer.substr(csize, sendBuffer.size());
 		}	
