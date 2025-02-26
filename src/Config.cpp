@@ -73,7 +73,7 @@ bool Config::isValidConfig(const Server &server) {
 
         const std::multimap<std::string, std::string>& files = route.getFiles();
         for (std::multimap<std::string, std::string>::const_iterator fit = files.begin(); fit != files.end(); ++fit) {
-            if (fit->first == "root" && (fit->second[0] != '.' || fit->second[1] != '/'))
+            if (fit->first == "root" && ((fit->second[0] != '.' && (fit->second[1] != '/' || fit->second[1] != '\0') )))
                 return printFalse("Invalid root path '" + fit->second + "' in route " + route.getUrl());
             if (fit->first == "redirect" && (fit->second[0] != '.' || fit->second[1] != '/'))
                 return printFalse("Invalid redirect path '" + fit->second + "' in route " + route.getUrl());
@@ -145,17 +145,31 @@ void Config::addRoute(std::vector<std::pair<std::string, std::vector<std::string
 
         if (key == "methods") {
             for (std::vector<std::string>::iterator mit = values.begin(); mit != values.end(); ++mit) {
-                if (*mit == "GET" || *mit == "POST" || *mit == "DELETE") {
+                if (*mit == "GET" || *mit == "POST" || *mit == "DELETE" || *mit == "PUT") {
                     route.addMethod(std::make_pair("method", *mit));
                 } else {
-                    printError("Invalid method '" + *mit + "' in route " + route.getUrl());
+                    printError("Invalid method '" + *mit + " in route " + route.getUrl());
                 }
             }
         } else if (key == "file" || key == "root" || key == "redirect" || key == "autoindex") {
             for (std::vector<std::string>::iterator vit = values.begin(); vit != values.end(); ++vit) {
                 route.addFile(std::make_pair(key, *vit));
             }
-        } else {
+        } else if (key == "cgi") {
+            if (values.size() != 2)
+                printError("Invalid cgi values in route " + route.getUrl());
+
+            route.addFile(std::make_pair(key, values[0]));
+        } else if (key == "maxBody") {
+            if (values.size() != 1)
+                printError("Invalid maxBody value in route " + route.getUrl());
+            std::cout << "maxBody: " << values[0] << " todo... not yet implemetnted" << std::endl;
+        } else if (key == "default") {
+            if (values.size() != 1)
+                printError("Invalid default value in route " + route.getUrl());
+            std::cout << "default: " << values[0] << " not set yet" << std::endl;
+        }
+        else {
             printError("unknown token " + key);
         }
     }
