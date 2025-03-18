@@ -19,8 +19,9 @@ HeaderValue::~HeaderValue() {}
 
 bool	HeaderValue::getPropertie(std::string name, HeaderProperty *property) {
 	for (std::vector<HeaderProperty>::iterator it = properties.begin(); it != properties.end(); ++it) {
-		if (this->name == name) {
+		if (it->name == name) {
 			property->name = it->name;
+			property->value = it->value;
 			return true;
 		}
 	}

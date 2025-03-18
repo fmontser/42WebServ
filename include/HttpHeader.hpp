@@ -17,6 +17,7 @@ class HttpHeader {
 		HttpHeader();
 		HttpHeader(const HttpHeader& src);
 		HttpHeader& operator=(const HttpHeader& src);
+
 		~HttpHeader();
 
 		bool	getValue(std::string name, HeaderValue *value);

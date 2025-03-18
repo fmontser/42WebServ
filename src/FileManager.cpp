@@ -77,6 +77,17 @@ void	FileManager::readFile(DataAdapter& dataAdapter) {
 }
 
 void	FileManager::writeFile(DataAdapter& dataAdapter) {
-	//TODO implementar
-	(void)dataAdapter;
+	HttpRequest&	request = dataAdapter.getRequest();
+
+	//TODO implementar y test
+	//TODO errores http?
+	//TODO hardcoded filename, sacar de los headers...
+
+	int fd = open("test.html", O_WRONLY | O_CREAT | O_APPEND, 0775);
+	if (fd > 0) {
+		write(fd, request.body.c_str(), request.body.size());
+		close(fd);
+	}
+	else
+		std::cerr << "Filesystem error" << std::endl;
 }

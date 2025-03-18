@@ -22,15 +22,12 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter) {
 		connection->isChunkedResponse = response.isChunked();
 	}
 	else if (request.method == "POST") {
-
-		//TODO POST METHOD / MULTIPART UPLOAD
-		/* 
-			Content-Type: multipart/form-data; boundary=---------------------------1234567890123456789012345\r\n
-			Content-Length: 5452\r\n
-		*/
-
-		if (request.handleMultipart(connection))
+		if (!connection->isMultipartUpload && request.handleMultipart(connection)) {
+			response.version = HTTP_VERSION;
+			response.statusCode = "100";
+			response.statusMsg = "CONTINUE";
 			return ;
+		}
 		FileManager::writeFile(dataAdapter); //TODO write unimplemented
 		if (response.statusCode.empty()) {
 			response.statusCode = "201";

@@ -20,7 +20,10 @@ class Connection {
 		std::string	sendBuffer;
 		bool		isChunkedResponse;
 		bool		isMultipartUpload;
+		bool		isMultipartHead;
 		std::string	boundarie;
+		std::string	boundStart;
+		std::string	boundEnd;
 		size_t		contentLength;
 
 		Connection(Server& server);

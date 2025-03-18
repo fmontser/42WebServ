@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+	<meta charset="UTF-8">
+	<link re	l="icon" href="favicon.ico">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Guia 42WebServ</title>
+
+	 <link rel="stylesheet" href="index.css" /> 
+</head>
+
+<body>
+	<h1>GUIA 42 WEBSERV:</h1>
+	<p style="font-style: italic;">subject version: 21.2</p>
+	<hr>
+
+	<!-- SECCION LIMITACIONES-->
+
+	<label for="toogleLimits">LIMITACIONES</label>
+	<input type="checkbox" id="toogleLimits" style="display: none;" >
+	<section id="sectionLimits">
+		<h3>Restricciones técnicas</h3>
+	<ul>
+		<li>Prohibido usar <code>fork()</code> excepto para la ejecución de CGIs. </li>
+		<li>No se puede usar <code>execve()</code> para invocar otro servidor web. </li>
+		<li>Está prohibido realizar operaciones de lectura/escritura sin pasar por <code>poll()</code> (o equivalentes). </li>
+		<li>Las librerias externas y Boost estan prohibidas.</li>
+		<li>El codigo debe compilar con las flags <strong>-Wall -Wextra -Werror -std=c++98</strong>.</li>
+		<li>Makefile debe gestionar la compilacion, almenos con las reglas <strong>$(NAME), all, clean, fclean y re</strong>.</li>
+	</ul>
+	<h3>Errores críticos</h3>
+	<ul>
+		<li>El programa no debe cerrarse inesperadamente ni fallar en ninguna circunstancia (incluso en caso de falta de memoria).</li>
+	</ul>
+		<label for="toogleLimits">COLAPSAR</label>
+	</section>
+	<hr>
+
+	<!-- SECCION REQUERIMIENTOS-->
+
+	<label for="toogleReq">REQUERIMIENTOS</label>
+	<input type="checkbox" id="toogleReq" style="display: none;" >
+	<section id="sectionReq">
+		<ol>
+			<li>
+				<p class="quote"><strong>"Your program has to take a configuration file as argument, or use a default path."</strong></p>
+				<p>
+					Tu programa debe ser capaz de recibir un archivo de configuración como argumento al ejecutarse, proporcionando flexibilidad en su configuración. Si no se proporciona un archivo de configuración al ejecutar el programa, este debe ser capaz de usar una ruta predeterminada a un archivo de configuración por defecto. Esta configuración flexible es importante para poder adaptar el comportamiento del servidor a diferentes entornos y requisitos sin tener que recompilar el código.  Por ejemplo, si el usuario no especifica un archivo, el servidor podría buscar un archivo llamado `config.conf` en el directorio de trabajo.
+				</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"You can’t execve another web server."</strong></p>
+				<p>
+					Está prohibido usar la función <code>execve</code> para ejecutar otro servidor web como parte de la solución. El objetivo principal de este requerimiento es garantizar que la implementación del servidor web sea completamente de tu autoría y que no dependa de la funcionalidad de otro servidor ya existente. Al evitar el uso de `execve` o funciones similares, se asegura que entiendes y aplicas todos los conceptos necesarios para construir un servidor web funcional. Esto fomenta una comprensión profunda de la implementación de un servidor web.
+				</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"Your server must never block and the client can be bounced properly if necessary."</strong></p>
+				<p>
+					Tu servidor debe ser no bloqueante en todas sus operaciones, evitando que se detenga o se congele mientras espera a que se complete una operación (como una lectura o escritura de socket). Además, debe ser capaz de desconectar un cliente de forma apropiada y controlada si es necesario, por ejemplo, cuando un cliente envía datos incorrectos, si hay un timeout o en otras situaciones excepcionales. Esta capacidad de manejar conexiones de forma no bloqueante y rechazar clientes de forma controlada es esencial para la estabilidad y rendimiento del servidor.
+				</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"It must be non-blocking and use only 1 poll() (or equivalent) for all the I/O operations between the client and the server (listen included)."</strong></p>
+				<p>
+					Tu servidor debe ser diseñado utilizando un modelo no bloqueante. Es decir, el servidor debe utilizar una única llamada a la función `poll()` (o una función similar que proporcione las mismas capacidades) para manejar todas las operaciones de entrada/salida con los clientes, incluyendo la escucha de nuevas conexiones (`listen`). Esto significa que todas las operaciones de read, write, y accept deben pasar por una única llamada a `poll()`. El objetivo de este requerimiento es que el servidor sea eficiente en el manejo de múltiples conexiones, al poder verificar la disponibilidad de múltiples sockets con una sola llamada al sistema.  Este modelo  optimiza el uso de los recursos del sistema.
+				</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"poll() (or equivalent) must check read and write at the same time."</strong></p>
+				<p>
+					La función `poll()` (o la función equivalente que uses) debe ser configurada para verificar la disponibilidad de lectura y escritura de los sockets al mismo tiempo, en la misma llamada. El servidor debe estar atento a ambos tipos de eventos (lectura de datos del cliente y escritura de datos hacia el cliente).  Esto permite que el servidor maneje la comunicación en ambas direcciones de forma eficiente, ya que puede estar listo para recibir datos de un cliente y enviar una respuesta simultáneamente.
+				</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"You must never do a read or a write operation without going through poll() (or equivalent)."</strong></p>
+				<p>
+					Nunca debes realizar una operación de lectura (como `read` o `recv`) o de escritura (como `write` o `send`) directamente sobre un descriptor de archivo. Todas las operaciones de entrada/salida (I/O) deben ser precedidas por la verificación de que el socket está listo para la operación utilizando la función `poll()` (o equivalente). Esto asegura que el servidor no se bloquee mientras espera a que una operación de lectura o escritura se complete, manteniendo el modelo no bloqueante. Cualquier acceso directo, que ignore el uso de `poll()`, se considerará una violación de este requerimiento.
+				</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"Checking the value of errno is strictly forbidden after a read or a write operation."</strong></p>
+				<p>
+					Está estrictamente prohibido verificar el valor de la variable `errno` después de realizar una operación de lectura o escritura directamente sobre un descriptor de archivo. La variable `errno` contiene un código de error que indica qué salió mal en una operación. Sin embargo, como debes usar `poll()` para saber si un socket está listo para leer o escribir, este debe ser el único mecanismo de detección de errores. Si no respetas esto e intentas usar `errno`, violarás el requerimiento de uso estricto de `poll()`.  Este requerimiento es fundamental para asegurar que se respete el modelo no bloqueante y que el código esté escrito de forma consistente con las directrices establecidas.
+				</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"You don’t need to use poll() (or equivalent) before reading your configuration file."</strong></p>
+				<p>
+					No es necesario utilizar `poll()` (o una función equivalente) antes de leer el archivo de configuración al inicio de tu servidor. La lectura del archivo de configuración se puede realizar utilizando funciones de lectura bloqueantes estándar, como `fopen` y `fread`. Esto es porque se asume que esta es una operación única que se realiza durante la inicialización del servidor y no necesita el manejo de múltiples eventos, por lo que se permite usar funciones bloqueantes sin afectar al resto de la operación del servidor.
+				</p>
+				<blockquote>
+					"Because you have to use non-blocking file descriptors, it is possible to use read/recv or write/send functions with no poll() (or equivalent), and your server wouldn’t be blocking. But it would consume more system resources. Thus, if you try to read/recv or write/send in any file descriptor without using poll() (or equivalent), your grade will be 0."
+				</blockquote>
+				<p>
+					Si bien es técnicamente posible usar funciones de lectura y escritura no bloqueantes como `read`, `recv`, `write`, o `send` en descriptores de archivo no bloqueantes sin la necesidad de `poll()` y, en teoria, no bloquear el hilo principal del programa, esto llevaría a una utilización ineficiente de los recursos del sistema.  Si se realiza esto, el servidor estaría ejecutando operaciones en bucle que consumirian recursos del sistema sin necesidad. Por lo tanto, cualquier intento de usar `read`, `recv`, `write` o `send` directamente en un descriptor de archivo sin pasar primero por `poll()` resultará en una calificación de 0. Este requerimiento se pone para que la implementación de tu servidor sea eficiente.
+				</p>
+
+			</li>
+
+			<li>
+				<p class="quote"><strong>"You can use every macro and define like FD_SET, FD_CLR, FD_ISSET, FD_ZERO (understanding what and how they do it is very useful)."</strong></p>
+				<p>
+					Puedes utilizar las macros y definiciones como `FD_SET`, `FD_CLR`, `FD_ISSET` y `FD_ZERO`, las cuales son utilizadas para manipular conjuntos de descriptores de archivo (file descriptor sets). Estas macros forman parte de la API de sockets de Unix y facilitan el manejo de múltiples descriptores de archivo en la función `select()` (o, en este caso, una función equivalente de `poll()`). Si bien este proyecto pide el uso de `poll()`, la comprensión de como funcionan estas macros es útil para el entendimiento general de la manipulación de los descriptores de archivo. En resumen, si bien la funcion usada será `poll()`, el concepto general de manejar un conjunto de descriptores de archivo es el mismo.
+				</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"A request to your server should never hang forever."</strong></p>
+				<p>
+					Todas las peticiones realizadas a tu servidor deben ser respondidas en un tiempo razonable y nunca deben quedarse colgadas esperando una respuesta indefinidamente. Es decir, el servidor no debe quedarse bloqueado esperando a que un cliente envíe información o procese una petición. En el caso de que una petición se tarde demasiado en completar, el servidor debe tener un mecanismo de timeout para rechazar la petición y liberar los recursos, evitando el bloqueo del servidor. Este es un requerimiento vital para garantizar que el servidor sea estable y responda a las peticiones en tiempo y forma.
+				</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"Your server must be compatible with the web browser of your choice."</strong></p>
+				<p>
+					Tu servidor debe ser capaz de comunicarse correctamente con cualquier navegador web moderno (por ejemplo, Chrome, Firefox, Safari, etc.). Esto implica que el servidor debe implementar el protocolo HTTP correctamente, incluyendo la gestión de encabezados HTTP, códigos de estado y la codificación de datos. Asegúrate de probar tu servidor con un navegador real para asegurar que las solicitudes y respuestas se manejan de forma correcta y tu servidor es capaz de generar respuestas HTML validas.
+				</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"We will consider that NGINX is HTTP 1.1 compliant and may be used to compare headers and answer behaviors."</strong></p>
+				<p>
+					Se considerará que NGINX, un servidor web de referencia, cumple completamente con el protocolo HTTP 1.1. Esto significa que puedes usar NGINX como una herramienta de referencia para validar el comportamiento de tu servidor. Puedes realizar pruebas comparando los encabezados y las respuestas que genera tu servidor con las que genera NGINX para el mismo tipo de peticiones.  Si tu servidor responde de la misma forma que NGINX, entonces puedes asegurar que implementas correctamente el protocolo HTTP 1.1.
+				</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"Your HTTP response status codes must be accurate."</strong></p>
+				<p>
+				   Los códigos de estado HTTP que tu servidor genera en las respuestas deben ser precisos y representar correctamente el resultado de la solicitud del cliente. Por ejemplo, cuando un recurso se encuentra debe devolver un código 200, si el recurso no existe, 404 y si hay un error interno, 500. Usar los códigos correctos es fundamental para el protocolo HTTP y  para el funcionamiento correcto de los clientes que solicitan recursos a tu servidor.
+				</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"You server must have default error pages if none are provided."</strong></p>
+				<p>
+					Tu servidor debe incluir páginas de error por defecto para los casos en los que no se haya especificado páginas de error personalizadas. En caso de que se produzca un error y no exista una página de error configurada, el servidor debe enviar una respuesta HTML genérica para indicar el error al cliente. Esto asegura una experiencia de usuario aceptable incluso cuando se producen errores en el servidor, y evita que el cliente reciba una respuesta HTTP sin información adicional sobre el error.
+				</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"You can’t use fork for something else than CGI (like PHP, or Python, and so forth)."</strong></p>
+				<p>
+					Está prohibido usar la función <code>fork</code> para crear procesos secundarios, excepto en el caso de la ejecución de programas CGI. La función <code>fork</code> es la encargada de crear procesos secundarios en entornos Unix. En este proyecto, la idea es que no uses la funcion `fork` para implementar funcionalidades de paralelismo en tu servidor, esta debe ser usada solo para la invocación de CGIs. La única funcionalidad permitida para usar procesos secundarios es el caso de la ejecución de scripts dinámicos mediante CGIs, como PHP o Python.
+				</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"You must be able to serve a fully static website."</strong></p>
+				<p>
+					Tu servidor debe ser capaz de servir un sitio web que sea totalmente estático, lo que implica que debe poder entregar archivos HTML, CSS, JavaScript, imágenes, vídeos, y cualquier otro tipo de archivo que forme parte de un sitio web estático. Esto es fundamental para que tu servidor pueda servir contenido web básico.  La entrega de archivos estáticos es una funcionalidad básica que todo servidor web debe implementar.
+				</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"Clients must be able to upload files."</strong></p>
+				<p>
+					Tu servidor debe permitir que los clientes suban archivos al servidor. Esto implica que el servidor debe manejar las peticiones HTTP de tipo `POST` que incluyan datos de formulario y archivos adjuntos. Además, debes guardar los archivos subidos en el directorio especificado en la configuración. Esta funcionalidad es importante para poder recibir datos y archivos de clientes externos.
+				</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"You need at least GET, POST, and DELETE methods."</strong></p>
+				<p>
+					Tu servidor debe implementar al menos los métodos HTTP `GET`, `POST` y `DELETE`.  El método `GET` se utiliza para obtener recursos del servidor, `POST` para enviar datos al servidor, y `DELETE` para eliminar recursos. Estos métodos son los mas utilizados y el que tu servidor funcione correctamente con estos métodos garantiza que cumple las funciones mínimas que se espera de un servidor HTTP.
+				</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"Stress tests your server. It must stay available at all cost."</strong></p>
+				<p>
+					Es fundamental realizar pruebas de estrés para asegurar que tu servidor es capaz de soportar altas cargas y sigue respondiendo a las peticiones incluso bajo condiciones de estrés y carga máxima. El servidor debe ser capaz de manejar un gran volumen de peticiones simultáneas sin bloquearse o dejar de responder. La resiliencia y la capacidad de mantenerse disponible bajo estrés son requisitos esenciales para un servidor web.
+				</p>
+			</li>
+			<li>
+				<p class="quote"><strong>"Your server must be able to listen to multiple ports (see Configuration file)."</strong></p>
+				<p>
+					Tu servidor debe ser capaz de escuchar en múltiples puertos al mismo tiempo. Esto permite que un solo servidor pueda gestionar peticiones en diferentes puertos para diferentes propósitos o para simular múltiples servidores en la misma maquina.  Esta característica es fundamental para el correcto funcionamiento de tu servidor.  La configuración de qué

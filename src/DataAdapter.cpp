@@ -39,25 +39,47 @@ static void	deserializeRequestLine(std::stringstream& data, HttpRequest& request
 
 
 
-static void	deserializeHeaders(std::stringstream& data, HttpRequest& request) {
+static void	deserializeHeaders(std::stringstream& data, HttpRequest& request, Connection *connection) {
 	std::string	line;
 
 	while (std::getline(data, line)) {
 		if (line == "\r")
-			break ;
-		request.addHeader(DataAdapter::deserializeHeader(line));
+				break ;
+		if (line != connection->boundStart)
+			request.addHeader(DataAdapter::deserializeHeader(line));
 	}
 }
 
-static void	deserializeBody(std::stringstream& data, HttpRequest& request) {
-	std::string	bodyValue;
-	//TODO irrelevante???? simplemente body = data.str()?
-/* 	while (std::getline(data, bodyValue)) {
-		bodyValue.append(bodyValue);
-		bodyValue.append(std::string(1,'\n'));
+static void	deserializeBody(std::stringstream& data, HttpRequest& request, Connection *connection) {
+	std::string	line;
+
+	//TODO limpiar e usar connection->bounds (cuando ya funcione...)
+
+	std::string boundarieLine = "--";
+	std::string endboundarieLine;
+
+	if (connection->isMultipartUpload) {
+
+		boundarieLine.append(connection->boundarie);
+		endboundarieLine.append (boundarieLine);
+		endboundarieLine.append("--\r");
+		boundarieLine.append("\r");
+
+		while (std::getline(data, line)) {
+			if (line != boundarieLine) {
+				if ( line == endboundarieLine)
+					break;
+				request.body.append(line);
+				request.body.append(std::string(1,'\n'));
+			}
+		}
 	}
-	request.body = bodyValue; */
-	request.body = data.str();
+	else {
+		while (std::getline(data, line)) {
+				request.body.append(line);
+				request.body.append(std::string(1,'\n'));
+		}
+	}
 }
 
 HttpHeader	DataAdapter::deserializeHeader(std::string data) {
@@ -90,13 +112,16 @@ HttpHeader	DataAdapter::deserializeHeader(std::string data) {
 	return newHeader;
 }
 
+
 void	DataAdapter::deserializeRequest() {
 	std::stringstream data;
 
 	data << _connection->recvBuffer;
-	deserializeRequestLine(data, _request);
-	deserializeHeaders(data, _request);
-	deserializeBody(data, _request);
+
+	if (!_connection->isMultipartUpload)
+		deserializeRequestLine(data, _request);
+	deserializeHeaders(data, _request, _connection);
+	deserializeBody(data, _request, _connection);
 }
 
 static void	serializeHeaders(std::stringstream& buffer, HttpResponse& response) {

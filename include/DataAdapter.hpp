@@ -13,14 +13,13 @@ class DataAdapter {
 		HttpResponse	_response;
 		Connection		*_connection;
 
-
 	public:
 		DataAdapter(Connection *connection);
 		~DataAdapter();
 		DataAdapter(const DataAdapter& src);
 		DataAdapter& operator=(const DataAdapter& src);
 
-		Connection		*getConnection() const;
+		Connection			*getConnection() const;
 
 		HttpRequest&		getRequest();
 		HttpResponse&		getResponse();

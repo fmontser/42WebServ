@@ -1,7 +1,8 @@
 #pragma once
 
 #include "HttpMessage.hpp"
-#include "Connection.hpp"
+
+class Connection;
 
 class HttpRequest : public HttpMessage {
 	public:

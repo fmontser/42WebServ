@@ -20,8 +20,9 @@ Connection::Connection(Server& server) : _server(server) {
 
 	isChunkedResponse = false;
 	isMultipartUpload = false;
-	boundarie.clear();
+	isMultipartHead = true;
 	contentLength = 0;
+	boundarie.clear();
 
 	_pollfd = pollfd();
 	_pollfd.fd = _socketFd;
@@ -36,6 +37,7 @@ Connection::Connection(const Connection& src) : _server(src._server) {
 	sendBuffer = src.sendBuffer;
 	isChunkedResponse = src.isChunkedResponse;
 	isMultipartUpload = src.isMultipartUpload;
+	isMultipartHead = src.isMultipartHead;
 	boundarie = src.boundarie;
 	contentLength = src.contentLength;
 }
@@ -48,6 +50,7 @@ Connection& Connection::operator=(const Connection& src) {
 		sendBuffer = src.sendBuffer;
 		isChunkedResponse = src.isChunkedResponse;
 		isMultipartUpload = src.isMultipartUpload;
+		isMultipartHead = src.isMultipartHead;
 		boundarie = src.boundarie;
 		contentLength = src.contentLength;
 	}
@@ -62,10 +65,6 @@ Server&			Connection::getServer() const { return _server; }
 struct pollfd	Connection::getPollFd() const { return _pollfd; }
 
 void	Connection::recieveData() {
-
-	//TODO multipart mode!!!
-
-
 	DataAdapter adapter = DataAdapter(this);
 	char		buffer[READ_BUFFER] = {0};
 	int			len;
@@ -78,11 +77,46 @@ void	Connection::recieveData() {
 		ConnectionManager::deleteConnection(_server, this);
 	}
 	else if (len > 0) {
-		recvBuffer.clear();
-		recvBuffer.append(buffer);
-		adapter.deserializeRequest();
-		HttpProcessor::processHttpRequest(adapter);
-		adapter.serializeResponse();
+		if (isMultipartUpload) {
+			recvBuffer.append(buffer);
+			if (isMultipartHead) {
+				isMultipartHead = false;
+				adapter.getRequest().method = "POST";
+				adapter.deserializeRequest();
+				HttpProcessor::processHttpRequest(adapter);
+				adapter.getResponse().version = HTTP_VERSION;
+				adapter.getResponse().statusCode = "100";
+				adapter.getResponse().statusMsg = "CONTINUE";
+				adapter.serializeResponse();
+				recvBuffer.clear();
+			}
+			else {
+/* 
+				recvBuffer.append(buffer);
+
+			
+
+				if (contentLength == 0) {
+					 adapter.deserializeRequest();
+					HttpProcessor::processHttpRequest(adapter);
+					adapter.serializeResponse();
+				}
+				else {
+					adapter.getResponse().version = HTTP_VERSION;
+					adapter.getResponse().statusCode = "100";
+					adapter.getResponse().statusMsg = "CONTINUE";
+					adapter.serializeResponse();
+				} */
+			}
+		}
+		else {
+			recvBuffer.clear();
+			recvBuffer.append(buffer);
+			adapter.deserializeRequest();
+			HttpProcessor::processHttpRequest(adapter);
+			adapter.serializeResponse();
+			recvBuffer.clear();
+		}
 	}
 }
 
@@ -109,7 +143,6 @@ void	Connection::sendData() {
 			isChunkedResponse = false;
 			chunkHeadSent = false;
 			sendBuffer.clear();
-			recvBuffer.clear();
 		}
 		if (send(_socketFd, chunk.c_str(), chunk.size(), 0) == -1) {
 			std::cerr << RED << "Send error: Server connection error" << END << std::endl;
@@ -120,7 +153,6 @@ void	Connection::sendData() {
 		std::cerr << RED << "Send error: Server connection error" << END << std::endl;
 	}
 	sendBuffer.clear();
-	recvBuffer.clear();
 }
 
 void	Connection::updatePollFd(struct pollfd pfd) { _pollfd = pfd; }
