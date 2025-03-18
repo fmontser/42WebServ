@@ -16,12 +16,14 @@ DataAdapter::~DataAdapter() {}
 DataAdapter::DataAdapter(const DataAdapter& src) {
 	_request = src._request;
 	_response = src._response;
+	_connection = src._connection;
 }
 
 DataAdapter& DataAdapter::operator=(const DataAdapter& src) {
 	if (this != &src) {
 		_request = src._request;
 		_response = src._response;
+		_connection = src._connection;
 	}
 	return *this;
 }
@@ -51,38 +53,11 @@ static void	deserializeHeaders(std::stringstream& data, HttpRequest& request, Co
 static void	deserializeBody(std::stringstream& data, HttpRequest& request, Connection *connection) {
 	std::string	line;
 
-/* 	//TODO limpiar e usar connection->bounds (cuando ya funcione...)
-
-	std::string boundarieLine = "--";
-	std::string endboundarieLine;
-
-	if (connection->isMultipartUpload) {
-
-		boundarieLine.append(connection->boundarie);
-		endboundarieLine.append (boundarieLine);
-		endboundarieLine.append("--\r");
-		boundarieLine.append("\r");
-
-		while (std::getline(data, line)) {
-			if (line != boundarieLine) {
-				if ( line == endboundarieLine)
-					break;
-				request.body.append(line);
-				request.body.append(std::string(1,'\n'));
-			}
-		}
-	}
-	else {
-		while (std::getline(data, line)) {
-				request.body.append(line);
-				request.body.append(std::string(1,'\n'));
-		}
-	}
- */
-	(void)connection;
 	while (std::getline(data, line)) {
-		request.body.append(line);
-		request.body.append(std::string(1,'\n'));
+		if (line != connection->boundEnd){
+			request.body.append(line);
+			request.body.append(std::string(1,'\n'));
+		}
 	}
 }
 
@@ -116,9 +91,17 @@ HttpHeader	DataAdapter::deserializeHeader(std::string data) {
 	return newHeader;
 }
 
-//TODO implement
 bool	DataAdapter::validatePart() {
+	std::string			line;
+	std::stringstream	data(_connection->recvBuffer);
 	
+	while (std::getline(data, line)) {
+
+		//TODO @@@@@ probar con imagen jpg diminuta...
+		if (line == _connection->boundEnd)
+			return true;
+	}
+	return false;
 }
 
 //TODO implement
@@ -130,7 +113,8 @@ void	DataAdapter::deserializeRequest() {
 
 	data << _connection->recvBuffer;
 
-	deserializeRequestLine(data, _request);
+	if (_connection->requestMode == Connection::SINGLE)
+		deserializeRequestLine(data, _request);
 	deserializeHeaders(data, _request, _connection);
 	deserializeBody(data, _request, _connection);
 }

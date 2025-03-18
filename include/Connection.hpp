@@ -12,7 +12,7 @@ class Connection {
 		Server&			_server;
 		int				_socketFd;
 		struct pollfd	_pollfd;
-		DataAdapter		*_dataAdapter;
+		DataAdapter		*_multiDataAdapter;
 
 	public:
 

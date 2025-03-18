@@ -83,7 +83,7 @@ void	FileManager::writeFile(DataAdapter& dataAdapter) {
 	//TODO errores http?
 	//TODO hardcoded filename, sacar de los headers...
 
-	int fd = open("test.html", O_WRONLY | O_CREAT | O_APPEND, 0775);
+	int fd = open("image.png", O_WRONLY | O_CREAT | O_APPEND, 0775);
 	if (fd > 0) {
 		write(fd, request.body.c_str(), request.body.size());
 		close(fd);

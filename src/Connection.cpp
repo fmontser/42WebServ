@@ -9,7 +9,7 @@
 #include "RequestProcessor.hpp"
 #include "Utils.hpp"
 
-Connection::Connection(Server& server) : _server(server) {
+Connection::Connection(Server& server) : _server(server), _multiDataAdapter(NULL) {
 	sockaddr_in	client_addr;
 	socklen_t	client_addr_len = sizeof(client_addr);
 
@@ -76,9 +76,20 @@ void	Connection::recieveData() {
 	else if (len > 0) {
 		recvBuffer.append(buffer);
 		if (requestMode == MULTIPART) {
-			adapter.getRequest().method = "POST";
+			if (_multiDataAdapter == NULL)
+				_multiDataAdapter = new DataAdapter(adapter);	//TODO liberar!!
+			if (!_multiDataAdapter->validatePart())
+				return ;
+			
+				//TODO en este punto hay una part, y ya se peude descontar del content length
 
-			//TODO @@@@@@
+			_multiDataAdapter->deserializeRequest();
+			_multiDataAdapter->getRequest().method = "POST";
+			HttpProcessor::processHttpRequest(*_multiDataAdapter);
+			
+			
+			//TODO @@@@@@ enviar? liberar?
+
 			recvBuffer.clear(); //TODO condicional si la parte ha sido procesada
 		}
 		else {

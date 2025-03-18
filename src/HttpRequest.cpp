@@ -33,8 +33,8 @@ bool	HttpRequest::handleMultipart(Connection *connection) {
 				connection->boundarie = property.value;
 				connection->boundStart = "--";
 				connection->boundStart.append(connection->boundarie);
+				connection->boundEnd =  connection->boundStart;
 				connection->boundStart.append("\r");
-				connection->boundEnd =  connection->boundarie;
 				connection->boundEnd.append("--\r");
 			}
 		}
