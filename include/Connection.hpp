@@ -16,11 +16,13 @@ class Connection {
 
 	public:
 
+		enum RequestMode { SINGLE, MULTIPART };
+		//enum ResponseMode { SINGLE, CHUNKED };
+
 		std::string	recvBuffer;
 		std::string	sendBuffer;
-		bool		isChunkedResponse;
-		bool		isMultipartUpload;
-		bool		isMultipartHead;
+		bool		isChunkedResponse;	//TODO cambiar a response mode (enums)
+		RequestMode	requestMode;
 		std::string	boundarie;
 		std::string	boundStart;
 		std::string	boundEnd;

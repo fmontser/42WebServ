@@ -23,6 +23,8 @@ class DataAdapter {
 
 		HttpRequest&		getRequest();
 		HttpResponse&		getResponse();
+		bool				validatePart();
+		void				deserializePart();
 		void				deserializeRequest();
 		void				serializeResponse();
 		static HttpHeader	deserializeHeader(std::string header);

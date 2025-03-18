@@ -21,7 +21,7 @@ HttpRequest& HttpRequest::operator=(const HttpRequest& src) {
 HttpRequest::~HttpRequest() {}
 
 bool	HttpRequest::handleMultipart(Connection *connection) {
-
+	
 	for (std::vector<HttpHeader>::iterator it = headers.begin(); it != headers.end(); ++it) {
 		HttpHeader	header = *it;
 		HeaderValue		value;
@@ -29,7 +29,7 @@ bool	HttpRequest::handleMultipart(Connection *connection) {
 
 		if (header.getValue("Content-Type", &value) && value.name == "multipart/form-data") {
 			if (value.getPropertie("boundary", &property)) {
-				connection->isMultipartUpload = true;
+				connection->requestMode = Connection::MULTIPART;
 				connection->boundarie = property.value;
 				connection->boundStart = "--";
 				connection->boundStart.append(connection->boundarie);
@@ -40,7 +40,7 @@ bool	HttpRequest::handleMultipart(Connection *connection) {
 		}
 		else if (header.getValue("Content-Length", &value))
 			connection->contentLength = Utils::strToUint(value.name);
-		if (connection->isMultipartUpload && !connection->boundarie.empty() && connection->contentLength > 0)
+		if (connection->requestMode == Connection::MULTIPART && !connection->boundarie.empty() && connection->contentLength > 0)
 			return true;
 	}
 	return false;

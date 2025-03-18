@@ -37,8 +37,6 @@ static void	deserializeRequestLine(std::stringstream& data, HttpRequest& request
 	request.version = line.substr(0, line.find('\r'));
 }
 
-
-
 static void	deserializeHeaders(std::stringstream& data, HttpRequest& request, Connection *connection) {
 	std::string	line;
 
@@ -53,7 +51,7 @@ static void	deserializeHeaders(std::stringstream& data, HttpRequest& request, Co
 static void	deserializeBody(std::stringstream& data, HttpRequest& request, Connection *connection) {
 	std::string	line;
 
-	//TODO limpiar e usar connection->bounds (cuando ya funcione...)
+/* 	//TODO limpiar e usar connection->bounds (cuando ya funcione...)
 
 	std::string boundarieLine = "--";
 	std::string endboundarieLine;
@@ -79,6 +77,12 @@ static void	deserializeBody(std::stringstream& data, HttpRequest& request, Conne
 				request.body.append(line);
 				request.body.append(std::string(1,'\n'));
 		}
+	}
+ */
+	(void)connection;
+	while (std::getline(data, line)) {
+		request.body.append(line);
+		request.body.append(std::string(1,'\n'));
 	}
 }
 
@@ -112,14 +116,21 @@ HttpHeader	DataAdapter::deserializeHeader(std::string data) {
 	return newHeader;
 }
 
+//TODO implement
+bool	DataAdapter::validatePart() {
+	
+}
+
+//TODO implement
+void	DataAdapter::deserializePart() {
+}
 
 void	DataAdapter::deserializeRequest() {
 	std::stringstream data;
 
 	data << _connection->recvBuffer;
 
-	if (!_connection->isMultipartUpload)
-		deserializeRequestLine(data, _request);
+	deserializeRequestLine(data, _request);
 	deserializeHeaders(data, _request, _connection);
 	deserializeBody(data, _request, _connection);
 }

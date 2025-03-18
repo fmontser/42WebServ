@@ -22,7 +22,7 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter) {
 		connection->isChunkedResponse = response.isChunked();
 	}
 	else if (request.method == "POST") {
-		if (!connection->isMultipartUpload && request.handleMultipart(connection)) {
+		if (connection->requestMode == Connection::SINGLE && request.handleMultipart(connection)) {
 			response.version = HTTP_VERSION;
 			response.statusCode = "100";
 			response.statusMsg = "CONTINUE";
