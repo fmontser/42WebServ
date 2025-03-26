@@ -1,4 +1,5 @@
 #include <sstream>
+#include <algorithm>
 #include "DataAdapter.hpp"
 #include "ConnectionManager.hpp"
 #include "FileManager.hpp"
@@ -47,7 +48,8 @@ static bool	deserializeHeaders(std::stringstream& data, HttpRequest& request, Co
 	std::string	line;
 
 	while (std::getline(data, line)) {
-		if (line == "\r")
+		line.append("\n");
+		if (line == CRLF)
 				break ;
 		if (line != connection->boundStart)
 			request.addHeader(DataAdapter::deserializeHeader(line));
@@ -57,33 +59,30 @@ static bool	deserializeHeaders(std::stringstream& data, HttpRequest& request, Co
 	return false;
 }
 
+static void removeBoundarie(std::vector<char>& body, const std::string& boundarie, DataAdapter& dataAdapter) {
+	size_t boundary_len = boundarie.length() + CRLF_OFFSET;
 
-//TODO test!
-#include <algorithm>
-#include <iostream>
-static void removeBoundarie(std::vector<char>& body, const std::string& boundarie) {
-	size_t boundary_len = boundarie.length();
-	if (boundary_len == 0 || body.empty()) return;
+	(void)dataAdapter;	//TODO Quitar esto!
 
-	for (size_t i = 0; (i = std::search(body.begin(), body.end(), boundarie.begin(), boundarie.end()) - body.begin()) < body.size(); ) {
-		std::cout << "Bound erased!" << boundarie << std::endl;
+	if (boundary_len == 0 || body.empty())
+		return;
+	for (size_t i = 0; (i = std::search(body.begin(), body.end(), boundarie.begin(), boundarie.end()) - body.begin()) < body.size();) {
 		body.erase(body.begin() + i, body.begin() + i + boundary_len);
 	}
 }
-static void	deserializeBody(std::stringstream& data, HttpRequest& request, Connection *connection) {
+static void	deserializeBody(std::stringstream& data, HttpRequest& request, DataAdapter& dataAdapter) {
 	char	c[1];
-	//size_t	pos;
-	(void)connection;
+
 	while(data.get(*c)) {
 		request.body.push_back(*c);
 	}
-
-	removeBoundarie(request.body, connection->boundStart);
-	removeBoundarie(request.body, connection->boundEnd);
+	removeBoundarie(request.body, dataAdapter.getConnection()->boundStart, dataAdapter);
+	removeBoundarie(request.body, dataAdapter.getConnection()->boundEnd, dataAdapter);
 }
 
 HttpHeader	DataAdapter::deserializeHeader(std::string data) {
 	HttpHeader newHeader;
+	data.erase(data.find(CRLF, 0), CRLF_OFFSET);
 	newHeader.name = data.substr(0, data.find(':'));
 	data = data.substr(data.find(':') + SPLIT_CHR_SZ, data.size());
 	Utils::trimString(data);
@@ -121,7 +120,7 @@ void	DataAdapter::deserializeRequest() {
 		deserializeRequestLine(data, _request);
 	if (!isHeadersComplete)
 		isHeadersComplete = deserializeHeaders(data, _request, _connection);
-	deserializeBody(data, _request, _connection);
+	deserializeBody(data, _request, *this);
 }
 
 static void	serializeHeaders(std::stringstream& buffer, HttpResponse& response) {

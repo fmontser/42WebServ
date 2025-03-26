@@ -19,7 +19,7 @@ class DataAdapter {
 		DataAdapter(const DataAdapter& src);
 		DataAdapter& operator=(const DataAdapter& src);
 
-		bool	isHeadersComplete;
+		bool				isHeadersComplete;
 
 		Connection			*getConnection() const;
 

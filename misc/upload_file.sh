@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # Nombre del archivo a subir
-ARCHIVO="tiny.jpg"
-#ARCHIVO="image.jpg"
-#ARCHIVO="test.html"
+ARCHIVO="image.jpg"
+
+
 # URL del servidor
 URL="http://localhost:8042"
 

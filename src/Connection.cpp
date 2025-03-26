@@ -76,7 +76,7 @@ void	Connection::recieveData() {
 		ConnectionManager::deleteConnection(_server, this);
 	}
 	else if (len > 0) {
-		recvBuffer.assign(buffer, buffer + len); //TODO check -1?
+		recvBuffer.assign(buffer, buffer + len);
 		if (requestMode == MULTIPART) {
 			if (_multiDataAdapter == NULL)
 				_multiDataAdapter = new DataAdapter(adapter);
@@ -85,8 +85,9 @@ void	Connection::recieveData() {
 			_multiDataAdapter->deserializeRequest();
 			_multiDataAdapter->getRequest().method = "POST";
 			HttpProcessor::processHttpRequest(*_multiDataAdapter);
-			_multiDataAdapter->serializeResponse();
+			//_multiDataAdapter->serializeResponse(); //TODO @@@@@@@@@@@@@@@@@@@@@@ arreglar respuestas!!!
 			recvBuffer.clear();
+			_multiDataAdapter->getRequest().body.clear();
 			if (contentLength == 0)
 				delete _multiDataAdapter;
 		}
