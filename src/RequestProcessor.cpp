@@ -22,18 +22,23 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter) {
 		connection->isChunkedResponse = response.isChunked();
 	}
 	else if (request.method == "POST") {
-		if (!connection->isMultipartUpload && request.handleMultipart(connection)) {
+		if (connection->requestMode == Connection::SINGLE && request.handleMultipart(connection)) {
 			response.version = HTTP_VERSION;
 			response.statusCode = "100";
 			response.statusMsg = "CONTINUE";
 			return ;
 		}
 		FileManager::writeFile(dataAdapter); //TODO write unimplemented
-		if (response.statusCode.empty()) {
+		if (response.statusCode.empty() && dataAdapter.getConnection()->contentLength == 0) {
 			response.statusCode = "201";
 			response.statusMsg = "CREATED";
 			std::cout << BLUE << "Info: success 201 \"" << request.method << "\", CREATED " << END << std::endl;
 			std::cout << BLUE << "Connection fd: " << connection->getPollFd().fd << std::endl;
+		}
+		else {
+			response.version = HTTP_VERSION;
+			response.statusCode = "100";
+			response.statusMsg = "CONTINUE";
 		}
 	}
 	else if (request.method == "DELETE") {

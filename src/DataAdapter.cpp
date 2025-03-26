@@ -1,4 +1,5 @@
 #include <sstream>
+#include <algorithm>
 #include "DataAdapter.hpp"
 #include "ConnectionManager.hpp"
 #include "FileManager.hpp"
@@ -9,19 +10,25 @@
 
 #define SPLIT_CHR_SZ 1
 
-DataAdapter::DataAdapter(Connection * connection) : _connection(connection) {}
+DataAdapter::DataAdapter(Connection * connection) : _connection(connection) {
+	isHeadersComplete = false;
+}
 
 DataAdapter::~DataAdapter() {}
 
 DataAdapter::DataAdapter(const DataAdapter& src) {
 	_request = src._request;
 	_response = src._response;
+	_connection = src._connection;
+	isHeadersComplete =src.isHeadersComplete;
 }
 
 DataAdapter& DataAdapter::operator=(const DataAdapter& src) {
 	if (this != &src) {
 		_request = src._request;
 		_response = src._response;
+		_connection = src._connection;
+		isHeadersComplete =src.isHeadersComplete;
 	}
 	return *this;
 }
@@ -37,53 +44,45 @@ static void	deserializeRequestLine(std::stringstream& data, HttpRequest& request
 	request.version = line.substr(0, line.find('\r'));
 }
 
-
-
-static void	deserializeHeaders(std::stringstream& data, HttpRequest& request, Connection *connection) {
+static bool	deserializeHeaders(std::stringstream& data, HttpRequest& request, Connection *connection) {
 	std::string	line;
 
 	while (std::getline(data, line)) {
-		if (line == "\r")
+		line.append("\n");
+		if (line == CRLF)
 				break ;
 		if (line != connection->boundStart)
 			request.addHeader(DataAdapter::deserializeHeader(line));
 	}
+	if (connection->requestMode == Connection::MULTIPART)
+		return true;
+	return false;
 }
 
-static void	deserializeBody(std::stringstream& data, HttpRequest& request, Connection *connection) {
-	std::string	line;
+static void removeBoundarie(std::vector<char>& body, const std::string& boundarie, DataAdapter& dataAdapter) {
+	size_t boundary_len = boundarie.length() + CRLF_OFFSET;
 
-	//TODO limpiar e usar connection->bounds (cuando ya funcione...)
+	(void)dataAdapter;	//TODO Quitar esto!
 
-	std::string boundarieLine = "--";
-	std::string endboundarieLine;
-
-	if (connection->isMultipartUpload) {
-
-		boundarieLine.append(connection->boundarie);
-		endboundarieLine.append (boundarieLine);
-		endboundarieLine.append("--\r");
-		boundarieLine.append("\r");
-
-		while (std::getline(data, line)) {
-			if (line != boundarieLine) {
-				if ( line == endboundarieLine)
-					break;
-				request.body.append(line);
-				request.body.append(std::string(1,'\n'));
-			}
-		}
+	if (boundary_len == 0 || body.empty())
+		return;
+	for (size_t i = 0; (i = std::search(body.begin(), body.end(), boundarie.begin(), boundarie.end()) - body.begin()) < body.size();) {
+		body.erase(body.begin() + i, body.begin() + i + boundary_len);
 	}
-	else {
-		while (std::getline(data, line)) {
-				request.body.append(line);
-				request.body.append(std::string(1,'\n'));
-		}
+}
+static void	deserializeBody(std::stringstream& data, HttpRequest& request, DataAdapter& dataAdapter) {
+	char	c[1];
+
+	while(data.get(*c)) {
+		request.body.push_back(*c);
 	}
+	removeBoundarie(request.body, dataAdapter.getConnection()->boundStart, dataAdapter);
+	removeBoundarie(request.body, dataAdapter.getConnection()->boundEnd, dataAdapter);
 }
 
 HttpHeader	DataAdapter::deserializeHeader(std::string data) {
 	HttpHeader newHeader;
+	data.erase(data.find(CRLF, 0), CRLF_OFFSET);
 	newHeader.name = data.substr(0, data.find(':'));
 	data = data.substr(data.find(':') + SPLIT_CHR_SZ, data.size());
 	Utils::trimString(data);
@@ -112,16 +111,16 @@ HttpHeader	DataAdapter::deserializeHeader(std::string data) {
 	return newHeader;
 }
 
-
 void	DataAdapter::deserializeRequest() {
 	std::stringstream data;
 
-	data << _connection->recvBuffer;
+	data << std::string(_connection->recvBuffer.begin(), _connection->recvBuffer.end());
 
-	if (!_connection->isMultipartUpload)
+	if (_connection->requestMode == Connection::SINGLE)
 		deserializeRequestLine(data, _request);
-	deserializeHeaders(data, _request, _connection);
-	deserializeBody(data, _request, _connection);
+	if (!isHeadersComplete)
+		isHeadersComplete = deserializeHeaders(data, _request, _connection);
+	deserializeBody(data, _request, *this);
 }
 
 static void	serializeHeaders(std::stringstream& buffer, HttpResponse& response) {
@@ -151,7 +150,7 @@ void	DataAdapter::serializeResponse() {
 
 	buffer << _response.version << " " << _response.statusCode << " " << _response.statusMsg << CRLF;
 	serializeHeaders(buffer, _response);
-	buffer << _response.body;
+	buffer << std::string(_response.body.begin(), _response.body.end());
 	_connection->sendBuffer = buffer.str();
 }
 

@@ -19,6 +19,8 @@ class DataAdapter {
 		DataAdapter(const DataAdapter& src);
 		DataAdapter& operator=(const DataAdapter& src);
 
+		bool				isHeadersComplete;
+
 		Connection			*getConnection() const;
 
 		HttpRequest&		getRequest();

@@ -3,13 +3,14 @@
 #include <iostream>
 #include <unistd.h>
 #include <cstdlib>
+#include <cstring>
 #include "Connection.hpp"
 #include "ConnectionManager.hpp"
 #include "DataAdapter.hpp"
 #include "RequestProcessor.hpp"
 #include "Utils.hpp"
 
-Connection::Connection(Server& server) : _server(server) {
+Connection::Connection(Server& server) : _server(server), _multiDataAdapter(NULL) {
 	sockaddr_in	client_addr;
 	socklen_t	client_addr_len = sizeof(client_addr);
 
@@ -19,9 +20,9 @@ Connection::Connection(Server& server) : _server(server) {
 	}
 
 	isChunkedResponse = false;
-	isMultipartUpload = false;
-	isMultipartHead = true;
+	requestMode = SINGLE;
 	contentLength = 0;
+	recvBuffer.clear();
 	boundarie.clear();
 
 	_pollfd = pollfd();
@@ -36,8 +37,7 @@ Connection::Connection(const Connection& src) : _server(src._server) {
 	recvBuffer = src.recvBuffer;
 	sendBuffer = src.sendBuffer;
 	isChunkedResponse = src.isChunkedResponse;
-	isMultipartUpload = src.isMultipartUpload;
-	isMultipartHead = src.isMultipartHead;
+	requestMode = src.requestMode;
 	boundarie = src.boundarie;
 	contentLength = src.contentLength;
 }
@@ -49,8 +49,7 @@ Connection& Connection::operator=(const Connection& src) {
 		recvBuffer = src.recvBuffer;
 		sendBuffer = src.sendBuffer;
 		isChunkedResponse = src.isChunkedResponse;
-		isMultipartUpload = src.isMultipartUpload;
-		isMultipartHead = src.isMultipartHead;
+		requestMode = src.requestMode;
 		boundarie = src.boundarie;
 		contentLength = src.contentLength;
 	}
@@ -77,41 +76,22 @@ void	Connection::recieveData() {
 		ConnectionManager::deleteConnection(_server, this);
 	}
 	else if (len > 0) {
-		if (isMultipartUpload) {
-			recvBuffer.append(buffer);
-			if (isMultipartHead) {
-				isMultipartHead = false;
-				adapter.getRequest().method = "POST";
-				adapter.deserializeRequest();
-				HttpProcessor::processHttpRequest(adapter);
-				adapter.getResponse().version = HTTP_VERSION;
-				adapter.getResponse().statusCode = "100";
-				adapter.getResponse().statusMsg = "CONTINUE";
-				adapter.serializeResponse();
-				recvBuffer.clear();
-			}
-			else {
-/* 
-				recvBuffer.append(buffer);
+		recvBuffer.assign(buffer, buffer + len);
+		if (requestMode == MULTIPART) {
+			if (_multiDataAdapter == NULL)
+				_multiDataAdapter = new DataAdapter(adapter);
 
-			
-
-				if (contentLength == 0) {
-					 adapter.deserializeRequest();
-					HttpProcessor::processHttpRequest(adapter);
-					adapter.serializeResponse();
-				}
-				else {
-					adapter.getResponse().version = HTTP_VERSION;
-					adapter.getResponse().statusCode = "100";
-					adapter.getResponse().statusMsg = "CONTINUE";
-					adapter.serializeResponse();
-				} */
-			}
+			contentLength -= len;
+			_multiDataAdapter->deserializeRequest();
+			_multiDataAdapter->getRequest().method = "POST";
+			HttpProcessor::processHttpRequest(*_multiDataAdapter);
+			//_multiDataAdapter->serializeResponse(); //TODO @@@@@@@@@@@@@@@@@@@@@@ arreglar respuestas!!!
+			recvBuffer.clear();
+			_multiDataAdapter->getRequest().body.clear();
+			if (contentLength == 0)
+				delete _multiDataAdapter;
 		}
 		else {
-			recvBuffer.clear();
-			recvBuffer.append(buffer);
 			adapter.deserializeRequest();
 			HttpProcessor::processHttpRequest(adapter);
 			adapter.serializeResponse();
