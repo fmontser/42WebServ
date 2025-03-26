@@ -9,7 +9,9 @@
 
 #define SPLIT_CHR_SZ 1
 
-DataAdapter::DataAdapter(Connection * connection) : _connection(connection) {}
+DataAdapter::DataAdapter(Connection * connection) : _connection(connection) {
+	isHeadersComplete = false;
+}
 
 DataAdapter::~DataAdapter() {}
 
@@ -17,6 +19,7 @@ DataAdapter::DataAdapter(const DataAdapter& src) {
 	_request = src._request;
 	_response = src._response;
 	_connection = src._connection;
+	isHeadersComplete =src.isHeadersComplete;
 }
 
 DataAdapter& DataAdapter::operator=(const DataAdapter& src) {
@@ -24,6 +27,7 @@ DataAdapter& DataAdapter::operator=(const DataAdapter& src) {
 		_request = src._request;
 		_response = src._response;
 		_connection = src._connection;
+		isHeadersComplete =src.isHeadersComplete;
 	}
 	return *this;
 }
@@ -39,7 +43,7 @@ static void	deserializeRequestLine(std::stringstream& data, HttpRequest& request
 	request.version = line.substr(0, line.find('\r'));
 }
 
-static void	deserializeHeaders(std::stringstream& data, HttpRequest& request, Connection *connection) {
+static bool	deserializeHeaders(std::stringstream& data, HttpRequest& request, Connection *connection) {
 	std::string	line;
 
 	while (std::getline(data, line)) {
@@ -48,17 +52,34 @@ static void	deserializeHeaders(std::stringstream& data, HttpRequest& request, Co
 		if (line != connection->boundStart)
 			request.addHeader(DataAdapter::deserializeHeader(line));
 	}
+	if (connection->requestMode == Connection::MULTIPART)
+		return true;
+	return false;
 }
 
-static void	deserializeBody(std::stringstream& data, HttpRequest& request, Connection *connection) {
-	std::string	line;
 
-	while (std::getline(data, line)) {
-		if (line != connection->boundEnd){
-			request.body.append(line);
-			request.body.append(std::string(1,'\n'));
-		}
+//TODO test!
+#include <algorithm>
+#include <iostream>
+static void removeBoundarie(std::vector<char>& body, const std::string& boundarie) {
+	size_t boundary_len = boundarie.length();
+	if (boundary_len == 0 || body.empty()) return;
+
+	for (size_t i = 0; (i = std::search(body.begin(), body.end(), boundarie.begin(), boundarie.end()) - body.begin()) < body.size(); ) {
+		std::cout << "Bound erased!" << boundarie << std::endl;
+		body.erase(body.begin() + i, body.begin() + i + boundary_len);
 	}
+}
+static void	deserializeBody(std::stringstream& data, HttpRequest& request, Connection *connection) {
+	char	c[1];
+	//size_t	pos;
+	(void)connection;
+	while(data.get(*c)) {
+		request.body.push_back(*c);
+	}
+
+	removeBoundarie(request.body, connection->boundStart);
+	removeBoundarie(request.body, connection->boundEnd);
 }
 
 HttpHeader	DataAdapter::deserializeHeader(std::string data) {
@@ -91,31 +112,15 @@ HttpHeader	DataAdapter::deserializeHeader(std::string data) {
 	return newHeader;
 }
 
-bool	DataAdapter::validatePart() {
-	std::string			line;
-	std::stringstream	data(_connection->recvBuffer);
-	
-	while (std::getline(data, line)) {
-
-		//TODO @@@@@ probar con imagen jpg diminuta...
-		if (line == _connection->boundEnd)
-			return true;
-	}
-	return false;
-}
-
-//TODO implement
-void	DataAdapter::deserializePart() {
-}
-
 void	DataAdapter::deserializeRequest() {
 	std::stringstream data;
 
-	data << _connection->recvBuffer;
+	data << std::string(_connection->recvBuffer.begin(), _connection->recvBuffer.end());
 
 	if (_connection->requestMode == Connection::SINGLE)
 		deserializeRequestLine(data, _request);
-	deserializeHeaders(data, _request, _connection);
+	if (!isHeadersComplete)
+		isHeadersComplete = deserializeHeaders(data, _request, _connection);
 	deserializeBody(data, _request, _connection);
 }
 
@@ -146,7 +151,7 @@ void	DataAdapter::serializeResponse() {
 
 	buffer << _response.version << " " << _response.statusCode << " " << _response.statusMsg << CRLF;
 	serializeHeaders(buffer, _response);
-	buffer << _response.body;
+	buffer << std::string(_response.body.begin(), _response.body.end());
 	_connection->sendBuffer = buffer.str();
 }
 

@@ -3,6 +3,7 @@
 #include <iostream>
 #include <unistd.h>
 #include <cstdlib>
+#include <cstring>
 #include "Connection.hpp"
 #include "ConnectionManager.hpp"
 #include "DataAdapter.hpp"
@@ -21,6 +22,7 @@ Connection::Connection(Server& server) : _server(server), _multiDataAdapter(NULL
 	isChunkedResponse = false;
 	requestMode = SINGLE;
 	contentLength = 0;
+	recvBuffer.clear();
 	boundarie.clear();
 
 	_pollfd = pollfd();
@@ -74,23 +76,19 @@ void	Connection::recieveData() {
 		ConnectionManager::deleteConnection(_server, this);
 	}
 	else if (len > 0) {
-		recvBuffer.append(buffer);
+		recvBuffer.assign(buffer, buffer + len); //TODO check -1?
 		if (requestMode == MULTIPART) {
 			if (_multiDataAdapter == NULL)
-				_multiDataAdapter = new DataAdapter(adapter);	//TODO liberar!!
-			if (!_multiDataAdapter->validatePart())
-				return ;
-			
-				//TODO en este punto hay una part, y ya se peude descontar del content length
+				_multiDataAdapter = new DataAdapter(adapter);
 
+			contentLength -= len;
 			_multiDataAdapter->deserializeRequest();
 			_multiDataAdapter->getRequest().method = "POST";
 			HttpProcessor::processHttpRequest(*_multiDataAdapter);
-			
-			
-			//TODO @@@@@@ enviar? liberar?
-
-			recvBuffer.clear(); //TODO condicional si la parte ha sido procesada
+			_multiDataAdapter->serializeResponse();
+			recvBuffer.clear();
+			if (contentLength == 0)
+				delete _multiDataAdapter;
 		}
 		else {
 			adapter.deserializeRequest();

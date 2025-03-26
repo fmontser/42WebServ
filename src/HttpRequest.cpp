@@ -34,8 +34,8 @@ bool	HttpRequest::handleMultipart(Connection *connection) {
 				connection->boundStart = "--";
 				connection->boundStart.append(connection->boundarie);
 				connection->boundEnd =  connection->boundStart;
-				connection->boundStart.append("\r");
-				connection->boundEnd.append("--\r");
+				connection->boundStart.append("\r\n");
+				connection->boundEnd.append("--\r\n");
 			}
 		}
 		else if (header.getValue("Content-Length", &value))

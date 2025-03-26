@@ -58,7 +58,7 @@ static void	manageServerConnections(Server& server) {
 		Connection&	connection = *(*it);
 		if (connection.hasPollIn())
 			connection.recieveData();
-		else if (connection.hasPollOut() && !connection.sendBuffer.empty())
+		if (connection.hasPollOut() && !connection.sendBuffer.empty())
 			connection.sendData();
 	}
 	cachedList.clear();

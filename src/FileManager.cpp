@@ -72,20 +72,23 @@ void	FileManager::readFile(DataAdapter& dataAdapter) {
 		response.addHeader(contentLengthHeader.str());
 
 	}
-	response.body = body;
+	response.body.assign(body.c_str(), body.c_str() + body.size());
 	close(fd);
 }
 
 void	FileManager::writeFile(DataAdapter& dataAdapter) {
 	HttpRequest&	request = dataAdapter.getRequest();
 
+	(void)request;
+
+	//TODO esta todo mal!! debe añadir en cada iteracion...
 	//TODO implementar y test
 	//TODO errores http?
 	//TODO hardcoded filename, sacar de los headers...
 
-	int fd = open("image.png", O_WRONLY | O_CREAT | O_APPEND, 0775);
+ 	int fd = open("image.jpg", O_WRONLY | O_CREAT | O_APPEND, 0775);
 	if (fd > 0) {
-		write(fd, request.body.c_str(), request.body.size());
+		write(fd, &request.body[0], request.body.size());
 		close(fd);
 	}
 	else

@@ -19,14 +19,14 @@ class Connection {
 		enum RequestMode { SINGLE, MULTIPART };
 		//enum ResponseMode { SINGLE, CHUNKED };
 
-		std::string	recvBuffer;
-		std::string	sendBuffer;
-		bool		isChunkedResponse;	//TODO cambiar a response mode (enums)
-		RequestMode	requestMode;
-		std::string	boundarie;
-		std::string	boundStart;
-		std::string	boundEnd;
-		size_t		contentLength;
+		std::vector<char>	recvBuffer;
+		std::string			sendBuffer;
+		bool				isChunkedResponse;	//TODO cambiar a response mode (enums)
+		RequestMode			requestMode;
+		std::string			boundarie;
+		std::string			boundStart;
+		std::string			boundEnd;
+		size_t				contentLength;
 
 		Connection(Server& server);
 		Connection(const Connection& src);
