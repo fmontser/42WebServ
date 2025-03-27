@@ -20,6 +20,7 @@ class DataAdapter {
 		DataAdapter& operator=(const DataAdapter& src);
 
 		bool				isHeadersComplete;
+		bool				allowFileAppend;
 
 		Connection			*getConnection() const;
 

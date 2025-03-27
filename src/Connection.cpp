@@ -85,7 +85,8 @@ void	Connection::recieveData() {
 			_multiDataAdapter->deserializeRequest();
 			_multiDataAdapter->getRequest().method = "POST";
 			HttpProcessor::processHttpRequest(*_multiDataAdapter);
-			//_multiDataAdapter->serializeResponse(); //TODO @@@@@@@@@@@@@@@@@@@@@@ arreglar respuestas!!!
+			if (!_multiDataAdapter->getResponse().statusCode.empty())
+				_multiDataAdapter->serializeResponse();
 			recvBuffer.clear();
 			_multiDataAdapter->getRequest().body.clear();
 			if (contentLength == 0)

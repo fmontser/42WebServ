@@ -12,7 +12,7 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter) {
 
 	response.version = HTTP_VERSION;
 	if (request.method == "GET") {
-		FileManager::readFile(dataAdapter);
+		FileManager::readFile(dataAdapter);	//TODO @@@@@ 11111 @@@@@@ refactor de respuestas por status code!! 
 		if (response.statusCode.empty()) {
 			response.statusCode = "200";
 			response.statusMsg = "OK";
@@ -28,17 +28,12 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter) {
 			response.statusMsg = "CONTINUE";
 			return ;
 		}
-		FileManager::writeFile(dataAdapter); //TODO write unimplemented
+		FileManager::writeFile(dataAdapter); //TODO refactor de respuestas por status code!! 
 		if (response.statusCode.empty() && dataAdapter.getConnection()->contentLength == 0) {
 			response.statusCode = "201";
 			response.statusMsg = "CREATED";
 			std::cout << BLUE << "Info: success 201 \"" << request.method << "\", CREATED " << END << std::endl;
 			std::cout << BLUE << "Connection fd: " << connection->getPollFd().fd << std::endl;
-		}
-		else {
-			response.version = HTTP_VERSION;
-			response.statusCode = "100";
-			response.statusMsg = "CONTINUE";
 		}
 	}
 	else if (request.method == "DELETE") {
