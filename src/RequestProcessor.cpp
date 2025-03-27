@@ -12,7 +12,8 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter) {
 
 	response.version = HTTP_VERSION;
 	if (request.method == "GET") {
-		FileManager::readFile(dataAdapter);	//TODO @@@@@ 11111 @@@@@@ refactor de respuestas por status code!! 
+		//TODO @@@@@@@@ 111111 @@@@@@@@ LOS ENVIOS TAMBIEN SUFREN DE LA CODIFICACION TEXTO PLANO!!!! (por eso no funcniona favicon??)
+		FileManager::readFile(dataAdapter);	//TODO @@@@@ 222222 @@@@@@ refactor de respuestas por status code!! 
 		if (response.statusCode.empty()) {
 			response.statusCode = "200";
 			response.statusMsg = "OK";
