@@ -12,13 +12,21 @@ class Connection {
 		Server&			_server;
 		int				_socketFd;
 		struct pollfd	_pollfd;
-		DataAdapter		*_dataAdapter;
+		DataAdapter		*_multiDataAdapter;
 
 	public:
 
-		std::string	recvBuffer;
-		std::string	sendBuffer;
-		bool		isChunkedResponse;
+		enum RequestMode { SINGLE, MULTIPART };
+		//enum ResponseMode { SINGLE, CHUNKED };
+
+		std::vector<char>	recvBuffer;
+		std::string			sendBuffer;
+		bool				isChunkedResponse;	//TODO cambiar a response mode (enums)
+		RequestMode			requestMode;
+		std::string			boundarie;
+		std::string			boundStart;
+		std::string			boundEnd;
+		size_t				contentLength;
 
 		Connection(Server& server);
 		Connection(const Connection& src);

@@ -1,4 +1,6 @@
 #include "Utils.hpp"
+#include <cstdlib>
+
 
 std::vector<std::string> Utils::splitString(const std::string& str, char delimiter) {
 	std::vector<std::string> tokens;
@@ -28,4 +30,22 @@ void	Utils::trimString(std::string& str) {
 		end--;
 	}
 	str = str.substr(start, end - start + 1);
+}
+
+size_t	Utils::strToUint(std::string str) {
+	return std::strtol(str.c_str(), NULL, 10);
+}
+
+size_t	Utils::strHexToUint(std::string  str) {
+	return std::strtol(str.c_str(), NULL, 16);
+}
+
+void	Utils::nestedQuoteExtract(char delimiter, std::string& str) {
+	size_t start, end;
+
+	while (str.find(delimiter,0) != str.npos) {
+		start = str.find(delimiter,0);
+		end = str.find_last_of(delimiter, str.size());
+		str = str.substr(start + 1, end - 1);
+	}
 }

@@ -8,6 +8,7 @@
 #include "DataAdapter.hpp"
 #include "ServerConstants.hpp"
 #include "Connection.hpp"
+#include "Utils.hpp"
 
 FileManager::FileManager() {}
 FileManager::~FileManager() {}
@@ -38,6 +39,8 @@ static void chunkEncode(std::string& body, size_t maxPayload) {
 	body = buffer.str();
 }
 
+//TODO comprobar permisos de lectura (403 Forbidden), devolver 403?
+//TODO si no existe (404 Not found), devolver 404?
 void	FileManager::readFile(DataAdapter& dataAdapter) {
 	std::string			target, body; 
 	int					fd, readSize;
@@ -72,10 +75,58 @@ void	FileManager::readFile(DataAdapter& dataAdapter) {
 		response.addHeader(contentLengthHeader.str());
 
 	}
-	response.body = body;
+	response.body.assign(body.c_str(), body.c_str() + body.size());
 	close(fd);
 }
 
-void	FileManager::writeFile(DataAdapter& dataAdapter) {
-	(void)dataAdapter;
+#include <algorithm>
+
+int	FileManager::writeFile(DataAdapter& dataAdapter) {
+	HttpRequest&	request = dataAdapter.getRequest();
+	std::string		fileName;
+	int				fd;
+
+	fileName.append(dataAdapter.getConnection()->getServer().getRoot());
+	fileName.append("upload/"); //TODO hardcoded? get from server config?
+
+	for (std::vector<HttpHeader>::iterator it = dataAdapter.getRequest().headers.begin();
+			it != dataAdapter.getRequest().headers.end(); ++it) {
+
+		if (it->name == "Content-Disposition"){
+			HeaderValue value;
+			it->getValue("Content-Disposition", &value);
+			if (!value.properties.empty()) {
+				HeaderProperty propertie;
+				value.getPropertie("filename", &propertie);
+				if (!propertie.value.empty()){
+					std::string	cropped = propertie.value;
+					Utils::nestedQuoteExtract('"', cropped);
+					fileName.append(cropped);
+					break;
+				}
+			}
+		}
+	}
+	if (!access(fileName.c_str(), W_OK) == 0)
+		return 403; //TODO si no hay permisos 403 Forbidden
+
+	if ((access(fileName.c_str(), F_OK) == 0 && dataAdapter.allowFileAppend)
+		|| !access(fileName.c_str(), F_OK) == 0) {
+
+		fd = open(fileName.c_str(), O_WRONLY | O_CREAT | O_APPEND, 0775);
+		if (fd > 0) {
+			write(fd, &request.body[0], request.body.size());
+			close(fd);
+		}
+		else {
+			std::cerr << "Error: Server error" << std::endl;
+			return 500;
+		}
+
+	}
+	else 
+		return 409; //TODO si ya existe 409 Conflict
+
+	if (dataAdapter.getConnection()->requestMode == Connection::MULTIPART)
+		dataAdapter.allowFileAppend = true;
 }

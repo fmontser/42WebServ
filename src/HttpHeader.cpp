@@ -22,6 +22,7 @@ bool	HttpHeader::getValue(std::string name, HeaderValue *value) {
 	for (std::vector<HeaderValue>::iterator it = values.begin(); it != values.end(); ++it) {
 		if (this->name == name) {
 			value->name = it->name;
+			value->properties = it->properties;
 			return true;
 		}
 	}

@@ -10,7 +10,6 @@
 Server::Server() {}
 
 Server::~Server() {
-	//TODO comprobar que se libera el fd
 	close(_socketFd);
 	for (std::list<Connection *>::iterator it = _connectionList.begin(); it != _connectionList.end(); ++it)
 		delete (*it);
@@ -49,7 +48,7 @@ Server& Server::operator=(const Server& src) {
 
 void Server::listenSocket() {
 	int optionEnable = 1;
-	int optionBufferSize = SOCKET_BUFFER_SIZE; //TODO  entender bien cual seria el tamano adecuado, est NO es el payload, mas bien page size??
+	int optionBufferSize = SOCKET_BUFFER_SIZE;
 	struct sockaddr_in address;
 
 	_socketFd = socket(AF_INET, SOCK_STREAM, 0);
@@ -107,7 +106,7 @@ void	Server::setDefault(const std::string& default_) {_default = default_; }
 void	Server::setSocketFd(int socketFd) { _socketFd = socketFd; }
 void	Server::setPollfd(struct pollfd pfd) {_pollfd = pfd; }
 void	Server::addConfigMethods(const std::string& method) {_method[method] = "allowed"; }
-//TODO####################
+
 void	Server::setPort(const std::string& port) {
 	char	*err;
 	int		portNumber;

@@ -13,14 +13,16 @@ class DataAdapter {
 		HttpResponse	_response;
 		Connection		*_connection;
 
-
 	public:
 		DataAdapter(Connection *connection);
 		~DataAdapter();
 		DataAdapter(const DataAdapter& src);
 		DataAdapter& operator=(const DataAdapter& src);
 
-		Connection		*getConnection() const;
+		bool				isHeadersComplete;
+		bool				allowFileAppend;
+
+		Connection			*getConnection() const;
 
 		HttpRequest&		getRequest();
 		HttpResponse&		getResponse();

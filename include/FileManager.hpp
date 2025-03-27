@@ -15,5 +15,5 @@ class FileManager {
 	public:
 
 		static void readFile(DataAdapter& dataAdapter);
-		static void writeFile(DataAdapter& dataAdapter);
+		static int writeFile(DataAdapter& dataAdapter);
 };

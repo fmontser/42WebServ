@@ -18,7 +18,7 @@ class HttpMessage {
 	public:
 		std::string				version;
 		std::vector<HttpHeader>	headers;
-		std::string				body;
+		std::vector<char>		body;
 
 		void	addHeader(HttpHeader header);
 		void	addHeader(std::string header);

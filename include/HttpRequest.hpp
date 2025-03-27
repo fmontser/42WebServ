@@ -2,6 +2,8 @@
 
 #include "HttpMessage.hpp"
 
+class Connection;
+
 class HttpRequest : public HttpMessage {
 	public:
 		std::string	method;
@@ -11,5 +13,7 @@ class HttpRequest : public HttpMessage {
 		~HttpRequest();
 		HttpRequest(const HttpRequest& src);
 		HttpRequest& operator=(const HttpRequest& src);
+
+		bool	handleMultipart(Connection *connection);
 };
 
