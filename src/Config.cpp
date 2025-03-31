@@ -55,6 +55,15 @@ bool Config::isValidConfig(Server &server) {
 	if (server.getRoot().empty() || server.getRoot()[0] != '.')
 		return printFalse("Server root is missing.");
 
+	if (server.getUploadDir().empty())
+		return printFalse("Server upload dir is missing.");
+
+	for (std::vector<std::string>::iterator it = server.getServerMethods().begin(); it != server.getServerMethods().end(); it++) {
+			std::string method = it->c_str();
+			if (method != "GET" && method != "POST" && method != "PUT" && method != "DELETE")
+				return printFalse("Invalid server method '" + method + "' in server " + server.getName());
+	}
+
 	std::string defaultPage = server.getDefault();
 	if (!defaultPage.empty() && (defaultPage.size() < 5 || defaultPage.substr(defaultPage.size() - 5) != ".html"))
 		return printFalse("Server default must end with .html");
@@ -84,6 +93,19 @@ bool Config::isValidConfig(Server &server) {
 	return true;
 }
 
+static void tokenizeServerMethods(std::stringstream& ss, std::vector<std::pair<std::string, std::vector<std::string> > > &tokenPairs) {
+	std::string					buffer;
+	std::vector<std::string>	values;
+
+	while (true) {
+		ss >> buffer;
+		if (ss.fail())
+			break;
+		values.push_back(buffer);
+	} 
+	tokenPairs.push_back(std::make_pair(std::string("serverMethods"), values));
+}
+
 static void tokenize(std::fstream &configFileStream, std::vector<std::pair<std::string, std::vector<std::string> > > &tokenPairs) {
 	std::string line;
 	int lineNumber = 0;
@@ -103,6 +125,10 @@ static void tokenize(std::fstream &configFileStream, std::vector<std::pair<std::
 		std::string key;
 		std::vector<std::string> values;
 		ss >> key;
+		if (key == "serverMethods") {
+			tokenizeServerMethods(ss, tokenPairs);
+			continue;
+		}
 		if (key.empty()) {
 			continue;
 		}
@@ -145,25 +171,16 @@ void Config::addRoute(std::vector<std::pair<std::string, std::vector<std::string
 
 		if (key == "methods") {
 			for (std::vector<std::string>::iterator mit = values.begin(); mit != values.end(); ++mit) {
-				if (*mit == "GET" || *mit == "POST" || *mit == "DELETE" || *mit == "PUT") {
-					route.addMethod(std::make_pair("method", *mit));
-				} else {
-					printError("Invalid method '" + *mit + " in route " + route.getUrl());
-				}
+				route.addMethod(std::make_pair("method", *mit));
 			}
 		} else if (key == "file" || key == "root" || key == "redirect" || key == "autoindex") {
 			for (std::vector<std::string>::iterator vit = values.begin(); vit != values.end(); ++vit) {
 				route.addFile(std::make_pair(key, *vit));
 			}
-		} else if (key == "cgi") {
+		} else if (key == "cgi") { //TODO pendiente de implementacion CGI
 			if (values.size() != 2)
 				printError("Invalid cgi values in route " + route.getUrl());
-
 			route.addFile(std::make_pair(key, values[0]));
-		} else if (key == "maxBody") {
-			if (values.size() != 1)
-				printError("Invalid maxBody value in route " + route.getUrl());
-			std::cout << "maxBody: " << values[0] << " todo... not yet implemetnted" << std::endl;
 		} else if (key == "default") {
 			if (values.size() != 1)
 				printError("Invalid default value in route " + route.getUrl());
@@ -207,16 +224,16 @@ void Config::addServer(std::vector<std::pair<std::string, std::vector<std::strin
 			server.setPort(values[0]);
 		} else if (key == "root") {
 			server.setRoot(values[0]);
+		} else if (key == "uploadDir") {
+			server.setUploadDir(values[0]);
 		} else if (key == "default") {
 			server.setDefault(values[0]);
+		} else if (key == "serverMethods") {
+			server.setServerMethods(values);
 		} else if (key == "route") {
 			_insideRouteBlock = true;
 			addRoute(it);
 			_insideRouteBlock = false;
-		} else if (key == "methods") {
-			for (std::vector<std::string>::iterator mit = values.begin(); mit != values.end(); ++mit) {
-				server.addConfigMethods(*mit);
-			}
 		} else if (key == "autoindex") {
 			if (!_insideRouteBlock) 
 				printError("autoindex must be inside a route block.");
@@ -231,6 +248,7 @@ void Config::addServer(std::vector<std::pair<std::string, std::vector<std::strin
 		_actualServer = &(_servers[server.getName()]);
 	}
 }
+
 std::map<std::string, Server>& Config::getServers() {
 	return _servers;
 }

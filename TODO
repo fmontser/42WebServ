@@ -1,7 +1,5 @@
-//TODO gestionar cometarios en config.cfg??
-//TODO validacion previa del archico config.cfg, segfaults a saco!
 
-//TODO validador de REQUESTS!!!!! hay un faenon!
+//TODO validador de REQUESTS!!!!! hay un faenon! (solo si los test lo requieren)
 
 //TODO chunked REQUEST -> NOT_IMPLEMENTED?
 
@@ -11,15 +9,6 @@
 
 //TODO 405 not allowed, es si la ruta no permite un metodo que SI esta implementado.
 
-/* 
-
-_request.setUrl("/default/405.html"); //TODO hardcoded, debe obtener la ruta del config.
-fd = readFile(server.getRoot(), _request, _response);
-_response.setStatusCode("405");
-_response.setStatusMsg("METHOD_NOT_ALLOWED");
-std::cerr << YELLOW << "Warning: Error 405 \"" << _request.getMethod() << "\" method not allowed " << END << std::endl;
-
-*/
 
 //TODO curl test con:
 /*

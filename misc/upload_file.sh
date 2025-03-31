@@ -4,6 +4,7 @@
 ARCHIVO="image.jpg"
 
 
+
 # URL del servidor
 URL="http://localhost:8042"
 

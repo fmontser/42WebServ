@@ -63,14 +63,15 @@ static bool	deserializeHeaders(std::stringstream& data, HttpRequest& request, Co
 }
 
 static void removeBoundarie(std::vector<char>& body, const std::string& boundarie) {
-	size_t boundary_len = boundarie.length() + CRLF_OFFSET;
+	size_t boundary_len = boundarie.length();
 
 	if (boundary_len == 0 || body.empty())
 		return;
-	for (size_t i = 0; (i = std::search(body.begin(), body.end(), boundarie.begin(), boundarie.end()) - body.begin()) < body.size();) {
-		body.erase(body.begin() + i, body.begin() + i + boundary_len);
-	}
+	std::vector<char>::iterator it = std::search(body.begin(), body.end(), boundarie.begin(), boundarie.end());
+	if (it != body.end())
+		body.erase(it, it + boundary_len);
 }
+
 static void	deserializeBody(std::stringstream& data, HttpRequest& request, Connection *connection) {
 	char	c[1];
 
