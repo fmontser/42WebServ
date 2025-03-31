@@ -17,8 +17,8 @@ void printError(const std::string &str) {
 }
 
 bool printFalse(const std::string &str) {
-    std::cerr << RED << str << END << std::endl;
-    return false;
+	std::cerr << RED << str << END << std::endl;
+	return false;
 }
 
 std::map<std::string, Server> Config::_servers;
@@ -28,14 +28,14 @@ bool Config::_insideRouteBlock = false;
 Config::Config() {}
 Config::~Config() {}
 Config::Config(const Config& src) {
-    _servers = src._servers;
+	_servers = src._servers;
 }
 
 Config& Config::operator=(const Config& src) {
-    if (this != &src) {
-        _servers = src._servers;
-    }
-    return *this;
+	if (this != &src) {
+		_servers = src._servers;
+	}
+	return *this;
 }
 
 bool Config::isValidConfig(const Server &server) {
@@ -232,5 +232,5 @@ void Config::addServer(std::vector<std::pair<std::string, std::vector<std::strin
     }
 }
 std::map<std::string, Server>& Config::getServers() {
-    return _servers;
+	return _servers;
 }
