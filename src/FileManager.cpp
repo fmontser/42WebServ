@@ -112,7 +112,7 @@ int	FileManager::writeFile(DataAdapter& dataAdapter) {
 		}
 	}
 
-	if (!access(uploadDir.c_str(), W_OK) == 0)
+	if (!access(uploadDir.c_str(), W_OK) == 0) {
 		return 403; //TODO si no hay permisos 403 Forbidden
 	}
 
