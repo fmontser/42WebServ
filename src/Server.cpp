@@ -20,13 +20,14 @@ Server::Server(const Server& src) {
 	_host = src._host;
 	_port = src._port;
 	_root = src._root;
+	_uploadDir = src._uploadDir;
 	_default = src._default;
 	_maxPayload = src._maxPayload;
 	_routes = src._routes;
 	_connectionList = src._connectionList;
 	_socketFd = src._socketFd;
 	_pollfd = src._pollfd;
-	_method = src._method;
+	_serverMethods = src._serverMethods;
 }
 
 Server& Server::operator=(const Server& src) {
@@ -35,13 +36,14 @@ Server& Server::operator=(const Server& src) {
 		_host = src._host;
 		_port = src._port;
 		_root = src._root;
+		_uploadDir = src._uploadDir;
 		_default = src._default;
 		_maxPayload = src._maxPayload;
 		_routes = src._routes;
 		_connectionList = src._connectionList;
 		_socketFd = src._socketFd;
 		_pollfd = src._pollfd;
-		_method = src._method;
+		_serverMethods = src._serverMethods;
 	}
 	return *this;
 }
@@ -90,10 +92,12 @@ std::string						Server::getName() const { return this->_name; }
 std::string						Server::getHost() const { return this->_host; }
 int										Server::getPort() const { return this->_port; }
 std::string						Server::getRoot() const { return this->_root; }
+std::string						Server::getUploadDir() const { return this->_uploadDir; }
+std::vector<std::string>&		Server::getServerMethods() { return this->_serverMethods; }
 int										Server::getMaxPayload() const { return _maxPayload; }
 
 
-std::map<std::string, Route>&	Server::getRoutes() { return (std::map<std::string, Route>&)_routes; }
+std::map<std::string, Route>&	Server::getRoutes() { return _routes; }
 std::list<Connection *>&		Server::getConnectionList() { return _connectionList; }
 int								Server::getSocketFd() const { return _socketFd; }
 struct pollfd					Server::getPollfd() const { return _pollfd; }
@@ -102,16 +106,16 @@ std::string						Server::getDefault() const { return _default; }
 void	Server::setName(const std::string& name) { this->_name = name; }
 void	Server::setHost(const std::string& host) { this->_host = host; }
 void	Server::setRoot(const std::string& root) {_root = root; }
+void	Server::setUploadDir(const std::string& uploadDir) {_uploadDir = uploadDir; }
+void	Server::setServerMethods(const std::vector<std::string>& serverMethods) { _serverMethods = serverMethods; }
 void	Server::setDefault(const std::string& default_) {_default = default_; }
 void	Server::setSocketFd(int socketFd) { _socketFd = socketFd; }
 void	Server::setPollfd(struct pollfd pfd) {_pollfd = pfd; }
-void	Server::addConfigMethods(const std::string& method) {_method[method] = "allowed"; }
 
 void	Server::setPort(const std::string& port) {
 	char	*err;
 	int		portNumber;
 	
-	//TODO esta validacion deberia estar en config
 	portNumber = strtol(port.c_str(), &err, 10);
 	_port = portNumber;
 }
@@ -120,7 +124,6 @@ void	Server::setMaxPayLoad(const std::string& maxPayLoad) {
 	char	*err;
 	int		payloadSize;
 	
-	//TODO esta validacion deberia estar en config
 	payloadSize = strtol(maxPayLoad.c_str(), &err, 10);
 	_maxPayload = payloadSize;
 }

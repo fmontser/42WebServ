@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <cstdlib>
 #include <sstream>
+#include <sys/stat.h>
 #include "Config.hpp"
 #include "FileManager.hpp"
 #include "DataAdapter.hpp"
@@ -86,9 +87,10 @@ int	FileManager::writeFile(DataAdapter& dataAdapter) {
 	std::string		fileName, uploadDir;
 	int				fd;
 
-	fileName.append(dataAdapter.getConnection()->getServer().getRoot());
-	fileName.append("upload/");
-	uploadDir = fileName;
+	uploadDir.append(dataAdapter.getConnection()->getServer().getRoot());
+	uploadDir.append(dataAdapter.getConnection()->getServer().getUploadDir());
+	if (!access(uploadDir.c_str(), F_OK) == 0)
+		mkdir(uploadDir.c_str(), 0777);
 
 	for (std::vector<HttpHeader>::iterator it = dataAdapter.getRequest().headers.begin();
 			it != dataAdapter.getRequest().headers.end(); ++it) {
@@ -102,14 +104,15 @@ int	FileManager::writeFile(DataAdapter& dataAdapter) {
 				if (!propertie.value.empty()){
 					std::string	cropped = propertie.value;
 					Utils::nestedQuoteExtract('"', cropped);
+					fileName.append(uploadDir);
 					fileName.append(cropped);
 					break;
 				}
 			}
 		}
 	}
-	
-	if (!access(uploadDir.c_str(), W_OK) == 0) {
+
+	if (!access(uploadDir.c_str(), W_OK) == 0)
 		return 403; //TODO si no hay permisos 403 Forbidden
 	}
 
@@ -125,7 +128,6 @@ int	FileManager::writeFile(DataAdapter& dataAdapter) {
 			std::cerr << "Error: Server error" << std::endl;
 			return 500;
 		}
-
 	}
 	else 
 		return 409; //TODO si ya existe 409 Conflict
