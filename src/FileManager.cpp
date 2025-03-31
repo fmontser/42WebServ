@@ -62,7 +62,7 @@ void	FileManager::readFile(DataAdapter& dataAdapter) {
 	do {
 		char readBuffer[READ_BUFFER] = {0};
 		readSize = read(fd, readBuffer, READ_BUFFER);
-		body.append(readBuffer);
+		body.append(readBuffer); //TODO &&&& sustituir por char vector
 	} while (readSize > 0);
 	
 	if ((int)body.size() > server.getMaxPayload()){
@@ -87,7 +87,7 @@ int	FileManager::writeFile(DataAdapter& dataAdapter) {
 	int				fd;
 
 	fileName.append(dataAdapter.getConnection()->getServer().getRoot());
-	fileName.append("upload/"); //TODO hardcoded? get from server config?
+	fileName.append("upload/");
 
 	for (std::vector<HttpHeader>::iterator it = dataAdapter.getRequest().headers.begin();
 			it != dataAdapter.getRequest().headers.end(); ++it) {
