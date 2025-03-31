@@ -1,7 +1,9 @@
 #!/bin/bash
 
 # Nombre del archivo a subir
-ARCHIVO="image.jpg"
+ARCHIVO="en.subject.pdf"
+#ARCHIVO="image.jpg"
+#ARCHIVO="guia.html"
 
 
 

@@ -78,7 +78,7 @@ static void	deserializeBody(std::stringstream& data, HttpRequest& request, Conne
 	while(data.get(*c)) {
 		request.body.push_back(*c);
 	}
-	removeBoundarie(request.body, connection->boundStart);
+ 	removeBoundarie(request.body, connection->boundStart);
 	removeBoundarie(request.body, connection->boundEnd);
 }
 

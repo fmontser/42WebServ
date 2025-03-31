@@ -114,6 +114,7 @@ int	FileManager::writeFile(DataAdapter& dataAdapter) {
 
 	if (!access(uploadDir.c_str(), W_OK) == 0)
 		return 403; //TODO si no hay permisos 403 Forbidden
+	}
 
 	if ((access(fileName.c_str(), F_OK) == 0 && dataAdapter.allowFileAppend)
 		|| !access(fileName.c_str(), F_OK) == 0) {
@@ -133,6 +134,5 @@ int	FileManager::writeFile(DataAdapter& dataAdapter) {
 
 	if (dataAdapter.getConnection()->requestMode == Connection::MULTIPART)
 		dataAdapter.allowFileAppend = true;
-		
 	return 200;
 }

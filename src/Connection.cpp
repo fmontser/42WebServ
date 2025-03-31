@@ -86,10 +86,10 @@ void	Connection::recieveData() {
 			_multiDataAdapter->getRequest().method = "POST";
 			HttpProcessor::processHttpRequest(*_multiDataAdapter);
 			if (!_multiDataAdapter->getResponse().statusCode.empty())
-				_multiDataAdapter->serializeResponse();
+			_multiDataAdapter->serializeResponse();
 			recvBuffer.clear();
 			_multiDataAdapter->getRequest().body.clear();
-			if (contentLength == 0)
+ 			if (contentLength == 0)
 				delete _multiDataAdapter;
 		}
 		else {
