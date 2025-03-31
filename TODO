@@ -1,6 +1,8 @@
 //TODO gestionar cometarios en config.cfg??
 //TODO validacion previa del archico config.cfg, segfaults a saco!
 
+//TODO validador de REQUESTS!!!!! hay un faenon!
+
 //TODO chunked REQUEST -> NOT_IMPLEMENTED?
 
 //TODO el error 500 es un generico para cualquier cosa no prevista...
@@ -21,8 +23,9 @@ std::cerr << YELLOW << "Warning: Error 405 \"" << _request.getMethod() << "\" me
 
 //TODO curl test con:
 /*
-
-curl -X GET http://localhost:8042/
-curl -F "file=@webserv" http://localhost:8042/
+	curl -X GET -H "SuperHeader: value1; prop0, value2; prop0=A; prop1=B" http://localhost:8042/
+	curl -X GET http://localhost:8042/
+	curl -F "file=@webserv" http://localhost:8042/
 
 */
+

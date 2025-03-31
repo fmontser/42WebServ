@@ -3,19 +3,30 @@
 #include <string>
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
-#include "Socket.hpp"
+
+class Connection;
 
 class DataAdapter {
 	private:
-		static std::string	_buffer;
-		static HttpRequest	_request;
-		static Socket&		_targetSocket;
 
-		DataAdapter();
+		HttpRequest		_request;
+		HttpResponse	_response;
+		Connection		*_connection;
+
+	public:
+		DataAdapter(Connection *connection);
 		~DataAdapter();
 		DataAdapter(const DataAdapter& src);
 		DataAdapter& operator=(const DataAdapter& src);
-	public:
-		static void	recieveData(Socket *targetSocket, std::string& request);
-		static void	sendData(Socket *targetSocket, HttpResponse& response);
+
+		bool				isHeadersComplete;
+		bool				allowFileAppend;
+
+		Connection			*getConnection() const;
+
+		HttpRequest&		getRequest();
+		HttpResponse&		getResponse();
+		void				deserializeRequest();
+		void				serializeResponse();
+		static HttpHeader	deserializeHeader(std::string header);
 };

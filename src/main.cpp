@@ -1,11 +1,13 @@
 #include <iostream>
 #include <fstream>
 #include "Config.hpp"
-#include "SocketManager.hpp"
+#include "ConnectionManager.hpp"
 #include "SignalManager.hpp"
+#include "Server.hpp"
 
 int main(int argc, char** argv) {
 	
+
 	if (argc < 2) {
 		std::cerr << "Argument error: Invalid number of arguments" << std::endl;
 		return(1);
@@ -20,16 +22,11 @@ int main(int argc, char** argv) {
 
 	Config::loadConfig(configFileStream);
 
-	bool asServer = true;
 	for (std::map<std::string, Server>::iterator it = Config::getServers().begin();
 		it != Config::getServers().end(); ++it) {
-		Socket	*newSocket = new Socket();
-		newSocket->setPort(it->second.getPort());
-		newSocket->setParentServer(&(it->second));
-		newSocket->enableSocket(asServer);
-		SocketManager::addSocket(it->second, newSocket);
+			it->second.listenSocket();
 	}
-	std::map<std::string, Server> test =  Config::getServers();
-	SocketManager::monitorSockets();
+	
+	ConnectionManager::monitorConnections();
 	return 0;
 }

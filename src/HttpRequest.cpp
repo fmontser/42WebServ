@@ -1,42 +1,47 @@
 #include "HttpRequest.hpp"
+#include "Utils.hpp"
+#include "Connection.hpp"
+#include <algorithm>
 
-HttpRequest::HttpRequest() {}
-HttpRequest::~HttpRequest() {}
-HttpRequest::HttpRequest(const HttpRequest& src) {
-	_method = src._method;
-	_url = src._url;
-	_version = src._version;
-	_headers = src._headers;
-	_body = src._body;
+HttpRequest::HttpRequest() : HttpMessage() {}
+
+HttpRequest::HttpRequest(const HttpRequest& src) : HttpMessage() {
+	this->method = src.method;
+	this->url = src.url;
 }
 
 HttpRequest& HttpRequest::operator=(const HttpRequest& src) {
 	if (this != &src) {
-		_method = src._method;
-		_url = src._url;
-		_version = src._version;
-		_headers = src._headers;
-		_body = src._body;
+		this->method = src.method;
+		this->url = src.url;
 	}
 	return *this;
 }
 
-void	HttpRequest::clear() {
-	_method.clear();
-	_url.clear();
-	_version.clear();
-	_headers.clear();
-	_body.clear();
+HttpRequest::~HttpRequest() {}
+
+bool	HttpRequest::handleMultipart(Connection *connection) {
+	
+	for (std::vector<HttpHeader>::iterator it = headers.begin(); it != headers.end(); ++it) {
+		HttpHeader	header = *it;
+		HeaderValue		value;
+		HeaderProperty	property;
+
+		if (header.getValue("Content-Type", &value) && value.name == "multipart/form-data") {
+			if (value.getPropertie("boundary", &property)) {
+				connection->requestMode = Connection::MULTIPART;
+				connection->boundarie = property.value;
+				connection->boundStart = "--";
+				connection->boundStart.append(connection->boundarie);
+				connection->boundEnd =  connection->boundStart;
+				connection->boundStart.append("\r\n");
+				connection->boundEnd.append("--\r\n");
+			}
+		}
+		else if (header.getValue("Content-Length", &value))
+			connection->contentLength = Utils::strToUint(value.name);
+		if (connection->requestMode == Connection::MULTIPART && !connection->boundarie.empty() && connection->contentLength > 0)
+			return true;
+	}
+	return false;
 }
-
-std::string								HttpRequest::getMethod() const { return _method; }
-std::string								HttpRequest::getUrl() const { return _url;}
-std::string								HttpRequest::getVersion() const { return _version; }
-std::multimap<std::string, std::string>	HttpRequest::getHeaders() const { return _headers; }
-std::string								HttpRequest::getBody() const { return _body; }
-
-void	HttpRequest::setMethod(const std::string& method) { _method = method; }
-void	HttpRequest::setUrl(const std::string& url) { _url = url; }
-void	HttpRequest::setVersion(const std::string& version) { _version =  version; }
-void	HttpRequest::addHeader(std::pair<std::string, std::string>& header) { _headers.insert(header); }
-void	HttpRequest::setBody(const std::string& body) { _body =  body; }

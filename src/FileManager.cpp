@@ -2,26 +2,22 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <cstdlib>
+#include <sstream>
 #include "Config.hpp"
 #include "FileManager.hpp"
 #include "DataAdapter.hpp"
 #include "ServerConstants.hpp"
-
-HttpRequest		FileManager::_request;
-HttpResponse	FileManager::_response;
+#include "Connection.hpp"
+#include "Utils.hpp"
 
 FileManager::FileManager() {}
 FileManager::~FileManager() {}
 
-FileManager::FileManager(const FileManager& src) {
-	_request = src._request;
-	_response = src._response;
-}
+FileManager::FileManager(const FileManager& src) { (void)src; }
 
 FileManager& FileManager::operator=(const FileManager& src) {
 	if (this != &src) {
-		_request = src._request;
-		_response = src._response;
+		(void)src;
 	}
 	return *this;
 }
@@ -43,128 +39,94 @@ static void chunkEncode(std::string& body, size_t maxPayload) {
 	body = buffer.str();
 }
 
-static int readFile(Socket *socket, HttpRequest& request, HttpResponse& response ) {
+//TODO comprobar permisos de lectura (403 Forbidden), devolver 403?
+//TODO si no existe (404 Not found), devolver 404?
+void	FileManager::readFile(DataAdapter& dataAdapter) {
 	std::string			target, body; 
 	int					fd, readSize;
-	Server&	server = *socket->getParentServer();
-
-	target = server.getRoot().substr(0, server.getRoot().size() - 1).append(request.getUrl());
-	if (isDirectory(request.getUrl()))
-		target.append("index.html"); //TODO respuesta default si se solicita un directorio, que pasa con index.php?
+	Server&				server = dataAdapter.getConnection()->getServer();
+	HttpRequest&		request = dataAdapter.getRequest();
+	HttpResponse&		response = dataAdapter.getResponse();
+	
+	target = server.getRoot().substr(0, server.getRoot().size() - 1).append(request.url);
+	if (isDirectory(request.url))
+		target.append("index.html"); //TODO hardcoded, obtener de config
 	
 	fd = open(target.c_str(), O_RDONLY, 0644);
 	if (fd < 0) {
 		fd = open("../web/default/404.html", O_RDONLY, 0644); //TODO hardcoded, debe obtener la ruta del config.
-		response.setStatusCode("404");
-		response.setStatusMsg("NOT_FOUND");
+		response.statusCode = "404";
+		response.statusMsg = "NOT_FOUND";
 		std::cerr << YELLOW << "Warning: error 404 \"" << target << "\", NOT_FOUND " << END << std::endl;
 	}
 	do {
 		char readBuffer[READ_BUFFER] = {0};
 		readSize = read(fd, readBuffer, READ_BUFFER);
-		body.append(readBuffer);
+		body.append(readBuffer); //TODO &&&& sustituir por char vector
 	} while (readSize > 0);
 	
 	if ((int)body.size() > server.getMaxPayload()){
-		response.addHeader(std::make_pair("Transfer-Encoding","chunked"));
+		response.addHeader("Transfer-Encoding: chunked");
 		chunkEncode(body, server.getMaxPayload());
 	}
 	else {
-		std::stringstream	bodySize;
-		bodySize << body.size() - 1;
-		response.addHeader(std::make_pair("Content-Length", bodySize.str()));
+		std::stringstream	contentLengthHeader;
+		contentLengthHeader << "Content-Length: " << body.size();
+		response.addHeader(contentLengthHeader.str());
+
 	}
-	response.setBody(body);
-	return (fd);
+	response.body.assign(body.c_str(), body.c_str() + body.size());
+	close(fd);
 }
 
-static int writeFile(Socket *socket , HttpRequest& request, HttpResponse& response ) {
-	//TODO @@@@@@@ implementar escritura del archivo...hayq que quitar las boundaries
-	(void)socket;
-	(void)request;
-	(void)response;
+#include <algorithm>
 
-	//envia el cliente todo por el mismo socket??? 
-	return 0;
-}
+int	FileManager::writeFile(DataAdapter& dataAdapter) {
+	HttpRequest&	request = dataAdapter.getRequest();
+	std::string		fileName;
+	int				fd;
 
-void	FileManager::processMultiPart(Socket *socket) {
-	int fd;
+	fileName.append(dataAdapter.getConnection()->getServer().getRoot());
+	fileName.append("upload/");
 
-	if (socket->multiMode) {
-		_request.setBody(socket->recvBuffer);
-		socket->multiMode = false;
-	}
-	
-	fd = writeFile(socket, _request, _response);
-	if (fd < 0)
-		(void)socket; //TODO error 500!
-	_response.setStatusCode("201");
-	_response.setStatusMsg("CREATED");
-	std::cout << BLUE << "Info: success 201 \"" << _request.getMethod() << "\", CREATED " << END << std::endl;
+	for (std::vector<HttpHeader>::iterator it = dataAdapter.getRequest().headers.begin();
+			it != dataAdapter.getRequest().headers.end(); ++it) {
 
-}
-
-void	FileManager::processHttpRequest(Socket *socket) {
-	int	fd;
-
-	_response.setVersion(HTTP_VERSION);
-	_response.addHeader(std::make_pair("Connection", "keep-alive"));
-	if (_request.getMethod() == "GET") {
-		fd = readFile(socket, _request, _response);
-		if (_response.getStatusCode().empty()) {
-			_response.setStatusCode("200");
-			_response.setStatusMsg("OK");
-			std::cout << BLUE << "Info: success 200 \"" << _request.getMethod() << "\", OK " << " FD: " << socket->getFd() << END << std::endl;
+		if (it->name == "Content-Disposition"){
+			HeaderValue value;
+			it->getValue("Content-Disposition", &value);
+			if (!value.properties.empty()) {
+				HeaderProperty propertie;
+				value.getPropertie("filename", &propertie);
+				if (!propertie.value.empty()){
+					std::string	cropped = propertie.value;
+					Utils::nestedQuoteExtract('"', cropped);
+					fileName.append(cropped);
+					break;
+				}
+			}
 		}
 	}
-	else if (_request.getMethod() == "POST") {
+	if (!access(fileName.c_str(), W_OK) == 0)
+		return 403; //TODO si no hay permisos 403 Forbidden
 
-		//TODO set boundarie....hardcoded
-		if (socket->boundarie.empty()) {
-			std::string bound = _request.getHeaders().find("Content-Type")->second;
-			std::string len = _request.getHeaders().find("Content-Length")->second;
-			socket->contentLength = atoi(len.c_str());
-			socket->boundarie = bound.substr(bound.find('=') + 1, bound.size());
-			socket->multiMode = true;
+	if ((access(fileName.c_str(), F_OK) == 0 && dataAdapter.allowFileAppend)
+		|| !access(fileName.c_str(), F_OK) == 0) {
+
+		fd = open(fileName.c_str(), O_WRONLY | O_CREAT | O_APPEND, 0775);
+		if (fd > 0) {
+			write(fd, &request.body[0], request.body.size());
+			close(fd);
+		}
+		else {
+			std::cerr << "Error: Server error" << std::endl;
+			return 500;
 		}
 
-
 	}
-	else if (_request.getMethod() == "DELETE") {
-		//TODO DELETE METHOD
-		_response.setStatusCode("204");
-		_response.setStatusMsg("NO_CONTENT");
-		std::cout << BLUE << "Info: success 204 \"" << _request.getMethod() << "\", NO_CONTENT " << END << std::endl;
-	}
-	else {
+	else 
+		return 409; //TODO si ya existe 409 Conflict
 
-/* 		_request.setUrl("/default/501.html"); //TODO hardcoded, debe obtener la ruta del config.
-		std::string errorPath = _config.getErrorPage(501);
-		_request.setUrl(errorPath); //TODO hardcoded, debe obtener la ruta del config.
-*/
-		fd = readFile(socket, _request, _response);
-		_response.setStatusCode("501");
-		_response.setStatusMsg("METHOD_NOT_IMPLEMENTED");
-		std::cerr << YELLOW << "Warning: Error 501 \"" << _request.getMethod() << "\", METHOD_NOT_IMPLEMENTED " << END << std::endl; */
-	}
-	if (fd > 2)
-		close(fd);
-}
-
-void	FileManager::recieveHttpRequest(Socket *socket, HttpRequest& request) {
-	_request = request;
-	processHttpRequest(socket);
-	//TODO multipart no responde entre partes...
- 	if (!socket->multiMode)
-		DataAdapter::sendData(socket, _response);
-	_request.clear();
-	_response.clear();
-}
-
-void	FileManager::recieveHttpResponse(Socket *socket, HttpResponse& response) {
-	_response = response;
-	DataAdapter::sendData(socket, _response);
-	_request.clear();
-	_response.clear();
+	if (dataAdapter.getConnection()->requestMode == Connection::MULTIPART)
+		dataAdapter.allowFileAppend = true;
 }
