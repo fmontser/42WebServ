@@ -129,4 +129,6 @@ int	FileManager::writeFile(DataAdapter& dataAdapter) {
 
 	if (dataAdapter.getConnection()->requestMode == Connection::MULTIPART)
 		dataAdapter.allowFileAppend = true;
+		
+	return 200;
 }

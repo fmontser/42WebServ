@@ -93,7 +93,7 @@ std::string						Server::getRoot() const { return this->_root; }
 int										Server::getMaxPayload() const { return _maxPayload; }
 
 
-std::map<std::string, Route>&	Server::getRoutes() { return (std::map<std::string, Route>&)_routes; }
+std::map<std::string, Route>&	Server::getRoutes() { return _routes; }
 std::list<Connection *>&		Server::getConnectionList() { return _connectionList; }
 int								Server::getSocketFd() const { return _socketFd; }
 struct pollfd					Server::getPollfd() const { return _pollfd; }
