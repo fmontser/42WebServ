@@ -56,9 +56,7 @@ void	FileManager::readFile(DataAdapter& dataAdapter) {
 	fd = open(target.c_str(), O_RDONLY, 0644);
 	if (fd < 0) {
 		fd = open("../web/default/404.html", O_RDONLY, 0644); //TODO hardcoded, debe obtener la ruta del config.
-		response.statusCode = "404";
-		response.statusMsg = "NOT_FOUND";
-		std::cerr << YELLOW << "Warning: error 404 \"" << target << "\", NOT_FOUND " << END << std::endl;
+		response.setupResponse(HttpResponse::NOT_FOUND);
 	}
 	do {
 		char readBuffer[READ_BUFFER] = {0};
@@ -82,7 +80,7 @@ void	FileManager::readFile(DataAdapter& dataAdapter) {
 
 #include <algorithm>
 
-int	FileManager::writeFile(DataAdapter& dataAdapter) {
+HttpResponse::responseType	FileManager::writeFile(DataAdapter& dataAdapter) {
 	HttpRequest&	request = dataAdapter.getRequest();
 	std::string		fileName, uploadDir;
 	int				fd;
@@ -112,10 +110,8 @@ int	FileManager::writeFile(DataAdapter& dataAdapter) {
 		}
 	}
 
-	if (!access(uploadDir.c_str(), W_OK) == 0) {
-		return 403; //TODO si no hay permisos 403 Forbidden
-	}
-
+	if (!access(uploadDir.c_str(), W_OK) == 0)
+		return HttpResponse::FORBIDDEN;
 	if ((access(fileName.c_str(), F_OK) == 0 && dataAdapter.allowFileAppend)
 		|| !access(fileName.c_str(), F_OK) == 0) {
 
@@ -124,15 +120,13 @@ int	FileManager::writeFile(DataAdapter& dataAdapter) {
 			write(fd, &request.body[0], request.body.size());
 			close(fd);
 		}
-		else {
-			std::cerr << "Error: Server error" << std::endl;
-			return 500;
-		}
+		else 
+			return HttpResponse::SERVER_ERROR;
 	}
 	else 
-		return 409; //TODO si ya existe 409 Conflict
+		return HttpResponse::CONFLICT;
 
 	if (dataAdapter.getConnection()->requestMode == Connection::MULTIPART)
 		dataAdapter.allowFileAppend = true;
-	return 200;
+	return HttpResponse::CREATED;
 }
