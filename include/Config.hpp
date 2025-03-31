@@ -7,12 +7,13 @@
 
 class Config {
 private:
-    static std::map<std::string, Server> _servers;
-    static Server* _actualServer;
+    static std::map<std::string, Server>    _servers;
+    static Server*                          _actualServer;
+    static bool                             _insideRouteBlock;
 
-    static void addRoute(std::vector<std::string>::iterator &it);
-    static void addServer(std::vector<std::string>::iterator &it);
-    static bool isValidConfig(Server &server);
+    static void addRoute(std::vector<std::pair<std::string, std::vector<std::string> > >::iterator &it);
+    static void addServer(std::vector<std::pair<std::string, std::vector<std::string> > >::iterator &it);
+    static bool isValidConfig(const Server &server);
 
     Config();
     ~Config();

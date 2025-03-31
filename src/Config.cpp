@@ -3,10 +3,17 @@
 #include "ServerConstants.hpp"
 #include <sys/stat.h>
 #include "Config.hpp"
+#include <sstream>
+
+static std::string toString(int value) {
+    std::ostringstream oss;
+    oss << value;
+    return oss.str();
+}
 
 void printError(const std::string &str) {
-	std::cerr << RED << str << END << std::endl;
-	exit(1);
+    std::cerr << RED << "Config file error: " << str << END << std::endl;
+    exit(1);
 }
 
 bool printFalse(const std::string &str) {
@@ -15,8 +22,8 @@ bool printFalse(const std::string &str) {
 }
 
 std::map<std::string, Server> Config::_servers;
-Server* Config::_actualServer = NULL; 
-/* bool isRoute = false; */
+Server* Config::_actualServer = NULL;
+bool Config::_insideRouteBlock = false;
 
 Config::Config() {}
 Config::~Config() {}
@@ -31,200 +38,199 @@ Config& Config::operator=(const Config& src) {
 	return *this;
 }
 
-bool Config::isValidConfig(Server &server) {
-	if (server.getName().empty())
-		return printFalse("Config file error: Server name is missing.");
+bool Config::isValidConfig(const Server &server) {
+    if (server.getName().empty())
+        return printFalse("Server name is missing.");
 
-	if (server.getMaxPayload() < MIN_PAYLOAD || server.getMaxPayload() > MAX_PAYLOAD)
-		return printFalse("Config file error: Server maxPayload is invalid.");
+    if (server.getMaxPayload() < MIN_PAYLOAD || server.getMaxPayload() > MAX_PAYLOAD)
+        return printFalse("Server maxPayload is invalid.");
 
-	if (server.getHost().empty())
-		return printFalse("Config file error: Server host is missing.");
+    if (server.getHost().empty())
+        return printFalse("Server host is missing.");
 
-	int port = server.getPort();
-	if (port <= 0 || port > 65535)
-		return printFalse("Config file error: Server port is invalid.");
+    int port = server.getPort();
+    if (port <= 0 || port > 65535)
+        return printFalse("Server port is invalid.");
 
-	if (server.getRoot().empty() || server.getRoot()[0] != '.')
-		return printFalse("Config file error: Server root is missing.");
+    if (server.getRoot().empty() || server.getRoot()[0] != '.')
+        return printFalse("Server root is missing.");
 
-	std::string defaultPage = server.getDefault();
-	if (!defaultPage.empty() && (defaultPage.size() < 5 || defaultPage.substr(defaultPage.size() - 5) != ".html"))
-		return printFalse("Config file error: Server default must end with .html");
+    std::string defaultPage = server.getDefault();
+    if (!defaultPage.empty() && (defaultPage.size() < 5 || defaultPage.substr(defaultPage.size() - 5) != ".html"))
+        return printFalse("Server default must end with .html");
 
-	const std::map<std::string, Route>& _routes = server.getRoutes();
-	for (std::map<std::string, Route>::const_iterator it = _routes.begin(); it != _routes.end(); ++it) {
-		
-		if (it->first.empty() || it->first[0] == '{')
-			return printFalse("Config file error: Route url is missing.");
-		const Route& route = it->second;
+    const std::map<std::string, Route>& _routes = server.getRoutes();
+    for (std::map<std::string, Route>::const_iterator it = _routes.begin(); it != _routes.end(); ++it) {
+        if (it->first.empty() || it->first[0] == '{')
+            return printFalse("Route url is missing.");
+        const Route& route = it->second;
 
-		const std::multimap<std::string, std::string>& methods = route.getMethods();
-		for (std::multimap<std::string, std::string>::const_iterator mit = methods.begin(); mit != methods.end(); ++mit) {
-			if (mit->second != "GET" && mit->second != "POST" && mit->second != "PUT" && mit->second != "DELETE")
-				return printFalse("Config file error: Invalid method '" + mit->second + "' in route " + route.getUrl());
-		}
+        const std::multimap<std::string, std::string>& methods = route.getMethods();
+        for (std::multimap<std::string, std::string>::const_iterator mit = methods.begin(); mit != methods.end(); ++mit) {
+            if (mit->second != "GET" && mit->second != "POST" && mit->second != "PUT" && mit->second != "DELETE")
+                return printFalse("Invalid method '" + mit->second + "' in route " + route.getUrl());
+        }
 
-		const std::multimap<std::string, std::string>& files = route.getFiles();
-		for (std::multimap<std::string, std::string>::const_iterator fit = files.begin(); fit != files.end(); ++fit) {
-			if (fit->first == "root" && (fit->second[0] != '.' || fit->second[1] != '/'))
-				return printFalse("Config file error: Invalid root path '" + fit->second + "' in route " + route.getUrl());
-			if (fit->first == "redirect" && (fit->second[0] != '.' || fit->second[1] != '/'))
-				return printFalse("Config file error: Invalid redirect path '" + fit->second + "' in route " + route.getUrl());
-			if ((fit->first == "autoindex" && (fit->second != "on" && fit->second != "off"))/*  || !isRoute */)
-				return printFalse("Config file error: Invalid autoindex value " + fit->second );
-		}
-	}
-	return true;
+        const std::multimap<std::string, std::string>& files = route.getFiles();
+        for (std::multimap<std::string, std::string>::const_iterator fit = files.begin(); fit != files.end(); ++fit) {
+            if (fit->first == "root" && ((fit->second[0] != '.' && (fit->second[1] != '/' || fit->second[1] != '\0') )))
+                return printFalse("Invalid root path '" + fit->second + "' in route " + route.getUrl());
+            if (fit->first == "redirect" && (fit->second[0] != '.' || fit->second[1] != '/'))
+                return printFalse("Invalid redirect path '" + fit->second + "' in route " + route.getUrl());
+            if ((fit->first == "autoindex" && (fit->second != "on" && fit->second != "off")))
+                return printFalse("Invalid autoindex value " + fit->second );
+        }
+    }
+    return true;
 }
 
-static void tokenize(std::fstream &configFileStream, std::vector<std::string> &tokenList) {
-	char c;
-	std::string token;
-	bool flag = false;
-	bool isComment = false;
+static void tokenize(std::fstream &configFileStream, std::vector<std::pair<std::string, std::vector<std::string> > > &tokenPairs) {
+    std::string line;
+    int lineNumber = 0;
 
-	token.clear();
-	while (configFileStream.get(c)) {
-		if (c == '#')
-			isComment = true;
-		if (isComment && c == '\n')
-			isComment = false;
-		else if (isComment)
-			continue;
-		if (isspace(c)) {
-			if (flag) {
-				flag = false;
-				tokenList.push_back(token);
-				token.clear();
-			}
-			else
-				continue;
-		}
-		else {
-			flag = true;
-			token.append(std::string(1, c));
-		}
-	}
-	tokenList.push_back(token);
-	configFileStream.close();
+    while (std::getline(configFileStream, line)) {
+        lineNumber++;
+        size_t commentPos = line.find('#');
+        if (commentPos != std::string::npos) {
+            line = line.substr(0, commentPos);
+        }
+        line.erase(0, line.find_first_not_of(" \t"));
+        line.erase(line.find_last_not_of(" \t") + 1);
+        if (line.empty()) {
+            continue;
+        }
+        std::stringstream ss(line);
+        std::string key;
+        std::vector<std::string> values;
+        ss >> key;
+        if (key.empty()) {
+            continue;
+        }
+        if (key == "{" || key == "}") {
+            tokenPairs.push_back(std::make_pair(key, std::vector<std::string>()));
+            continue;
+        }
+        std::string value;
+        while (ss >> value) {
+            values.push_back(value);
+        }
+        if (values.empty() && key != "{" && key != "}") {
+            printError("Line " + toString(lineNumber) + " has no values for key '" + key + "'.");
+        }
+        tokenPairs.push_back(std::make_pair(key, values));
+    }
+    configFileStream.close();
 }
 
 void Config::loadConfig(std::fstream &configFileStream) {
-	std::vector<std::string> tokenList;
-	std::vector<std::string>::iterator it;
+    std::vector<std::pair<std::string, std::vector<std::string> > > tokenPairs;
+    tokenize(configFileStream, tokenPairs);
 
-	tokenize(configFileStream, tokenList);
-
-
-	for (it = tokenList.begin(); it != tokenList.end(); ++it) {
-		if (*it == "server")
-			addServer(it);
-	}
+    for (std::vector<std::pair<std::string, std::vector<std::string> > >::iterator it = tokenPairs.begin(); it != tokenPairs.end(); ++it) {
+        if (it->first == "server") {
+            addServer(it);
+        }
+    }
 }
 
-void Config::addRoute(std::vector<std::string>::iterator &it) {
-	Route route;
-	std::string key, value;
+void Config::addRoute(std::vector<std::pair<std::string, std::vector<std::string> > >::iterator &it) {
+    Route                       route;
+    std::string                 key;
+    std::vector<std::string>    values;
+
+    route.setUrl(it->second[0]);
+    while ((++it)->first != "}") {
+        key = it->first;
+        values = it->second;
+
+        if (key == "methods") {
+            for (std::vector<std::string>::iterator mit = values.begin(); mit != values.end(); ++mit) {
+                if (*mit == "GET" || *mit == "POST" || *mit == "DELETE" || *mit == "PUT") {
+                    route.addMethod(std::make_pair("method", *mit));
+                } else {
+                    printError("Invalid method '" + *mit + " in route " + route.getUrl());
+                }
+            }
+        } else if (key == "file" || key == "root" || key == "redirect" || key == "autoindex") {
+            for (std::vector<std::string>::iterator vit = values.begin(); vit != values.end(); ++vit) {
+                route.addFile(std::make_pair(key, *vit));
+            }
+        } else if (key == "cgi") {
+            if (values.size() != 2)
+                printError("Invalid cgi values in route " + route.getUrl());
+
+            route.addFile(std::make_pair(key, values[0]));
+        } else if (key == "maxBody") {
+            if (values.size() != 1)
+                printError("Invalid maxBody value in route " + route.getUrl());
+            std::cout << "maxBody: " << values[0] << " todo... not yet implemetnted" << std::endl;
+        } else if (key == "default") {
+            if (values.size() != 1)
+                printError("Invalid default value in route " + route.getUrl());
+            std::cout << "default: " << values[0] << " not set yet" << std::endl;
+        }
+        else {
+            printError("unknown token " + key);
+        }
+    }
+    _actualServer->getRoutes().insert(std::make_pair(route.getUrl(), route));
+}
+
+void Config::addServer(std::vector<std::pair<std::string, std::vector<std::string> > >::iterator &it) {
+    Server server;
+    _actualServer = &server;
+    if (it->second[0] == "{")
+        printError("Server name is missing.");
+     server.setName(it->second[0]);
  
-	route.setUrl(*(++it));
+    bool foundOpeningBrace = false;
+    for (std::vector<std::string>::iterator vit = it->second.begin(); vit != it->second.end(); ++vit) {
+        if (*vit == "{") {
+            foundOpeningBrace = true;
+            break;
+        }
+    }
+    if (!foundOpeningBrace) {
+        printError("Config file error: Expected '{' after server name.");
+    }
+    while ((++it)->first != "}") {
+        std::string key = it->first;
+        std::vector<std::string> values = it->second;
 
-	if (*(++it) == "{") {
-		while (*(++it) != "}") {
-			key = *it;
-			value = *(++it);
-			if (key == "methods") {
-				while (42) {
-					if (*it == "GET" || *it == "POST" || *it == "DELETE") {
-						route.addMethod(std::make_pair("method", *it));
-					}
-					else {
-						--it;
-						break;
-					}
-					++it;
-				}
-			}
-			else if (key == "file") {
-				route.addFile(std::make_pair(key, value));
-			}
-			else if (key == "root") {
-				route.addFile(std::make_pair(key, value));
-			}
-			else if (key == "redirect") {
-				route.addFile(std::make_pair(key, value));
-			}
-			else if (key == "autoindex") {
-				route.addFile(std::make_pair(key, value));
-			}
-			else {
-				printError("Config file error: unknown token " + key);
-			}
-		   /*  isRoute = false; */
-		}
-	}
-
- /*    if (_actualServer->getRoutes().find(route.getUrl()) != _actualServer->getRoutes().end())
-		printError("Config file error: Route " + route.getUrl() + " is duplicated.");
-	else
-  */       _actualServer->getRoutes().insert(std::make_pair(route.getUrl(), route));
+        if (key == "maxPayload") {
+            server.setMaxPayLoad(values[0]);
+        } else if (key == "name") {
+            server.setName(values[0]);
+        } else if (key == "host") {
+            server.setHost(values[0]);
+        } else if (key == "port") {
+            server.setPort(values[0]);
+        } else if (key == "root") {
+            server.setRoot(values[0]);
+        } else if (key == "default") {
+            server.setDefault(values[0]);
+        } else if (key == "route") {
+            _insideRouteBlock = true;
+            addRoute(it);
+            _insideRouteBlock = false;
+        } else if (key == "methods") {
+            for (std::vector<std::string>::iterator mit = values.begin(); mit != values.end(); ++mit) {
+                server.addConfigMethods(*mit);
+            }
+        } else if (key == "autoindex") {
+            if (!_insideRouteBlock) 
+                printError("autoindex must be inside a route block.");
+        }
+    }
+    if (!isValidConfig(server))
+        printError("server " + server.getName() + " is invalid.");
+    if (_servers.find(server.getName()) != _servers.end())
+        printError("server " + server.getName() + " is duplicated.");
+    else {
+        _servers.insert(std::make_pair(server.getName(), server));
+        _actualServer = &(_servers[server.getName()]);
+    }
 }
-
-void Config::addServer(std::vector<std::string>::iterator &it) {
-	Server server;
-	_actualServer = &server;
-
-	server.setName(*(++it));
-	if (*(++it) == "{") {
-		while (*(++it) != "}") {
-			if (*it == "maxPayload") {
-				server.setMaxPayLoad(*(++it));
-			}
-			else if (*it == "name") {
-				server.setName(*(++it));
-			}
-			else if (*it == "host") {
-				server.setHost(*(++it));
-			}
-			else if (*it == "port") {
-				server.setPort(*(++it));
-			}
-			else if (*it == "root") {
-				server.setRoot(*(++it));
-			}
-			else if (*it == "default") {
-				server.setDefault(*(++it));
-			}
-			else if (*it == "route") {
-			  /*   isRoute = true; */
-				addRoute(it);
-			}
-			else if (*it == "methods") {
-				while (42) {
-					++it;
-					if (*it == "}") {
-						--it;
-						break;
-					}
-					server.addConfigMethods(*it);
-				}
-			}
-/*             else {
-				printError("Config file error: unknown token " + *it);
-			} */
-		}
-		if (!isValidConfig(server))
-			printError("Config file error: server " + server.getName() + " is invalid.");
-	}
-
-	if (_servers.find(server.getName()) != _servers.end())
-		printError("Config file error: server " + server.getName() + " is duplicated.");
-	else {
-		_servers.insert(std::make_pair(server.getName(), server));
-		_actualServer = &(_servers[server.getName()]);
-	}
-}
-
 std::map<std::string, Server>& Config::getServers() {
 	return _servers;
 }
