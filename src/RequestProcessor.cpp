@@ -10,7 +10,6 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter) {
 	HttpResponse&	response = dataAdapter.getResponse();
 	Connection		*connection = dataAdapter.getConnection();
 
-	//TODO @@@@@@@@ 111111 @@@@@@@@ LOS ENVIOS TAMBIEN SUFREN DE LA CODIFICACION TEXTO PLANO!!!! (por eso no funcniona favicon??)
 	if (request.method == "GET") {
 		FileManager::readFile(dataAdapter);
 		if (response.statusCode.empty())

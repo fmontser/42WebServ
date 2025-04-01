@@ -64,7 +64,7 @@ void	FileManager::readFile(DataAdapter& dataAdapter) {
 		body.append(readBuffer); //TODO &&&& sustituir por char vector
 	} while (readSize > 0);
 	
-	if ((int)body.size() > server.getMaxPayload()){
+	if ((int)body.size() > server.getMaxPayload()){	//TODO comprobar que el chunk encoding funciona con binarios!!
 		response.addHeader("Transfer-Encoding: chunked");
 		chunkEncode(body, server.getMaxPayload());
 	}
