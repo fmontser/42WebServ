@@ -20,7 +20,7 @@ class Connection {
 		//enum ResponseMode { SINGLE, CHUNKED };
 
 		std::vector<char>	recvBuffer;
-		std::string			sendBuffer;
+		std::vector<char>	sendBuffer;
 		bool				isChunkedResponse;	//TODO cambiar a response mode (enums)
 		RequestMode			requestMode;
 		std::string			boundarie;

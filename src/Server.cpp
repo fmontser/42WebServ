@@ -101,14 +101,13 @@ std::map<std::string, Route>&	Server::getRoutes() { return _routes; }
 std::list<Connection *>&		Server::getConnectionList() { return _connectionList; }
 int								Server::getSocketFd() const { return _socketFd; }
 struct pollfd					Server::getPollfd() const { return _pollfd; }
-std::string						Server::getDefault() const { return _default; }
+
 
 void	Server::setName(const std::string& name) { this->_name = name; }
 void	Server::setHost(const std::string& host) { this->_host = host; }
 void	Server::setRoot(const std::string& root) {_root = root; }
 void	Server::setUploadDir(const std::string& uploadDir) {_uploadDir = uploadDir; }
 void	Server::setServerMethods(const std::vector<std::string>& serverMethods) { _serverMethods = serverMethods; }
-void	Server::setDefault(const std::string& default_) {_default = default_; }
 void	Server::setSocketFd(int socketFd) { _socketFd = socketFd; }
 void	Server::setPollfd(struct pollfd pfd) {_pollfd = pfd; }
 

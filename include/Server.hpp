@@ -42,7 +42,7 @@ class Server {
 		std::list<Connection *>&		getConnectionList();
 		int								getSocketFd() const;
 		struct pollfd					getPollfd() const;
-		std::string						getDefault() const;
+
 
 		void	setName(const std::string& name);
 		void	setHost(const std::string& host);
@@ -52,7 +52,6 @@ class Server {
 		void	setServerMethods(const std::vector<std::string>& serverMethods);
 		void	setSocketFd(int socketFd);
 		void	setPollfd(struct pollfd pfd);
-		void	setDefault(const std::string& default_);
 		void	setMaxPayLoad(const std::string& maxPayLoad);
 
 		void	listenSocket();

@@ -1,5 +1,6 @@
 #include <sstream>
 #include <algorithm>
+#include <cstdio>
 #include "DataAdapter.hpp"
 #include "ConnectionManager.hpp"
 #include "FileManager.hpp"
@@ -149,13 +150,16 @@ static void	serializeHeaders(std::stringstream& buffer, HttpResponse& response) 
 }
 
 void	DataAdapter::serializeResponse() {
+	int byte;
 	std::stringstream	buffer;
 	std::multimap<std::string, std::string>::iterator	it;
 
 	buffer << _response.version << " " << _response.statusCode << " " << _response.statusMsg << CRLF;
 	serializeHeaders(buffer, _response);
-	buffer << std::string(_response.body.begin(), _response.body.end());
-	_connection->sendBuffer = buffer.str();
+	for (std::vector<char>::iterator it = _response.body.begin(); it != _response.body.end(); ++it)
+		buffer << *it;
+	while ((byte = buffer.get()) != EOF)
+		_connection->sendBuffer.push_back(byte);
 }
 
 Connection		*DataAdapter::getConnection() const { return _connection; }
