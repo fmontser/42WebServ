@@ -4,11 +4,11 @@
 class HttpResponse : public HttpMessage {
 	public:
 		enum responseType {
-			LOCKED = 0,
 			CONTINUE = 100,
 			OK = 200,
 			CREATED = 201,
 			NO_CONTENT = 204,
+			SEE_OTHER = 303,
 			FORBIDDEN = 403,
 			NOT_FOUND = 404,
 			CONFLICT = 409,

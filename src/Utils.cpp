@@ -1,4 +1,6 @@
 #include "Utils.hpp"
+#include <sstream>
+#include <iostream>
 #include <cstdlib>
 
 
@@ -48,4 +50,13 @@ void	Utils::nestedQuoteExtract(char delimiter, std::string& str) {
 		end = str.find_last_of(delimiter, str.size());
 		str = str.substr(start + 1, end - 1);
 	}
+}
+
+
+size_t	Utils::getStringStreamLength(std::stringstream& ss) {
+	std::streampos pos = ss.tellg();
+	ss.seekg(0, std::ios::end);
+	std::streampos length = ss.tellg();
+	ss.seekg(pos);
+	return length;
 }

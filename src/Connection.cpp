@@ -23,6 +23,7 @@ Connection::Connection(Server& server) : _server(server), _multiDataAdapter(NULL
 	requestMode = SINGLE;
 	contentLength = 0;
 	recvBuffer.clear();
+	sendBuffer.clear();
 	boundarie.clear();
 
 	_pollfd = pollfd();
@@ -80,7 +81,6 @@ void	Connection::recieveData() {
 		if (requestMode == MULTIPART) {
 			if (_multiDataAdapter == NULL)
 				_multiDataAdapter = new DataAdapter(adapter);
-
 			contentLength -= len;
 			_multiDataAdapter->deserializeRequest();
 			_multiDataAdapter->getRequest().method = "POST";
@@ -89,8 +89,14 @@ void	Connection::recieveData() {
 				_multiDataAdapter->serializeResponse();
 			recvBuffer.clear();
 			_multiDataAdapter->getRequest().body.clear();
- 			if (contentLength == 0)
-				delete _multiDataAdapter;
+ 			if (contentLength == 0) {
+				 delete _multiDataAdapter;
+				_multiDataAdapter = NULL;
+				boundarie.clear();
+				boundStart.clear();
+				boundEnd.clear();
+				requestMode = Connection::SINGLE;
+			}
 		}
 		else {
 			adapter.deserializeRequest();
@@ -104,21 +110,24 @@ void	Connection::recieveData() {
 void	Connection::sendData() {
 	std::string chunk;
 	static bool chunkHeadSent = false;
+	std::string _chunkBuffer = std::string(sendBuffer.begin(), sendBuffer.end());
 
 	chunk.clear();
 	if (isChunkedResponse) {
-		if (sendBuffer.find(HTTP_BODY_START) != std::string::npos && !chunkHeadSent)
+ 		if (_chunkBuffer.find(HTTP_BODY_START) != std::string::npos && !chunkHeadSent)
 		{
-			size_t csize = sendBuffer.find(HTTP_BODY_START) + HTTP_BODY_START_OFFSET;
-			chunk += sendBuffer.substr(0, csize);
-			sendBuffer = sendBuffer.substr(chunk.size(), sendBuffer.size());
+			size_t csize = _chunkBuffer.find(HTTP_BODY_START) + HTTP_BODY_START_OFFSET;
+			chunk += _chunkBuffer.substr(0, csize);
+			_chunkBuffer = _chunkBuffer.substr(chunk.size(), _chunkBuffer.size());
+			sendBuffer.erase(sendBuffer.begin(), sendBuffer.begin() + csize);
 			chunkHeadSent = true;
 		}
-		if (sendBuffer.find(CRLF) != std::string::npos) {
-			size_t csize = sendBuffer.find(CRLF) + CRLF_OFFSET;
-			csize += Utils::strHexToUint(sendBuffer.substr(0, csize).c_str()) + CRLF_OFFSET;
-			chunk += sendBuffer.substr(0, csize);
-			sendBuffer = sendBuffer.substr(csize, sendBuffer.size());
+		if (_chunkBuffer.find(CRLF) != std::string::npos) {
+			size_t csize = _chunkBuffer.find(CRLF) + CRLF_OFFSET;
+			csize += Utils::strHexToUint(_chunkBuffer.substr(0, csize).c_str()) + CRLF_OFFSET;
+			chunk += _chunkBuffer.substr(0, csize);
+			_chunkBuffer = _chunkBuffer.substr(csize, _chunkBuffer.size());
+			sendBuffer.erase(sendBuffer.begin(), sendBuffer.begin() + csize);
 		}	
 		if (sendBuffer.empty()) {
 			isChunkedResponse = false;
@@ -130,13 +139,14 @@ void	Connection::sendData() {
 		}
 		return ;
 	}
-	else if (send(_socketFd, sendBuffer.c_str(), sendBuffer.size(), 0) == -1) {
+	else if (send(_socketFd, &sendBuffer[0], sendBuffer.size(), 0) == -1) {
 		std::cerr << RED << "Send error: Server connection error" << END << std::endl;
 	}
 	sendBuffer.clear();
 }
 
 void	Connection::updatePollFd(struct pollfd pfd) { _pollfd = pfd; }
+bool	Connection::hasPollErr() const { return _pollfd.revents & POLLERR; }
 bool	Connection::hasPollIn() const { return _pollfd.revents & POLLIN; }
-bool	Connection::hasPollOut() const { return _pollfd.revents && POLLOUT; }
+bool	Connection::hasPollOut() const { return _pollfd.revents & POLLOUT; }
 

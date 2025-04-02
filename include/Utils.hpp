@@ -10,4 +10,5 @@ class Utils {
 		static size_t					strToUint(std::string str);
 		static size_t					strHexToUint(std::string  str);
 		static void						nestedQuoteExtract(char delimiter, std::string& str);
+		static size_t					getStringStreamLength(std::stringstream& ss);
 };

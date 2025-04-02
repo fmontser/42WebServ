@@ -27,55 +27,65 @@ static bool isDirectory(const std::string& url) {
 	return (url.substr(url.size() - 1, 1) == "/") ? true : false;
 }
 
-static void chunkEncode(std::string& body, size_t maxPayload) {
+static void chunkEncode(std::vector<char>& body, size_t maxPayload) {
 	std::stringstream	buffer;
+	std::vector<char>	_body(body);
+	int					byte;
 
-	while (body.size()) {
-		int	csize = body.size() >= maxPayload ? maxPayload : body.size();
+	while (_body.size()) {
+		int	csize = _body.size() >= maxPayload ? maxPayload : _body.size();
+
 		buffer << std::hex << csize << CRLF;
-		buffer << body.substr(0, csize) << CRLF;
-		body = body.substr(csize, body.size());
+		buffer << std::string(_body.begin(), _body.begin() + csize);
+		_body.erase(_body.begin(), _body.begin() + csize);
+		buffer << CRLF;
 	}
 	buffer << '0' << CRLF << CRLF;
-	body = buffer.str();
+	body.clear();
+	while ((byte = buffer.get()) != EOF)
+		body.push_back(byte);
 }
 
-//TODO comprobar permisos de lectura (403 Forbidden), devolver 403?
-//TODO si no existe (404 Not found), devolver 404?
-void	FileManager::readFile(DataAdapter& dataAdapter) {
-	std::string			target, body; 
-	int					fd, readSize;
+HttpResponse::responseType	FileManager::readFile(DataAdapter& dataAdapter) {
+	std::string			target; 
+	int					fd, readSize, i;
 	Server&				server = dataAdapter.getConnection()->getServer();
 	HttpRequest&		request = dataAdapter.getRequest();
 	HttpResponse&		response = dataAdapter.getResponse();
+	char				readBuffer[READ_BUFFER] = {0};
 	
 	target = server.getRoot().substr(0, server.getRoot().size() - 1).append(request.url);
 	if (isDirectory(request.url))
-		target.append("index.html"); //TODO hardcoded, obtener de config
+		target.append(server.getRoutes().find(request.url)->second.getDefault());
 	
+	if(access(target.c_str(), F_OK != 0))
+		return HttpResponse::NOT_FOUND;
+	
+	if (access(target.c_str(), R_OK) != 0)
+		return HttpResponse::FORBIDDEN;
+
 	fd = open(target.c_str(), O_RDONLY, 0644);
-	if (fd < 0) {
-		fd = open("../web/default/404.html", O_RDONLY, 0644); //TODO hardcoded, debe obtener la ruta del config.
-		response.setupResponse(HttpResponse::NOT_FOUND);
-	}
+	if (fd < 0)
+		return HttpResponse::SERVER_ERROR;
+
 	do {
-		char readBuffer[READ_BUFFER] = {0};
+		i = 0;
 		readSize = read(fd, readBuffer, READ_BUFFER);
-		body.append(readBuffer); //TODO &&&& sustituir por char vector
-	} while (readSize > 0);
-	
-	if ((int)body.size() > server.getMaxPayload()){
+		while (i < readSize)
+		response.body.push_back(readBuffer[i++]);
+	} while (readSize);
+
+	if ((int)response.body.size() > server.getMaxPayload()) {
 		response.addHeader("Transfer-Encoding: chunked");
-		chunkEncode(body, server.getMaxPayload());
+		chunkEncode(response.body, server.getMaxPayload());
 	}
 	else {
 		std::stringstream	contentLengthHeader;
-		contentLengthHeader << "Content-Length: " << body.size();
+		contentLengthHeader << "Content-Length: " << response.body.size();
 		response.addHeader(contentLengthHeader.str());
-
 	}
-	response.body.assign(body.c_str(), body.c_str() + body.size());
 	close(fd);
+	return HttpResponse::OK;
 }
 
 #include <algorithm>
@@ -87,7 +97,7 @@ HttpResponse::responseType	FileManager::writeFile(DataAdapter& dataAdapter) {
 
 	uploadDir.append(dataAdapter.getConnection()->getServer().getRoot());
 	uploadDir.append(dataAdapter.getConnection()->getServer().getUploadDir());
-	if (!access(uploadDir.c_str(), F_OK) == 0)
+	if (access(uploadDir.c_str(), F_OK) != 0)
 		mkdir(uploadDir.c_str(), 0777);
 
 	for (std::vector<HttpHeader>::iterator it = dataAdapter.getRequest().headers.begin();
@@ -110,10 +120,10 @@ HttpResponse::responseType	FileManager::writeFile(DataAdapter& dataAdapter) {
 		}
 	}
 
-	if (!access(uploadDir.c_str(), W_OK) == 0)
+	if (access(uploadDir.c_str(), W_OK) != 0)
 		return HttpResponse::FORBIDDEN;
 	if ((access(fileName.c_str(), F_OK) == 0 && dataAdapter.allowFileAppend)
-		|| !access(fileName.c_str(), F_OK) == 0) {
+		|| access(fileName.c_str(), F_OK) != 0) {
 
 		fd = open(fileName.c_str(), O_WRONLY | O_CREAT | O_APPEND, 0775);
 		if (fd > 0) {
