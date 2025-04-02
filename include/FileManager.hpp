@@ -14,6 +14,6 @@ class FileManager {
 
 	public:
 
-		static void readFile(DataAdapter& dataAdapter);
-		static int writeFile(DataAdapter& dataAdapter);
+		static HttpResponse::responseType	readFile(DataAdapter& dataAdapter);
+		static HttpResponse::responseType	writeFile(DataAdapter& dataAdapter);
 };

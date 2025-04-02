@@ -38,60 +38,7 @@ Config& Config::operator=(const Config& src) {
 	return *this;
 }
 
-bool Config::isValidConfig(Server &server) {
-	if (server.getName().empty())
-		return printFalse("Server name is missing.");
 
-	if (server.getMaxPayload() < MIN_PAYLOAD || server.getMaxPayload() > MAX_PAYLOAD)
-		return printFalse("Server maxPayload is invalid.");
-
-	if (server.getHost().empty())
-		return printFalse("Server host is missing.");
-
-	int port = server.getPort();
-	if (port <= 0 || port > 65535)
-		return printFalse("Server port is invalid.");
-
-	if (server.getRoot().empty() || server.getRoot()[0] != '.')
-		return printFalse("Server root is missing.");
-
-	if (server.getUploadDir().empty())
-		return printFalse("Server upload dir is missing.");
-
-	for (std::vector<std::string>::iterator it = server.getServerMethods().begin(); it != server.getServerMethods().end(); it++) {
-			std::string method = it->c_str();
-			if (method != "GET" && method != "POST" && method != "PUT" && method != "DELETE")
-				return printFalse("Invalid server method '" + method + "' in server " + server.getName());
-	}
-
-	std::string defaultPage = server.getDefault();
-	if (!defaultPage.empty() && (defaultPage.size() < 5 || defaultPage.substr(defaultPage.size() - 5) != ".html"))
-		return printFalse("Server default must end with .html");
-
-	std::map<std::string, Route>& _routes = server.getRoutes();
-	for (std::map<std::string, Route>::const_iterator it = _routes.begin(); it != _routes.end(); ++it) {
-		if (it->first.empty() || it->first[0] == '{')
-			return printFalse("Route url is missing.");
-		const Route& route = it->second;
-
-		const std::multimap<std::string, std::string>& methods = route.getMethods();
-		for (std::multimap<std::string, std::string>::const_iterator mit = methods.begin(); mit != methods.end(); ++mit) {
-			if (mit->second != "GET" && mit->second != "POST" && mit->second != "PUT" && mit->second != "DELETE")
-				return printFalse("Invalid method '" + mit->second + "' in route " + route.getUrl());
-		}
-
-		const std::multimap<std::string, std::string>& files = route.getFiles();
-		for (std::multimap<std::string, std::string>::const_iterator fit = files.begin(); fit != files.end(); ++fit) {
-			if (fit->first == "root" && ((fit->second[0] != '.' && (fit->second[1] != '/' || fit->second[1] != '\0') )))
-				return printFalse("Invalid root path '" + fit->second + "' in route " + route.getUrl());
-			if (fit->first == "redirect" && (fit->second[0] != '.' || fit->second[1] != '/'))
-				return printFalse("Invalid redirect path '" + fit->second + "' in route " + route.getUrl());
-			if ((fit->first == "autoindex" && (fit->second != "on" && fit->second != "off")))
-				return printFalse("Invalid autoindex value " + fit->second );
-		}
-	}
-	return true;
-}
 
 static void tokenizeServerMethods(std::stringstream& ss, std::vector<std::pair<std::string, std::vector<std::string> > > &tokenPairs) {
 	std::string					buffer;
@@ -160,8 +107,8 @@ void Config::loadConfig(std::fstream &configFileStream) {
 }
 
 void Config::addRoute(std::vector<std::pair<std::string, std::vector<std::string> > >::iterator &it) {
-	Route                       route;
-	std::string                 key;
+	Route						route;
+	std::string					key;
 	std::vector<std::string>    values;
 
 	route.setUrl(it->second[0]);
@@ -182,9 +129,7 @@ void Config::addRoute(std::vector<std::pair<std::string, std::vector<std::string
 				printError("Invalid cgi values in route " + route.getUrl());
 			route.addFile(std::make_pair(key, values[0]));
 		} else if (key == "default") {
-			if (values.size() != 1)
-				printError("Invalid default value in route " + route.getUrl());
-			std::cout << "default: " << values[0] << " not set yet" << std::endl;
+			route.setDefault(values[0]);
 		}
 		else {
 			printError("unknown token " + key);
@@ -226,8 +171,6 @@ void Config::addServer(std::vector<std::pair<std::string, std::vector<std::strin
 			server.setRoot(values[0]);
 		} else if (key == "uploadDir") {
 			server.setUploadDir(values[0]);
-		} else if (key == "default") {
-			server.setDefault(values[0]);
 		} else if (key == "serverMethods") {
 			server.setServerMethods(values);
 		} else if (key == "route") {
@@ -247,6 +190,65 @@ void Config::addServer(std::vector<std::pair<std::string, std::vector<std::strin
 		_servers.insert(std::make_pair(server.getName(), server));
 		_actualServer = &(_servers[server.getName()]);
 	}
+}
+
+bool Config::isValidConfig(Server &server) {
+	if (server.getName().empty())
+		return printFalse("Server name is missing.");
+
+	if (server.getMaxPayload() < MIN_PAYLOAD || server.getMaxPayload() > MAX_PAYLOAD)
+		return printFalse("Server maxPayload is invalid.");
+
+	if (server.getHost().empty())
+		return printFalse("Server host is missing.");
+
+	int port = server.getPort();
+	if (port <= 0 || port > 65535)
+		return printFalse("Server port is invalid.");
+
+	if (server.getRoot().empty() || server.getRoot()[0] != '.')
+		return printFalse("Server root is missing.");
+
+	if (server.getUploadDir().empty())
+		return printFalse("Server upload dir is missing.");
+
+	for (std::vector<std::string>::iterator it = server.getServerMethods().begin(); it != server.getServerMethods().end(); it++) {
+			std::string method = it->c_str();
+			if (method != "GET" && method != "POST" && method != "PUT" && method != "DELETE")
+				return printFalse("Invalid server method '" + method + "' in server " + server.getName());
+	}
+
+
+
+	std::map<std::string, Route>& _routes = server.getRoutes();
+	for (std::map<std::string, Route>::const_iterator it = _routes.begin(); it != _routes.end(); ++it) {
+		if (it->first.empty() || it->first[0] == '{')
+			return printFalse("Route name is missing.");
+		const Route& route = it->second;
+
+		if (route.getUrl().empty())
+			return printFalse("Route: " + it->first + "url is missing");
+		if (route.getDefault().empty())
+			return printFalse("Route: " + it->first + "default file is missing");
+
+		const std::multimap<std::string, std::string>& methods = route.getMethods();
+		for (std::multimap<std::string, std::string>::const_iterator mit = methods.begin(); mit != methods.end(); ++mit) {
+			if (mit->second != "GET" && mit->second != "POST" && mit->second != "PUT" && mit->second != "DELETE")
+				return printFalse("Invalid method '" + mit->second + "' in route " + route.getUrl());
+		}
+
+		//TODO need?
+		const std::multimap<std::string, std::string>& files = route.getFiles();
+		for (std::multimap<std::string, std::string>::const_iterator fit = files.begin(); fit != files.end(); ++fit) {
+			if (fit->first == "root" && ((fit->second[0] != '.' && (fit->second[1] != '/' || fit->second[1] != '\0') )))
+				return printFalse("Invalid root path '" + fit->second + "' in route " + route.getUrl());
+			if (fit->first == "redirect" && (fit->second[0] != '.' || fit->second[1] != '/'))
+				return printFalse("Invalid redirect path '" + fit->second + "' in route " + route.getUrl());
+			if ((fit->first == "autoindex" && (fit->second != "on" && fit->second != "off")))
+				return printFalse("Invalid autoindex value " + fit->second );
+		}
+	}
+	return true;
 }
 
 std::map<std::string, Server>& Config::getServers() {

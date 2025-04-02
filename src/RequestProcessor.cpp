@@ -10,47 +10,34 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter) {
 	HttpResponse&	response = dataAdapter.getResponse();
 	Connection		*connection = dataAdapter.getConnection();
 
-	response.version = HTTP_VERSION;
 	if (request.method == "GET") {
-		//TODO @@@@@@@@ 111111 @@@@@@@@ LOS ENVIOS TAMBIEN SUFREN DE LA CODIFICACION TEXTO PLANO!!!! (por eso no funcniona favicon??)
-		FileManager::readFile(dataAdapter);	//TODO @@@@@ 222222 @@@@@@ refactor de respuestas por status code!! 
-		if (response.statusCode.empty()) {
-			response.statusCode = "200";
-			response.statusMsg = "OK";
-			std::cout << BLUE << "Info: success 200 \"" << request.method << "\", OK " << END << std::endl;
-			std::cout << BLUE << "Connection fd: " << connection->getPollFd().fd << std::endl;
+		HttpResponse::responseType rtype  = FileManager::readFile(dataAdapter);
+		if (rtype == HttpResponse::NOT_FOUND || rtype == HttpResponse::FORBIDDEN ){	//TODO FORBIDDEN
+			dataAdapter.getRequest().url = "/default/404.html"; //TODO hardcoded obtener de server
+			response.setupResponse(FileManager::readFile(dataAdapter));
+			return;
 		}
+		else if (rtype != HttpResponse::OK || (response.statusCode.empty()))
+			response.setupResponse(rtype);
 		connection->isChunkedResponse = response.isChunked();
 	}
 	else if (request.method == "POST") {
 		if (connection->requestMode == Connection::SINGLE && request.handleMultipart(connection)) {
-			response.version = HTTP_VERSION;
-			response.statusCode = "100";
-			response.statusMsg = "CONTINUE";
-			return ;
+			response.setupResponse(HttpResponse::CONTINUE);
+			return;
 		}
-		FileManager::writeFile(dataAdapter); //TODO refactor de respuestas por status code!! 
-		if (response.statusCode.empty() && dataAdapter.getConnection()->contentLength == 0) {
-			response.statusCode = "201";
-			response.statusMsg = "CREATED";
-			std::cout << BLUE << "Info: success 201 \"" << request.method << "\", CREATED " << END << std::endl;
-			std::cout << BLUE << "Connection fd: " << connection->getPollFd().fd << std::endl;
-		}
+		HttpResponse::responseType rtype = FileManager::writeFile(dataAdapter);
+		if (rtype != HttpResponse::CREATED || (response.statusCode.empty() && connection->contentLength == 0))
+			response.setupResponse(rtype);
 	}
 	else if (request.method == "DELETE") {
 		//TODO DELETE METHOD
-		response.statusCode = "204";
-		response.statusMsg = "NO_CONTENT";
-		std::cout << BLUE << "Info: success 204 \"" << request.method << "\", NO_CONTENT " << END << std::endl;
+		response.setupResponse(HttpResponse::NO_CONTENT);
 	}
 	else {
-
- 		request.url = "/default/501.html"; //TODO hardcoded, debe obtener la ruta del config.
-
-		FileManager::readFile(dataAdapter);
-		response.statusCode = "501";
-		response.statusMsg = "METHOD_NOT_IMPLEMENTED";
-		std::cerr << YELLOW << "Warning: Error 501 \"" << request.method << "\", METHOD_NOT_IMPLEMENTED " << END << std::endl;
+		request.url = "/default/501.html"; //TODO hardcoded, debe obtener la ruta del config.
+		FileManager::readFile(dataAdapter);	//TODO devolver pagina error!!!
+		response.setupResponse(HttpResponse::METHOD_NOT_IMPLEMENTED);
 	}
 }
 
