@@ -154,6 +154,8 @@ void	DataAdapter::serializeResponse() {
 	std::stringstream	buffer;
 	std::multimap<std::string, std::string>::iterator	it;
 
+	if (_response.statusCode.empty())
+		return;
 	buffer << _response.version << " " << _response.statusCode << " " << _response.statusMsg << CRLF;
 	serializeHeaders(buffer, _response);
 	for (std::vector<char>::iterator it = _response.body.begin(); it != _response.body.end(); ++it)

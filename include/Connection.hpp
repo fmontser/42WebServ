@@ -39,6 +39,7 @@ class Connection {
 		void			recieveData();
 		void			sendData();
 		void			updatePollFd(struct pollfd pfd);
+		bool			hasPollErr() const;
 		bool			hasPollIn() const;
 		bool			hasPollOut() const;
 };

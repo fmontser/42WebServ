@@ -146,6 +146,7 @@ void	Connection::sendData() {
 }
 
 void	Connection::updatePollFd(struct pollfd pfd) { _pollfd = pfd; }
+bool	Connection::hasPollErr() const { return _pollfd.revents & POLLERR; }
 bool	Connection::hasPollIn() const { return _pollfd.revents & POLLIN; }
-bool	Connection::hasPollOut() const { return _pollfd.revents && POLLOUT; }
+bool	Connection::hasPollOut() const { return _pollfd.revents & POLLOUT; }
 

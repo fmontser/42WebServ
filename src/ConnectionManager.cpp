@@ -56,30 +56,12 @@ static void	manageServerConnections(Server& server) {
 	std::list<Connection *>	cachedList(server.getConnectionList());
 	for (std::list<Connection *>::iterator it = cachedList.begin(); it != cachedList.end(); ++it) {
 		Connection&	connection = *(*it);
-
-		//TODO @@@@@@@@@@ POLLERR CHECK
-
-		/* 
-		
-		Supongamos que estás utilizando poll() para monitorear un socket, y la función regresa con revents = 4. Esto indicaría que el socket experimentó un error (esto corresponde a la bandera POLLERR).
-
-		En ese caso, el comportamiento adecuado sería manejar el error, lo que podría incluir:
-
-		Revisar el estado del socket con getsockopt() para obtener más información sobre el error.
-
-		Cerrar el socket si es necesario.
-
-		Intentar reconectar o manejar el fallo de acuerdo con la lógica de la aplicación.
-		
-		
-		*/
-
-
-
-		if (connection.hasPollIn())
-			connection.recieveData();
-		if (connection.hasPollOut() && !connection.sendBuffer.empty())
-			connection.sendData();
+	if (connection.hasPollErr())
+		ConnectionManager::deleteConnection(server, &connection);
+	if (connection.hasPollOut() && !connection.sendBuffer.empty())
+		connection.sendData();
+	if (connection.hasPollIn())
+		connection.recieveData();
 	}
 	cachedList.clear();
 }
