@@ -1,6 +1,7 @@
 #pragma once
 #include "HttpMessage.hpp"
-#include "DataAdapter.hpp"
+
+class DataAdapter;
 
 class HttpResponse : public HttpMessage {
 	public:
@@ -13,6 +14,7 @@ class HttpResponse : public HttpMessage {
 			BAD_REQUEST = 400,
 			FORBIDDEN = 403,
 			NOT_FOUND = 404,
+			METHOD_NOT_ALLOWED = 405,
 			CONFLICT = 409,
 			SERVER_ERROR = 500,
 			METHOD_NOT_IMPLEMENTED = 501
