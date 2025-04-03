@@ -138,11 +138,13 @@ void	Connection::sendData() {
 		}
 		if (send(_socketFd, chunk.c_str(), chunk.size(), 0) < 1) {
 			std::cerr << RED << "Send error: Server connection error" << END << std::endl;
+			ConnectionManager::deleteConnection(_server, this);
 		}
 		return ;
 	}
 	else if (send(_socketFd, &sendBuffer[0], sendBuffer.size(), 0) < 1) {
 		std::cerr << RED << "Send error: Server connection error" << END << std::endl;
+		ConnectionManager::deleteConnection(_server, this);
 	}
 	sendBuffer.clear();
 }
