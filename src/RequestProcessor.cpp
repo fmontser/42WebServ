@@ -5,13 +5,14 @@
 #include "FileManager.hpp"
 
 void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter) {
+	
+	HttpResponse::responseType rtype;
 
 	HttpRequest&	request = dataAdapter.getRequest();
 	HttpResponse&	response = dataAdapter.getResponse();
 	Connection		*connection = dataAdapter.getConnection();
-
 	if (request.method == "GET") {
-		HttpResponse::responseType rtype  = FileManager::readFile(dataAdapter);
+		rtype  = FileManager::readFile(dataAdapter);
 		if (rtype == HttpResponse::NOT_FOUND || rtype == HttpResponse::FORBIDDEN ){	//TODO FORBIDDEN
 			dataAdapter.getRequest().url = "/default/404.html"; //TODO hardcoded obtener de server
 			response.setupResponse(FileManager::readFile(dataAdapter));
@@ -27,8 +28,13 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter) {
 			return;
 		}
 		HttpResponse::responseType rtype = FileManager::writeFile(dataAdapter);
-		if (rtype != HttpResponse::CREATED || (response.statusCode.empty() && connection->contentLength == 0))
+		if (connection->contentLength == 0) {
 			response.setupResponse(rtype);
+			if (rtype == HttpResponse::CREATED){
+				dataAdapter.getRequest().url = "/defaults/201.html";
+				FileManager::readFile(dataAdapter);
+			}
+		}
 	}
 	else if (request.method == "DELETE") {
 		response.setupResponse(FileManager::deleteFile(dataAdapter));
@@ -38,6 +44,7 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter) {
 		FileManager::readFile(dataAdapter);
 		response.setupResponse(HttpResponse::METHOD_NOT_IMPLEMENTED);
 	}
+	
 }
 
 

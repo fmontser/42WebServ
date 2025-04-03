@@ -31,7 +31,7 @@ bool	HttpResponse::isChunked() {
 	return false;
 }
 
-void	HttpResponse::setupResponse(enum responseType responseType) {
+void	HttpResponse::setupResponse(enum responseType responseType, DataAdapter& dataAdapter) {
 	std::string contentLength ("Content-Length: ");
 	std::stringstream ss;
 
@@ -52,9 +52,6 @@ void	HttpResponse::setupResponse(enum responseType responseType) {
 		case CREATED:
 			statusCode = "201";
 			statusMsg = "CREATED";
-			//TODO!!!
-			//addHeader("Content-Length: 56");
- 			//body.assign(cbody.begin(), cbody.end()); //TODO asignar el body el default correspondiente.
 			break;
 		case NO_CONTENT:
 			statusCode = "204";
@@ -62,9 +59,14 @@ void	HttpResponse::setupResponse(enum responseType responseType) {
 			break;
 		case SEE_OTHER:
  			statusCode = "303";
-			statusMsg = "See Other";
-			addHeader("Location: /");	//TODO obtener location de server config...?
+			statusMsg = "SEE_OTHER";
+			addHeader("Location: /");
  			addHeader(contentLength);
+			break;
+		case BAD_REQUEST:	//TODO opcional - validacion de request parcial?? subject no lo pide.
+			statusCode = "400";
+			statusMsg = "BAD_REQUEST";
+			addHeader(contentLength);
 			break;
 		case FORBIDDEN:
 			statusCode = "403";

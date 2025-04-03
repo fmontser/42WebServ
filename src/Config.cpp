@@ -5,6 +5,8 @@
 #include "Config.hpp"
 #include <sstream>
 
+std::string Config::_appRoot = "../";
+
 static std::string toString(int value) {
 	std::ostringstream oss;
 	oss << value;
@@ -28,17 +30,17 @@ bool Config::_insideRouteBlock = false;
 Config::Config() {}
 Config::~Config() {}
 Config::Config(const Config& src) {
+	_appRoot = src._appRoot;
 	_servers = src._servers;
 }
 
 Config& Config::operator=(const Config& src) {
 	if (this != &src) {
+		_appRoot = src._appRoot;
 		_servers = src._servers;
 	}
 	return *this;
 }
-
-
 
 static void tokenizeServerMethods(std::stringstream& ss, std::vector<std::pair<std::string, std::vector<std::string> > > &tokenPairs) {
 	std::string					buffer;
@@ -173,6 +175,8 @@ void Config::addServer(std::vector<std::pair<std::string, std::vector<std::strin
 			server.setUploadDir(values[0]);
 		} else if (key == "serverMethods") {
 			server.setServerMethods(values);
+		} else if (key.find("default",0) != key.npos) {
+			server.getDefaults()[key] = values[0];
 		} else if (key == "route") {
 			_insideRouteBlock = true;
 			addRoute(it);
@@ -251,6 +255,5 @@ bool Config::isValidConfig(Server &server) {
 	return true;
 }
 
-std::map<std::string, Server>& Config::getServers() {
-	return _servers;
-}
+std::map<std::string, Server>& Config::getServers() { return _servers; }
+std::string Config::getAppRoot() { return _appRoot; }

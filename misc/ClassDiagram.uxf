@@ -182,7 +182,7 @@ Input 2: CgiProcessor -&gt; HttpResponse
 Output: HttpResponse -&gt; DataPAdapter
 Output2: HttpResponse -&gt; CgiProcessor
 
-Manage statusCode: 200, 201, 204, 400, 403, 404, 405, 500, 501
+Manage statusCode: 200, 201, 204, 400, 403, 404, 409, 405, 500, 501
 </panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1208</x><y>704</y><w>272</w><h>296</h></coordinates><panel_attributes>&lt;&lt;Processor&gt;&gt;
 CgiProcessor
 --

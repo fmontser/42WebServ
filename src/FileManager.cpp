@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <sstream>
 #include <sys/stat.h>
+#include <algorithm>
 #include "Config.hpp"
 #include "FileManager.hpp"
 #include "DataAdapter.hpp"
@@ -54,7 +55,11 @@ HttpResponse::responseType	FileManager::readFile(DataAdapter& dataAdapter) {
 	HttpResponse&		response = dataAdapter.getResponse();
 	char				readBuffer[READ_BUFFER] = {0};
 	
-	target = server.getRoot().substr(0, server.getRoot().size() - 1).append(request.url);
+	if (!response.statusCode.empty())
+		target = Config::getAppRoot().substr(0, server.getRoot().size() - 1).append(request.url);
+	else	
+		target = server.getRoot().substr(0, server.getRoot().size() - 1).append(request.url);
+
 	if (isDirectory(request.url))
 		target.append(server.getRoutes().find(request.url)->second.getDefault());
 	
@@ -88,7 +93,7 @@ HttpResponse::responseType	FileManager::readFile(DataAdapter& dataAdapter) {
 	return HttpResponse::OK;
 }
 
-#include <algorithm>
+
 
 HttpResponse::responseType	FileManager::writeFile(DataAdapter& dataAdapter) {
 	HttpRequest&	request = dataAdapter.getRequest();
