@@ -140,3 +140,19 @@ HttpResponse::responseType	FileManager::writeFile(DataAdapter& dataAdapter) {
 		dataAdapter.allowFileAppend = true;
 	return HttpResponse::CREATED;
 }
+
+HttpResponse::responseType	FileManager::deleteFile(DataAdapter& dataAdapter) {
+	HttpRequest&	request = dataAdapter.getRequest();
+	std::string		fileName;
+
+	fileName.append(dataAdapter.getConnection()->getServer().getRoot());
+	fileName.append(request.url);
+
+	if (access(fileName.c_str(), F_OK) != 0)
+		return HttpResponse::NOT_FOUND;
+	if (access(fileName.c_str(), W_OK) != 0)
+		return HttpResponse::FORBIDDEN;
+	if (remove(fileName.c_str()) != 0)
+		return HttpResponse::SERVER_ERROR;
+	return HttpResponse::NO_CONTENT;
+}

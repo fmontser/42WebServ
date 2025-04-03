@@ -10,11 +10,42 @@
 
 	<img src="/tucan.png" alt="tucan image">
 
-	<p>TU TUTNTUNT UT</p>
+	<p>TU TU TU TUUUU!!</p>
 
 	<form action="/" method="post" enctype="multipart/form-data">
 		<input type="file" name="archivo" id="archivo">
-		<button type="submit">Subir Archivo</button>
+		<button type="submit">Subir Archivo (POST)</button>
 	</form>
+
+	<hr>
+
+	<button id="deleteButton">Borrar deleteme (DELETE)</button>
+	<script>
+		document.getElementById('deleteButton').addEventListener('click', function() {
+			fetch('/upload/deleteme', {
+			method: 'DELETE'
+			});
+		});
+	</script>
+
+	<hr>
+
+	<button id="updateButton">Actualizar archivo deleteme (PUT)</button>
+	<script>
+		document.getElementById('updateButton').addEventListener('click', function() {
+		var nuevoContenido = prompt("Ingrese el nuevo contenido del archivo:");
+
+		if (nuevoContenido) {
+			fetch('/upload/deleteme', {
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'text/plain'
+			},
+			body: nuevoContenido
+			});
+		}
+		});
+	</script>
+
 </body>
 </html>

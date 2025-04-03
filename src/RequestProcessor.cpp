@@ -31,12 +31,11 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter) {
 			response.setupResponse(rtype);
 	}
 	else if (request.method == "DELETE") {
-		//TODO DELETE METHOD
-		response.setupResponse(HttpResponse::NO_CONTENT);
+		response.setupResponse(FileManager::deleteFile(dataAdapter));
 	}
 	else {
 		request.url = "/default/501.html"; //TODO hardcoded, debe obtener la ruta del config.
-		FileManager::readFile(dataAdapter);	//TODO devolver pagina error!!!
+		FileManager::readFile(dataAdapter);
 		response.setupResponse(HttpResponse::METHOD_NOT_IMPLEMENTED);
 	}
 }
