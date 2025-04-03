@@ -70,8 +70,10 @@ void	Connection::recieveData() {
 	int			len;
 
 	len = recv(_socketFd, buffer, READ_BUFFER, 0);
-	if (len == -1)
+	if (len == -1) {
 		std::cerr << RED << "Error: client error " << _socketFd << END << std::endl;
+		ConnectionManager::deleteConnection(_server, this);
+	}
 	else if (len == 0) {
 		std::cout << BLUE << "Info: client closed connection " << _socketFd << END << std::endl;
 		ConnectionManager::deleteConnection(_server, this);
@@ -134,12 +136,12 @@ void	Connection::sendData() {
 			chunkHeadSent = false;
 			sendBuffer.clear();
 		}
-		if (send(_socketFd, chunk.c_str(), chunk.size(), 0) == -1) {
+		if (send(_socketFd, chunk.c_str(), chunk.size(), 0) < 1) {
 			std::cerr << RED << "Send error: Server connection error" << END << std::endl;
 		}
 		return ;
 	}
-	else if (send(_socketFd, &sendBuffer[0], sendBuffer.size(), 0) == -1) {
+	else if (send(_socketFd, &sendBuffer[0], sendBuffer.size(), 0) < 1) {
 		std::cerr << RED << "Send error: Server connection error" << END << std::endl;
 	}
 	sendBuffer.clear();
