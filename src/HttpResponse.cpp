@@ -1,6 +1,8 @@
 #include "HttpResponse.hpp"
 #include "FileManager.hpp"
 #include "ServerConstants.hpp"
+#include "Utils.hpp"
+#include "DataAdapter.hpp"
 #include <iostream>
 #include <sstream>
 
@@ -31,19 +33,16 @@ bool	HttpResponse::isChunked() {
 	return false;
 }
 
-void	HttpResponse::setupResponse(enum responseType responseType) {
+
+
+void	HttpResponse::setupResponse(enum responseType responseType, DataAdapter& dataAdapter) {
 	std::string contentLength ("Content-Length: ");
-	std::stringstream ss;
 
-	ss << body.size();
-	contentLength.append(ss.str());
 	version = HTTP_VERSION;
-
 	switch (responseType) {
 		case CONTINUE:
 			statusCode = "100";
 			statusMsg = "CONTINUE";
-			addHeader(contentLength);
 			break;
 		case OK:
 			statusCode = "200";
@@ -52,9 +51,9 @@ void	HttpResponse::setupResponse(enum responseType responseType) {
 		case CREATED:
 			statusCode = "201";
 			statusMsg = "CREATED";
-			//TODO!!!
-			//addHeader("Content-Length: 56");
- 			//body.assign(cbody.begin(), cbody.end()); //TODO asignar el body el default correspondiente.
+			dataAdapter.getRequest().url = "/defaults/201.html";
+			FileManager::readFile(dataAdapter);
+			addHeader(contentLength.append(Utils::getStringSizeStr(body.size())));
 			break;
 		case NO_CONTENT:
 			statusCode = "204";
@@ -62,33 +61,57 @@ void	HttpResponse::setupResponse(enum responseType responseType) {
 			break;
 		case SEE_OTHER:
  			statusCode = "303";
-			statusMsg = "See Other";
-			addHeader("Location: /");	//TODO obtener location de server config...?
- 			addHeader(contentLength);
+			statusMsg = "SEE_OTHER";
+			addHeader("Location: /");
+ 			addHeader(contentLength.append(Utils::getStringSizeStr(body.size())));
+			break;
+		case BAD_REQUEST:
+			statusCode = "400";
+			statusMsg = "BAD_REQUEST";
+			dataAdapter.getRequest().url = "/defaults/400.html";
+			addHeader(contentLength.append(Utils::getStringSizeStr(body.size())));
 			break;
 		case FORBIDDEN:
 			statusCode = "403";
 			statusMsg = "FORBIDDEN";
-			addHeader(contentLength);
+			dataAdapter.getRequest().url = "/defaults/403.html";
+			FileManager::readFile(dataAdapter);
+			addHeader(contentLength.append(Utils::getStringSizeStr(body.size())));
 			break;
 		case NOT_FOUND:
 			statusCode = "404";
 			statusMsg = "NOT_FOUND";
-			addHeader(contentLength);
+			dataAdapter.getRequest().url = "/defaults/404.html";
+			FileManager::readFile(dataAdapter);
+			addHeader(contentLength.append(Utils::getStringSizeStr(body.size())));
 			break;
 		case CONFLICT:
 			statusCode = "409";
 			statusMsg = "CONFLICT";
-			addHeader(contentLength);
+			dataAdapter.getRequest().url = "/defaults/409.html";
+			FileManager::readFile(dataAdapter);
+			addHeader(contentLength.append(Utils::getStringSizeStr(body.size())));
+			break;
+		case METHOD_NOT_ALLOWED:
+			statusCode = "405";
+			statusMsg = "METHOD_NOT_ALLOWED";
+			dataAdapter.getRequest().url = "/defaults/405.html";
+			FileManager::readFile(dataAdapter);
+			addHeader(contentLength.append(Utils::getStringSizeStr(body.size())));
 			break;
 		case SERVER_ERROR:
 			statusCode = "500";
 			statusMsg = "SERVER_ERROR";
-			addHeader(contentLength);
+			dataAdapter.getRequest().url = "/defaults/500.html";
+			FileManager::readFile(dataAdapter);
+			addHeader(contentLength.append(Utils::getStringSizeStr(body.size())));
 			break;
 		case METHOD_NOT_IMPLEMENTED:
 			statusCode = "501";
 			statusMsg = "METHOD_NOT_IMPLEMENTED";
+			dataAdapter.getRequest().url = "/defaults/501.html";
+			FileManager::readFile(dataAdapter);
+			addHeader(contentLength.append(Utils::getStringSizeStr(body.size())));
 			break;
 		default:
 			break;

@@ -7,7 +7,15 @@
 #include "ServerConstants.hpp"
 #include "Connection.hpp"
 
-Server::Server() {}
+Server::Server() {
+	_defaults["default400"] = "/defaults/400.html";
+	_defaults["default403"] = "/defaults/403.html";
+	_defaults["default404"] = "/defaults/404.html";
+	_defaults["default405"] = "/defaults/405.html";
+	_defaults["default409"] = "/defaults/409.html";
+	_defaults["default500"] = "/defaults/500.html";
+	_defaults["default501"] = "/defaults/501.html";
+}
 
 Server::~Server() {
 	close(_socketFd);
@@ -21,7 +29,7 @@ Server::Server(const Server& src) {
 	_port = src._port;
 	_root = src._root;
 	_uploadDir = src._uploadDir;
-	_default = src._default;
+	_defaults = src._defaults;
 	_maxPayload = src._maxPayload;
 	_routes = src._routes;
 	_connectionList = src._connectionList;
@@ -37,7 +45,7 @@ Server& Server::operator=(const Server& src) {
 		_port = src._port;
 		_root = src._root;
 		_uploadDir = src._uploadDir;
-		_default = src._default;
+		_defaults = src._defaults;
 		_maxPayload = src._maxPayload;
 		_routes = src._routes;
 		_connectionList = src._connectionList;
@@ -94,6 +102,7 @@ int										Server::getPort() const { return this->_port; }
 std::string						Server::getRoot() const { return this->_root; }
 std::string						Server::getUploadDir() const { return this->_uploadDir; }
 std::vector<std::string>&		Server::getServerMethods() { return this->_serverMethods; }
+std::map<std::string, std::string>&		Server::getDefaults() {return this->_defaults; }
 int										Server::getMaxPayload() const { return _maxPayload; }
 
 

@@ -60,3 +60,10 @@ size_t	Utils::getStringStreamLength(std::stringstream& ss) {
 	ss.seekg(pos);
 	return length;
 }
+
+std::string Utils::getStringSizeStr(size_t size) {
+	std::stringstream ss;
+	
+	ss << size;
+	return ss.str();
+}

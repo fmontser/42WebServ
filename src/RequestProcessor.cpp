@@ -4,40 +4,52 @@
 #include "DataAdapter.hpp"
 #include "FileManager.hpp"
 
+
+//TODO @@@@@@@@@@ continuar manejar rutas!!!!!
+static	bool	validateRouteMethod(std::string method, Server& server, HttpRequest& request) {
+/* 
+	Route route =  != ;
+	std::map<std::string, Route>::iterator routeIt = server.getRoutes().find(request.url);
+	if (routeIt != server.getRoutes().end())
+		return true;
+	return false; */
+	return true;
+}
+
 void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter) {
+	
+	HttpResponse::responseType rtype;
 
 	HttpRequest&	request = dataAdapter.getRequest();
 	HttpResponse&	response = dataAdapter.getResponse();
 	Connection		*connection = dataAdapter.getConnection();
 
+	if (!validateRouteMethod(request.method, connection->getServer())) {
+		response.setupResponse(HttpResponse::METHOD_NOT_ALLOWED, dataAdapter);
+		return ;
+	}
 	if (request.method == "GET") {
-		HttpResponse::responseType rtype  = FileManager::readFile(dataAdapter);
-		if (rtype == HttpResponse::NOT_FOUND || rtype == HttpResponse::FORBIDDEN ){	//TODO FORBIDDEN
-			dataAdapter.getRequest().url = "/default/404.html"; //TODO hardcoded obtener de server
-			response.setupResponse(FileManager::readFile(dataAdapter));
-			return;
-		}
-		else if (rtype != HttpResponse::OK || (response.statusCode.empty()))
-			response.setupResponse(rtype);
+		rtype  = FileManager::readFile(dataAdapter);
+		response.setupResponse(rtype, dataAdapter);
 		connection->isChunkedResponse = response.isChunked();
 	}
 	else if (request.method == "POST") {
 		if (connection->requestMode == Connection::SINGLE && request.handleMultipart(connection)) {
-			response.setupResponse(HttpResponse::CONTINUE);
+			response.setupResponse(HttpResponse::CONTINUE, dataAdapter);
 			return;
 		}
 		HttpResponse::responseType rtype = FileManager::writeFile(dataAdapter);
-		if (rtype != HttpResponse::CREATED || (response.statusCode.empty() && connection->contentLength == 0))
-			response.setupResponse(rtype);
+		if (connection->contentLength == 0)
+			response.setupResponse(rtype, dataAdapter);
 	}
 	else if (request.method == "DELETE") {
-		response.setupResponse(FileManager::deleteFile(dataAdapter));
+		rtype = FileManager::deleteFile(dataAdapter);
+		response.setupResponse(rtype, dataAdapter);
 	}
 	else {
-		request.url = "/default/501.html"; //TODO hardcoded, debe obtener la ruta del config.
-		FileManager::readFile(dataAdapter);
-		response.setupResponse(HttpResponse::METHOD_NOT_IMPLEMENTED);
+		response.setupResponse(HttpResponse::METHOD_NOT_IMPLEMENTED, dataAdapter);
 	}
+	
 }
 
 
