@@ -13,6 +13,7 @@ Server::Server() {
 	_defaults["default404"] = "/defaults/404.html";
 	_defaults["default405"] = "/defaults/405.html";
 	_defaults["default409"] = "/defaults/409.html";
+	_defaults["default413"] = "/defaults/413.html";
 	_defaults["default500"] = "/defaults/500.html";
 	_defaults["default501"] = "/defaults/501.html";
 }
