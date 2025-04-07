@@ -8,6 +8,7 @@
 #include "Connection.hpp"
 #include "HttpHeader.hpp"
 #include "Utils.hpp"
+#include "HttpProcessor.hpp"
 
 #define SPLIT_CHR_SZ 1
 
@@ -48,15 +49,24 @@ static void	deserializeRequestLine(std::stringstream& data, HttpRequest& request
 	request.version = line.substr(0, line.find('\r'));
 }
 
-static bool	deserializeHeaders(std::stringstream& data, HttpRequest& request, Connection *connection) {
+static bool	deserializeHeaders(std::stringstream& data, HttpRequest& request, DataAdapter& dataAdapter) {
 	std::string	line;
+	Connection	*connection = dataAdapter.getConnection();
 
 	while (std::getline(data, line)) {
 		line.append("\n");
 		if (line == CRLF)
 				break ;
-		if (line != connection->boundStart)
-			request.addHeader(DataAdapter::deserializeHeader(line));
+		if (line != connection->boundStart) {
+			HttpHeader newHeader = DataAdapter::deserializeHeader(line);
+			if (newHeader.name == "Content-Length" 
+				&& Utils::strToUint(newHeader.values[0].name) > connection->getServer().getMaxPayload()) {
+					connection->isOverPayloadLimit = true;
+					return true;
+				}
+			request.addHeader(newHeader);
+		}
+
 	}
 	if (connection->requestMode == Connection::MULTIPART)
 		return true;
@@ -73,11 +83,16 @@ static void removeBoundarie(std::vector<char>& body, const std::string& boundari
 		body.erase(it, it + boundary_len);
 }
 
-static void	deserializeBody(std::stringstream& data, HttpRequest& request, Connection *connection) {
+static void	deserializeBody(std::stringstream& data, HttpRequest& request, DataAdapter& dataAdapter) {
 	char	c[1];
+	Connection *connection = dataAdapter.getConnection();
+	size_t		bodySize = 0;
 
 	while(data.get(*c)) {
 		request.body.push_back(*c);
+		bodySize++;
+		if (bodySize > connection->getServer().getMaxPayload())
+			connection->isOverPayloadLimit = true;
 	}
  	removeBoundarie(request.body, connection->boundStart);
 	removeBoundarie(request.body, connection->boundEnd);
@@ -124,8 +139,9 @@ void	DataAdapter::deserializeRequest() {
 	if (_connection->requestMode == Connection::SINGLE)
 		deserializeRequestLine(data, _request);
 	if (!isHeadersComplete)
-		isHeadersComplete = deserializeHeaders(data, _request, _connection);
-	deserializeBody(data, _request, _connection);
+		isHeadersComplete = deserializeHeaders(data, _request, *this);
+	if (!_connection->isOverPayloadLimit)
+		deserializeBody(data, _request, *this);
 }
 
 static void	serializeHeaders(std::stringstream& buffer, HttpResponse& response) {

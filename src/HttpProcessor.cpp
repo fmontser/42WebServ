@@ -1,20 +1,23 @@
 #include <iostream>
 #include "HttpHeader.hpp"
-#include "RequestProcessor.hpp"
+#include "HttpProcessor.hpp"
 #include "DataAdapter.hpp"
 #include "FileManager.hpp"
 
 
 //TODO @@@@@@@@@@ continuar manejar rutas!!!!!
-static	bool	validateRouteMethod(std::string method, Server& server, HttpRequest& request) {
-/* 
+/* static	bool	validateRouteMethod(std::string method, Server& server, HttpRequest& request) {
+
 	Route route =  != ;
 	std::map<std::string, Route>::iterator routeIt = server.getRoutes().find(request.url);
 	if (routeIt != server.getRoutes().end())
 		return true;
-	return false; */
+	return false;
+	(void)method;
+	(void)server;
+	(void)request;
 	return true;
-}
+} */
 
 void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter) {
 	
@@ -24,10 +27,15 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter) {
 	HttpResponse&	response = dataAdapter.getResponse();
 	Connection		*connection = dataAdapter.getConnection();
 
-	if (!validateRouteMethod(request.method, connection->getServer())) {
-		response.setupResponse(HttpResponse::METHOD_NOT_ALLOWED, dataAdapter);
+	if (connection->isOverPayloadLimit) {
+		connection->requestMode = Connection::SINGLE;
+		response.setupResponse(HttpResponse::PAYLOAD_TOO_LARGE, dataAdapter);
 		return ;
 	}
+/* 	if (!validateRouteMethod(request.method, connection->getServer())) {
+		response.setupResponse(HttpResponse::METHOD_NOT_ALLOWED, dataAdapter);
+		return ;
+	} */
 	if (request.method == "GET") {
 		rtype  = FileManager::readFile(dataAdapter);
 		response.setupResponse(rtype, dataAdapter);

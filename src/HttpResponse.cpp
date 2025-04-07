@@ -99,6 +99,13 @@ void	HttpResponse::setupResponse(enum responseType responseType, DataAdapter& da
 			FileManager::readFile(dataAdapter);
 			addHeader(contentLength.append(Utils::getStringSizeStr(body.size())));
 			break;
+		case PAYLOAD_TOO_LARGE:	//TODO TEST
+			statusCode = "413";
+			statusMsg = "PAYLOAD_TOO_LARGE";
+			dataAdapter.getRequest().url = "/defaults/413.html";
+			FileManager::readFile(dataAdapter);
+			addHeader(contentLength.append(Utils::getStringSizeStr(body.size())));
+			break;
 		case SERVER_ERROR:
 			statusCode = "500";
 			statusMsg = "SERVER_ERROR";

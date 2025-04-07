@@ -7,8 +7,6 @@
 class DataAdapater;
 
 class HttpProcessor {
-	private:
-
 	public:
 		HttpProcessor();
 		HttpProcessor(const HttpProcessor& src);

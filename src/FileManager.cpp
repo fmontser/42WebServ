@@ -80,7 +80,7 @@ HttpResponse::responseType	FileManager::readFile(DataAdapter& dataAdapter) {
 		response.body.push_back(readBuffer[i++]);
 	} while (readSize);
 
-	if ((int)response.body.size() > server.getMaxPayload()) {
+	if (response.body.size() > server.getMaxPayload()) {
 		response.addHeader("Transfer-Encoding: chunked");
 		chunkEncode(response.body, server.getMaxPayload());
 	}
