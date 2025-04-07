@@ -8,8 +8,8 @@ class Route {
 		std::string								_url;
 		std::string								_default;
 
-		std::multimap<std::string, std::string>	_methods;
-		std::multimap<std::string, std::string>	_files;
+		std::map<std::string, std::string>	_methods;
+		std::map<std::string, std::string>	_files;
 		std::pair<std::string, std::string>		_autoIndex;
 		std::pair<std::string, std::string>		_root;
 		std::pair<std::string, std::string>		_redirect;
@@ -21,8 +21,8 @@ class Route {
 		Route& operator=(const Route& src);
 
 		std::string							getUrl() const;
-		std::multimap<std::string, std::string>	getMethods() const;
-		std::multimap<std::string, std::string>	getFiles() const;
+		std::map<std::string, std::string>	getMethods() const;
+		std::map<std::string, std::string>	getFiles() const;
 
 		std::string								getDefault() const;
 

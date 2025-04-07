@@ -235,15 +235,15 @@ bool Config::isValidConfig(Server &server) {
 		if (route.getDefault().empty())
 			return printFalse("Route: " + it->first + "default file is missing");
 
-		const std::multimap<std::string, std::string>& methods = route.getMethods();
-		for (std::multimap<std::string, std::string>::const_iterator mit = methods.begin(); mit != methods.end(); ++mit) {
+		const std::map<std::string, std::string>& methods = route.getMethods();
+		for (std::map<std::string, std::string>::const_iterator mit = methods.begin(); mit != methods.end(); ++mit) {
 			if (mit->second != "GET" && mit->second != "POST" && mit->second != "PUT" && mit->second != "DELETE")
 				return printFalse("Invalid method '" + mit->second + "' in route " + route.getUrl());
 		}
 
 		//TODO need?
-		const std::multimap<std::string, std::string>& files = route.getFiles();
-		for (std::multimap<std::string, std::string>::const_iterator fit = files.begin(); fit != files.end(); ++fit) {
+		const std::map<std::string, std::string>& files = route.getFiles();
+		for (std::map<std::string, std::string>::const_iterator fit = files.begin(); fit != files.end(); ++fit) {
 			if (fit->first == "root" && ((fit->second[0] != '.' && (fit->second[1] != '/' || fit->second[1] != '\0') )))
 				return printFalse("Invalid root path '" + fit->second + "' in route " + route.getUrl());
 			if (fit->first == "redirect" && (fit->second[0] != '.' || fit->second[1] != '/'))
