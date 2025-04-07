@@ -111,7 +111,7 @@ void Config::loadConfig(std::fstream &configFileStream) {
 void Config::addRoute(std::vector<std::pair<std::string, std::vector<std::string> > >::iterator &it) {
 	Route						route;
 	std::string					key;
-	std::vector<std::string>    values;
+	std::vector<std::string>	values;
 
 	route.setUrl(it->second[0]);
 	while ((++it)->first != "}") {
@@ -122,15 +122,16 @@ void Config::addRoute(std::vector<std::pair<std::string, std::vector<std::string
 			for (std::vector<std::string>::iterator mit = values.begin(); mit != values.end(); ++mit) {
 				route.addMethod(std::make_pair("method", *mit));
 			}
-		} else if (key == "file" || key == "root" || key == "redirect" || key == "autoindex") {
-			for (std::vector<std::string>::iterator vit = values.begin(); vit != values.end(); ++vit) {
-				route.addFile(std::make_pair(key, *vit));
-			}
-		} else if (key == "cgi") { //TODO pendiente de implementacion CGI
-			if (values.size() != 2)
-				printError("Invalid cgi values in route " + route.getUrl());
-			route.addFile(std::make_pair(key, values[0]));
-		} else if (key == "default") {
+		} else if (key == "root") {
+			route.setRoot(values[0]);
+		}
+		else if (key == "redirect") {
+			route.setRedirect(values[0]);
+		}
+		else if (key == "autoindex") {
+			route.setAutoIndex(values[0]);
+		}
+		else if (key == "default") {
 			route.setDefault(values[0]);
 		}
 		else {
@@ -222,8 +223,6 @@ bool Config::isValidConfig(Server &server) {
 				return printFalse("Invalid server method '" + method + "' in server " + server.getName());
 	}
 
-
-
 	std::map<std::string, Route>& _routes = server.getRoutes();
 	for (std::map<std::string, Route>::const_iterator it = _routes.begin(); it != _routes.end(); ++it) {
 		if (it->first.empty() || it->first[0] == '{')
@@ -232,24 +231,19 @@ bool Config::isValidConfig(Server &server) {
 
 		if (route.getUrl().empty())
 			return printFalse("Route: " + it->first + "url is missing");
+		if (route.getRoot().empty())
+			return printFalse("Route: " + it->first + "root is missing");
+		if (route.getAutoIndex().empty())
+			return printFalse("Route: " + it->first + "autoindex is missing");
+		if (route.getRedirect().empty())
+			return printFalse("Route: " + it->first + "redirect is missing");
 		if (route.getDefault().empty())
-			return printFalse("Route: " + it->first + "default file is missing");
+			return printFalse("Route: " + it->first + "default is missing");
 
-		const std::map<std::string, std::string>& methods = route.getMethods();
-		for (std::map<std::string, std::string>::const_iterator mit = methods.begin(); mit != methods.end(); ++mit) {
+		const std::multimap<std::string, std::string>& methods = route.getMethods();
+		for (std::multimap<std::string, std::string>::const_iterator mit = methods.begin(); mit != methods.end(); ++mit) {
 			if (mit->second != "GET" && mit->second != "POST" && mit->second != "PUT" && mit->second != "DELETE")
 				return printFalse("Invalid method '" + mit->second + "' in route " + route.getUrl());
-		}
-
-		//TODO need?
-		const std::map<std::string, std::string>& files = route.getFiles();
-		for (std::map<std::string, std::string>::const_iterator fit = files.begin(); fit != files.end(); ++fit) {
-			if (fit->first == "root" && ((fit->second[0] != '.' && (fit->second[1] != '/' || fit->second[1] != '\0') )))
-				return printFalse("Invalid root path '" + fit->second + "' in route " + route.getUrl());
-			if (fit->first == "redirect" && (fit->second[0] != '.' || fit->second[1] != '/'))
-				return printFalse("Invalid redirect path '" + fit->second + "' in route " + route.getUrl());
-			if ((fit->first == "autoindex" && (fit->second != "on" && fit->second != "off")))
-				return printFalse("Invalid autoindex value " + fit->second );
 		}
 	}
 	return true;

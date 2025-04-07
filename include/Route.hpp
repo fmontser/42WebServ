@@ -5,14 +5,12 @@
 
 class Route {
 	private:
-		std::string								_url;
-		std::string								_default;
-
-		std::map<std::string, std::string>	_methods;
-		std::map<std::string, std::string>	_files;
-		std::pair<std::string, std::string>		_autoIndex;
-		std::pair<std::string, std::string>		_root;
-		std::pair<std::string, std::string>		_redirect;
+		std::string							_url;
+		std::string							_default;
+		std::multimap<std::string, std::string>	_methods;
+		std::string							_autoIndex;
+		std::string							_root;
+		std::string							_redirect;
 
 	public:
 		Route();
@@ -21,16 +19,17 @@ class Route {
 		Route& operator=(const Route& src);
 
 		std::string							getUrl() const;
-		std::map<std::string, std::string>	getMethods() const;
-		std::map<std::string, std::string>	getFiles() const;
+		std::string							getAutoIndex() const;
+		std::string							getRoot() const;
+		std::string							getRedirect() const;
+		std::multimap<std::string, std::string>	getMethods() const;
 
 		std::string								getDefault() const;
 
 		void	setUrl(const std::string& url);
 		void	addMethod(const std::pair<std::string, std::string> method);
-		void	addFile(const std::pair<std::string, std::string> file);
-		void	setAutoIndex(const std::pair<std::string, std::string> autoIndex);
-		void	setRoot(const std::pair<std::string, std::string> root);
-		void	setRedirect(const std::pair<std::string, std::string> redirect);
-		void	setDefault(const std::string& default_);
+		void	setAutoIndex(const std::string autoIndex);
+		void	setRoot(const std::string root);
+		void	setRedirect(const std::string redirect);
+		void	setDefault(const std::string default_);
 };
