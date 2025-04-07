@@ -22,6 +22,7 @@ class Connection {
 		std::vector<char>	recvBuffer;
 		std::vector<char>	sendBuffer;
 		bool				isChunkedResponse;	//TODO cambiar a response mode (enums)
+		bool				isOverPayloadLimit;
 		RequestMode			requestMode;
 		std::string			boundarie;
 		std::string			boundStart;
@@ -36,6 +37,7 @@ class Connection {
 		Server&			getServer() const;
 		struct pollfd	getPollFd() const;
 
+		void			flushSocketIn();
 		void			recieveData();
 		void			sendData();
 		void			updatePollFd(struct pollfd pfd);

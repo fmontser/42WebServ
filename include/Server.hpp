@@ -14,7 +14,7 @@ class Server {
 		std::string							_name;
 		std::string							_host;
 		int									_port;
-		int									_maxPayload;
+		size_t								_maxPayload;
 		std::string							_root;
 		std::string							_uploadDir;
 		std::vector<std::string>			_serverMethods;
@@ -38,7 +38,7 @@ class Server {
 		std::string							getUploadDir() const;
 		std::vector<std::string>&			getServerMethods();
 		std::map<std::string, std::string>&	getDefaults();
-		int									getMaxPayload() const;
+		size_t								getMaxPayload() const;
 		std::map<std::string, Route>&		getRoutes();
 		std::list<Connection *>&			getConnectionList();
 		int									getSocketFd() const;

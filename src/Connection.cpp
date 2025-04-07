@@ -7,7 +7,7 @@
 #include "Connection.hpp"
 #include "ConnectionManager.hpp"
 #include "DataAdapter.hpp"
-#include "RequestProcessor.hpp"
+#include "HttpProcessor.hpp"
 #include "Utils.hpp"
 
 Connection::Connection(Server& server) : _server(server), _multiDataAdapter(NULL) {
@@ -19,6 +19,7 @@ Connection::Connection(Server& server) : _server(server), _multiDataAdapter(NULL
 		std::cerr << RED << "Error: client connection error " << END << std::endl;
 	}
 
+	isOverPayloadLimit = false;
 	isChunkedResponse = false;
 	requestMode = SINGLE;
 	contentLength = 0;
@@ -37,6 +38,7 @@ Connection::Connection(const Connection& src) : _server(src._server) {
 	_pollfd = src._pollfd;
 	recvBuffer = src.recvBuffer;
 	sendBuffer = src.sendBuffer;
+	isOverPayloadLimit = src.isOverPayloadLimit;
 	isChunkedResponse = src.isChunkedResponse;
 	requestMode = src.requestMode;
 	boundarie = src.boundarie;
@@ -49,6 +51,7 @@ Connection& Connection::operator=(const Connection& src) {
 		_pollfd = src._pollfd;
 		recvBuffer = src.recvBuffer;
 		sendBuffer = src.sendBuffer;
+		isOverPayloadLimit = src.isOverPayloadLimit;
 		isChunkedResponse = src.isChunkedResponse;
 		requestMode = src.requestMode;
 		boundarie = src.boundarie;
@@ -146,7 +149,16 @@ void	Connection::sendData() {
 		std::cerr << RED << "Send error: Server connection error" << END << std::endl;
 		ConnectionManager::deleteConnection(_server, this);
 	}
+	if (isOverPayloadLimit)
+		ConnectionManager::deleteConnection(_server, this);
 	sendBuffer.clear();
+}
+
+void			Connection::flushSocketIn() {
+	int socket = _pollfd.fd;
+	char buffer[READ_BUFFER];
+
+	while (recv(socket, buffer, READ_BUFFER, 0));
 }
 
 void	Connection::updatePollFd(struct pollfd pfd) { _pollfd = pfd; }

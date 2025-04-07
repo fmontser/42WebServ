@@ -58,7 +58,7 @@ static void	manageServerConnections(Server& server) {
 		Connection&	connection = *(*it);
 		if (connection.hasPollErr())
 			ConnectionManager::deleteConnection(server, &connection);
-		else if (connection.hasPollIn())
+		else if (connection.hasPollIn() && !connection.isOverPayloadLimit)
 			connection.recieveData();
 		else if (connection.hasPollOut() && !connection.sendBuffer.empty())
 			connection.sendData();

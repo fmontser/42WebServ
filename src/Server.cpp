@@ -103,7 +103,7 @@ std::string						Server::getRoot() const { return this->_root; }
 std::string						Server::getUploadDir() const { return this->_uploadDir; }
 std::vector<std::string>&		Server::getServerMethods() { return this->_serverMethods; }
 std::map<std::string, std::string>&		Server::getDefaults() {return this->_defaults; }
-int										Server::getMaxPayload() const { return _maxPayload; }
+size_t										Server::getMaxPayload() const { return _maxPayload; }
 
 
 std::map<std::string, Route>&	Server::getRoutes() { return _routes; }

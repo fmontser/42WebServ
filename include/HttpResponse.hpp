@@ -16,6 +16,7 @@ class HttpResponse : public HttpMessage {
 			NOT_FOUND = 404,
 			METHOD_NOT_ALLOWED = 405,
 			CONFLICT = 409,
+			PAYLOAD_TOO_LARGE = 413,
 			SERVER_ERROR = 500,
 			METHOD_NOT_IMPLEMENTED = 501
 		};
