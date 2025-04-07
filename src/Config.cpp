@@ -5,8 +5,6 @@
 #include "Config.hpp"
 #include <sstream>
 
-std::string Config::_appRoot = "../";
-
 static std::string toString(int value) {
 	std::ostringstream oss;
 	oss << value;
@@ -30,13 +28,11 @@ bool Config::_insideRouteBlock = false;
 Config::Config() {}
 Config::~Config() {}
 Config::Config(const Config& src) {
-	_appRoot = src._appRoot;
 	_servers = src._servers;
 }
 
 Config& Config::operator=(const Config& src) {
 	if (this != &src) {
-		_appRoot = src._appRoot;
 		_servers = src._servers;
 	}
 	return *this;
@@ -172,8 +168,6 @@ void Config::addServer(std::vector<std::pair<std::string, std::vector<std::strin
 			server.setPort(values[0]);
 		} else if (key == "root") {
 			server.setRoot(values[0]);
-		} else if (key == "uploadDir") {
-			server.setUploadDir(values[0]);
 		} else if (key == "serverMethods") {
 			server.setServerMethods(values);
 		} else if (key.find("default",0) != key.npos) {
@@ -200,22 +194,15 @@ void Config::addServer(std::vector<std::pair<std::string, std::vector<std::strin
 bool Config::isValidConfig(Server &server) {
 	if (server.getName().empty())
 		return printFalse("Server name is missing.");
-
 	if (server.getMaxPayload() < MIN_PAYLOAD || server.getMaxPayload() > MAX_PAYLOAD)
 		return printFalse("Server maxPayload is invalid.");
-
 	if (server.getHost().empty())
 		return printFalse("Server host is missing.");
-
 	int port = server.getPort();
 	if (port <= 0 || port > 65535)
 		return printFalse("Server port is invalid.");
-
-	if (server.getRoot().empty() || server.getRoot()[0] != '.')
+	if (server.getRoot().empty())
 		return printFalse("Server root is missing.");
-
-	if (server.getUploadDir().empty())
-		return printFalse("Server upload dir is missing.");
 
 	for (std::vector<std::string>::iterator it = server.getServerMethods().begin(); it != server.getServerMethods().end(); it++) {
 			std::string method = it->c_str();
@@ -230,15 +217,15 @@ bool Config::isValidConfig(Server &server) {
 		const Route& route = it->second;
 
 		if (route.getUrl().empty())
-			return printFalse("Route: " + it->first + "url is missing");
-		if (route.getRoot().empty())
-			return printFalse("Route: " + it->first + "root is missing");
+			return printFalse("Route: " + it->first + " url is missing");
+/* 		if (route.getRoot().empty())
+			return printFalse("Route: " + it->first + " root is missing");
 		if (route.getAutoIndex().empty())
-			return printFalse("Route: " + it->first + "autoindex is missing");
+			return printFalse("Route: " + it->first + " autoindex is missing");
 		if (route.getRedirect().empty())
-			return printFalse("Route: " + it->first + "redirect is missing");
+			return printFalse("Route: " + it->first + " redirect is missing");
 		if (route.getDefault().empty())
-			return printFalse("Route: " + it->first + "default is missing");
+			return printFalse("Route: " + it->first + " default is missing"); */
 
 		const std::multimap<std::string, std::string>& methods = route.getMethods();
 		for (std::multimap<std::string, std::string>::const_iterator mit = methods.begin(); mit != methods.end(); ++mit) {
@@ -250,4 +237,3 @@ bool Config::isValidConfig(Server &server) {
 }
 
 std::map<std::string, Server>& Config::getServers() { return _servers; }
-std::string Config::getAppRoot() { return _appRoot; }

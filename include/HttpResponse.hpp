@@ -6,6 +6,7 @@ class DataAdapter;
 class HttpResponse : public HttpMessage {
 	public:
 		enum responseType {
+			EMPTY = 0,
 			CONTINUE = 100,
 			OK = 200,
 			CREATED = 201,

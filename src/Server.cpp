@@ -29,7 +29,6 @@ Server::Server(const Server& src) {
 	_host = src._host;
 	_port = src._port;
 	_root = src._root;
-	_uploadDir = src._uploadDir;
 	_defaults = src._defaults;
 	_maxPayload = src._maxPayload;
 	_routes = src._routes;
@@ -45,7 +44,6 @@ Server& Server::operator=(const Server& src) {
 		_host = src._host;
 		_port = src._port;
 		_root = src._root;
-		_uploadDir = src._uploadDir;
 		_defaults = src._defaults;
 		_maxPayload = src._maxPayload;
 		_routes = src._routes;
@@ -101,7 +99,6 @@ std::string						Server::getName() const { return this->_name; }
 std::string						Server::getHost() const { return this->_host; }
 int										Server::getPort() const { return this->_port; }
 std::string						Server::getRoot() const { return this->_root; }
-std::string						Server::getUploadDir() const { return this->_uploadDir; }
 std::vector<std::string>&		Server::getServerMethods() { return this->_serverMethods; }
 std::map<std::string, std::string>&		Server::getDefaults() {return this->_defaults; }
 size_t										Server::getMaxPayload() const { return _maxPayload; }
@@ -116,7 +113,6 @@ struct pollfd					Server::getPollfd() const { return _pollfd; }
 void	Server::setName(const std::string& name) { this->_name = name; }
 void	Server::setHost(const std::string& host) { this->_host = host; }
 void	Server::setRoot(const std::string& root) {_root = root; }
-void	Server::setUploadDir(const std::string& uploadDir) {_uploadDir = uploadDir; }
 void	Server::setServerMethods(const std::vector<std::string>& serverMethods) { _serverMethods = serverMethods; }
 void	Server::setSocketFd(int socketFd) { _socketFd = socketFd; }
 void	Server::setPollfd(struct pollfd pfd) {_pollfd = pfd; }
@@ -135,6 +131,14 @@ void	Server::setMaxPayLoad(const std::string& maxPayLoad) {
 	
 	payloadSize = strtol(maxPayLoad.c_str(), &err, 10);
 	_maxPayload = payloadSize;
+}
+
+//TODO check!
+Route	*Server::getRequestedRoute(std::string url) {
+	std::map<std::string, Route>::iterator it = _routes.find(url);
+	if (it !=  _routes.end())
+		return &it->second;
+	return NULL;
 }
 
 bool	Server::hasPollIn() const { return _pollfd.revents & POLLIN; }

@@ -68,6 +68,8 @@ Server&			Connection::getServer() const { return _server; }
 struct pollfd	Connection::getPollFd() const { return _pollfd; }
 
 void	Connection::recieveData() {
+
+	//TODO @@@@@@@@@@@@@@@@@@@@ refactor adapter unico en el heap.
 	DataAdapter adapter = DataAdapter(this);
 	char		buffer[READ_BUFFER] = {0};
 	int			len;

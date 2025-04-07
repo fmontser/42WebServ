@@ -47,21 +47,29 @@ static void chunkEncode(std::vector<char>& body, size_t maxPayload) {
 		body.push_back(byte);
 }
 
-HttpResponse::responseType	FileManager::readFile(DataAdapter& dataAdapter) {
-	std::string			target; 
+HttpResponse::responseType	FileManager::readFile(DataAdapter& dataAdapter, Route* actualRoute) {
+	std::string			target = "..";
 	int					fd, readSize, i;
 	Server&				server = dataAdapter.getConnection()->getServer();
 	HttpRequest&		request = dataAdapter.getRequest();
 	HttpResponse&		response = dataAdapter.getResponse();
 	char				readBuffer[READ_BUFFER] = {0};
 	
-	if (!response.statusCode.empty())
-		target = Config::getAppRoot().substr(0, server.getRoot().size() - 1).append(request.url);
-	else	
-		target = server.getRoot().substr(0, server.getRoot().size() - 1).append(request.url);
 
+	(void)actualRoute;
+
+	//TODO quitar esto si no hace falta.
+	if (!response.statusCode.empty()) {
+		target.append(server.getRoot().append(request.url));
+	}
+	else	
+		target.append(server.getRoot().append(request.url));
+
+
+
+	
 	if (isDirectory(request.url))
-		target.append(server.getRoutes().find(request.url)->second.getDefault());
+		target.append(actualRoute->getDefault());
 	
 	if(access(target.c_str(), F_OK != 0))
 		return HttpResponse::NOT_FOUND;
@@ -95,13 +103,18 @@ HttpResponse::responseType	FileManager::readFile(DataAdapter& dataAdapter) {
 
 
 
-HttpResponse::responseType	FileManager::writeFile(DataAdapter& dataAdapter) {
+HttpResponse::responseType	FileManager::writeFile(DataAdapter& dataAdapter, Route* actualRoute) {
 	HttpRequest&	request = dataAdapter.getRequest();
 	std::string		fileName, uploadDir;
 	int				fd;
 
 	uploadDir.append(dataAdapter.getConnection()->getServer().getRoot());
-	uploadDir.append(dataAdapter.getConnection()->getServer().getUploadDir());
+	
+	(void)actualRoute;
+
+	//TODO @@@@@@ append url??? de la ruta??
+	//TODO rutas y paths!!!!
+	//uploadDir.append(dataAdapter.getConnection()->getServer().getUploadDir());
 	if (access(uploadDir.c_str(), F_OK) != 0)
 		mkdir(uploadDir.c_str(), 0777);
 
@@ -146,11 +159,13 @@ HttpResponse::responseType	FileManager::writeFile(DataAdapter& dataAdapter) {
 	return HttpResponse::CREATED;
 }
 
-HttpResponse::responseType	FileManager::deleteFile(DataAdapter& dataAdapter) {
+HttpResponse::responseType	FileManager::deleteFile(DataAdapter& dataAdapter, Route* actualRoute) {
 	HttpRequest&	request = dataAdapter.getRequest();
-	std::string		fileName;
+	std::string		fileName("..");
 
 	fileName.append(dataAdapter.getConnection()->getServer().getRoot());
+	if (actualRoute)
+		fileName.append(actualRoute->getRoot());
 	fileName.append(request.url);
 
 	if (access(fileName.c_str(), F_OK) != 0)

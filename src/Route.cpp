@@ -36,3 +36,12 @@ void	Route::setAutoIndex(const std::string autoIndex) { _autoIndex = autoIndex; 
 void	Route::setRoot(const std::string root) { _root = root; }
 void	Route::setRedirect(const std::string redirect) { _redirect = redirect; }
 void	Route::setDefault(const std::string default_) { _default = default_; }
+
+//TODO check!
+bool	Route::isMethodAllowed(std::string method) {
+	for (std::multimap<std::string, std::string>::iterator it = _methods.begin(); it != _methods.end(); ++it) {
+		if (it->second == method)
+			return true;
+	}
+	return false;
+}

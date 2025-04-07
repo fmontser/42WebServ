@@ -3,21 +3,17 @@
 #include "HttpProcessor.hpp"
 #include "DataAdapter.hpp"
 #include "FileManager.hpp"
+#include "Utils.hpp"
 
 
-//TODO @@@@@@@@@@ continuar manejar rutas!!!!!
-/* static	bool	validateRouteMethod(std::string method, Server& server, HttpRequest& request) {
 
-	Route route =  != ;
-	std::map<std::string, Route>::iterator routeIt = server.getRoutes().find(request.url);
-	if (routeIt != server.getRoutes().end())
-		return true;
-	return false;
-	(void)method;
-	(void)server;
-	(void)request;
-	return true;
-} */
+static	HttpResponse::responseType	validateRouteMethod(HttpRequest& request, Route *actualRoute) {
+	if(actualRoute == NULL)
+		return HttpResponse::NOT_FOUND;
+	if (!actualRoute->isMethodAllowed(request.method))
+		return HttpResponse::METHOD_NOT_ALLOWED;
+	return HttpResponse::EMPTY;
+}
 
 void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter) {
 	
@@ -26,18 +22,22 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter) {
 	HttpRequest&	request = dataAdapter.getRequest();
 	HttpResponse&	response = dataAdapter.getResponse();
 	Connection		*connection = dataAdapter.getConnection();
+	Route			*actualRoute = connection->getServer().getRequestedRoute(Utils::getUrlPath(request.url));
+
+	rtype = validateRouteMethod(request, actualRoute);
+	if (rtype != HttpResponse::EMPTY) {
+		response.setupResponse(rtype, dataAdapter);
+		return;
+	}
 
 	if (connection->isOverPayloadLimit) {
 		connection->requestMode = Connection::SINGLE;
 		response.setupResponse(HttpResponse::PAYLOAD_TOO_LARGE, dataAdapter);
 		return ;
 	}
-/* 	if (!validateRouteMethod(request.method, connection->getServer())) {
-		response.setupResponse(HttpResponse::METHOD_NOT_ALLOWED, dataAdapter);
-		return ;
-	} */
+
 	if (request.method == "GET") {
-		rtype  = FileManager::readFile(dataAdapter);
+		rtype  = FileManager::readFile(dataAdapter, actualRoute);
 		response.setupResponse(rtype, dataAdapter);
 		connection->isChunkedResponse = response.isChunked();
 	}
@@ -46,12 +46,12 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter) {
 			response.setupResponse(HttpResponse::CONTINUE, dataAdapter);
 			return;
 		}
-		HttpResponse::responseType rtype = FileManager::writeFile(dataAdapter);
+		HttpResponse::responseType rtype = FileManager::writeFile(dataAdapter, actualRoute);
 		if (connection->contentLength == 0)
 			response.setupResponse(rtype, dataAdapter);
 	}
 	else if (request.method == "DELETE") {
-		rtype = FileManager::deleteFile(dataAdapter);
+		rtype = FileManager::deleteFile(dataAdapter, actualRoute);
 		response.setupResponse(rtype, dataAdapter);
 	}
 	else {

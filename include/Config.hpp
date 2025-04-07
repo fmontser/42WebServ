@@ -7,7 +7,7 @@
 
 class Config {
 private:
-	static std::string						_appRoot;
+
 	static std::map<std::string, Server>	_servers;
 	static Server*							_actualServer;
 	static bool								_insideRouteBlock;
@@ -22,7 +22,6 @@ private:
 	Config& operator=(const Config& src);
 
 public:
-	static std::string getAppRoot();
 	static void loadConfig(std::fstream &configFileStream);
 	static std::map<std::string, Server>& getServers();
 };
