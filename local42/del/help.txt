@@ -1,3 +1,0 @@
--lpthread
--lpthread
--no-pie
