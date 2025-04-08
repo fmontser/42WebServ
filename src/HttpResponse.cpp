@@ -5,6 +5,7 @@
 #include "DataAdapter.hpp"
 #include <iostream>
 #include <sstream>
+#include "Index.hpp"
 
 HttpResponse::HttpResponse() : HttpMessage() {}
 
@@ -44,6 +45,7 @@ void	HttpResponse::setupResponse(enum responseType responseType, DataAdapter& da
 			statusCode = "200";
 			statusMsg = "OK";
 
+			body = Index::generateAutoindex(dataAdapter);
 			//@@@@@@@@ listing! body = CLASE listing (USAR DATADAPTER COMO PARAMETRO)
 
 			addHeader(contentLength.append(Utils::getStringSizeStr(body.size())));
