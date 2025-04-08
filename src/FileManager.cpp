@@ -54,19 +54,11 @@ HttpResponse::responseType	FileManager::readFile(DataAdapter& dataAdapter, Route
 	HttpRequest&		request = dataAdapter.getRequest();
 	HttpResponse&		response = dataAdapter.getResponse();
 	char				readBuffer[READ_BUFFER] = {0};
-	
 
-	(void)actualRoute;
-
-	//TODO quitar esto si no hace falta.
-	if (!response.statusCode.empty()) {
-		target.append(server.getRoot().append(request.url));
-	}
+	if (!response.statusCode.empty())
+		target.append(request.url);
 	else	
 		target.append(server.getRoot().append(request.url));
-
-
-
 	
 	if (isDirectory(request.url))
 		target.append(actualRoute->getDefault());
@@ -80,7 +72,6 @@ HttpResponse::responseType	FileManager::readFile(DataAdapter& dataAdapter, Route
 	fd = open(target.c_str(), O_RDONLY, 0644);
 	if (fd < 0)
 		return HttpResponse::SERVER_ERROR;
-
 	do {
 		i = 0;
 		readSize = read(fd, readBuffer, READ_BUFFER);
@@ -108,13 +99,11 @@ HttpResponse::responseType	FileManager::writeFile(DataAdapter& dataAdapter, Rout
 	std::string		fileName, uploadDir;
 	int				fd;
 
+	uploadDir.append("..");
 	uploadDir.append(dataAdapter.getConnection()->getServer().getRoot());
+	uploadDir.append(actualRoute->getUrl());
+	uploadDir.append("/");
 	
-	(void)actualRoute;
-
-	//TODO @@@@@@ append url??? de la ruta??
-	//TODO rutas y paths!!!!
-	//uploadDir.append(dataAdapter.getConnection()->getServer().getUploadDir());
 	if (access(uploadDir.c_str(), F_OK) != 0)
 		mkdir(uploadDir.c_str(), 0777);
 

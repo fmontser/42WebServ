@@ -37,7 +37,6 @@ class Connection {
 		Server&			getServer() const;
 		struct pollfd	getPollFd() const;
 
-		void			flushSocketIn();
 		void			recieveData();
 		void			sendData();
 		void			updatePollFd(struct pollfd pfd);

@@ -53,7 +53,6 @@ void	HttpResponse::setupResponse(enum responseType responseType, DataAdapter& da
 			statusMsg = "CREATED";
 			dataAdapter.getRequest().url = "/defaults/201.html";
 			FileManager::readFile(dataAdapter,NULL);
-			addHeader(contentLength.append(Utils::getStringSizeStr(body.size())));
 			break;
 		case NO_CONTENT:
 			statusCode = "204";
@@ -69,56 +68,49 @@ void	HttpResponse::setupResponse(enum responseType responseType, DataAdapter& da
 			statusCode = "400";
 			statusMsg = "BAD_REQUEST";
 			dataAdapter.getRequest().url = "/defaults/400.html";
-			addHeader(contentLength.append(Utils::getStringSizeStr(body.size())));
+			FileManager::readFile(dataAdapter,NULL);
 			break;
 		case FORBIDDEN:
 			statusCode = "403";
 			statusMsg = "FORBIDDEN";
 			dataAdapter.getRequest().url = "/defaults/403.html";
 			FileManager::readFile(dataAdapter,NULL);
-			addHeader(contentLength.append(Utils::getStringSizeStr(body.size())));
 			break;
 		case NOT_FOUND:
 			statusCode = "404";
 			statusMsg = "NOT_FOUND";
 			dataAdapter.getRequest().url = "/defaults/404.html";
 			FileManager::readFile(dataAdapter,NULL);
-			addHeader(contentLength.append(Utils::getStringSizeStr(body.size())));
 			break;
 		case CONFLICT:
 			statusCode = "409";
 			statusMsg = "CONFLICT";
 			dataAdapter.getRequest().url = "/defaults/409.html";
 			FileManager::readFile(dataAdapter,NULL);
-			addHeader(contentLength.append(Utils::getStringSizeStr(body.size())));
 			break;
 		case METHOD_NOT_ALLOWED:
 			statusCode = "405";
 			statusMsg = "METHOD_NOT_ALLOWED";
 			dataAdapter.getRequest().url = "/defaults/405.html";
 			FileManager::readFile(dataAdapter,NULL);
-			addHeader(contentLength.append(Utils::getStringSizeStr(body.size())));
 			break;
 		case PAYLOAD_TOO_LARGE:	//TODO TEST
 			statusCode = "413";
 			statusMsg = "PAYLOAD_TOO_LARGE";
 			dataAdapter.getRequest().url = "/defaults/413.html";
 			FileManager::readFile(dataAdapter,NULL);
-			addHeader(contentLength.append(Utils::getStringSizeStr(body.size())));
 			break;
 		case SERVER_ERROR:
 			statusCode = "500";
 			statusMsg = "SERVER_ERROR";
 			dataAdapter.getRequest().url = "/defaults/500.html";
 			FileManager::readFile(dataAdapter,NULL);
-			addHeader(contentLength.append(Utils::getStringSizeStr(body.size())));
 			break;
 		case METHOD_NOT_IMPLEMENTED:
 			statusCode = "501";
 			statusMsg = "METHOD_NOT_IMPLEMENTED";
 			dataAdapter.getRequest().url = "/defaults/501.html";
 			FileManager::readFile(dataAdapter,NULL);
-			addHeader(contentLength.append(Utils::getStringSizeStr(body.size())));
 			break;
 		default:
 			break;

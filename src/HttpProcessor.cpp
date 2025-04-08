@@ -35,7 +35,7 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter) {
 		response.setupResponse(HttpResponse::PAYLOAD_TOO_LARGE, dataAdapter);
 		return ;
 	}
-
+	
 	if (request.method == "GET") {
 		rtype  = FileManager::readFile(dataAdapter, actualRoute);
 		response.setupResponse(rtype, dataAdapter);

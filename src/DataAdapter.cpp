@@ -58,15 +58,8 @@ static bool	deserializeHeaders(std::stringstream& data, HttpRequest& request, Da
 		if (line == CRLF)
 				break ;
 		if (line != connection->boundStart) {
-			HttpHeader newHeader = DataAdapter::deserializeHeader(line);
-			if (newHeader.name == "Content-Length" 
-				&& Utils::strToUint(newHeader.values[0].name) > connection->getServer().getMaxPayload()) {
-					connection->isOverPayloadLimit = true;
-					return true;
-				}
-			request.addHeader(newHeader);
+			request.addHeader(DataAdapter::deserializeHeader(line));
 		}
-
 	}
 	if (connection->requestMode == Connection::MULTIPART)
 		return true;
