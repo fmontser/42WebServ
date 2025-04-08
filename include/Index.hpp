@@ -18,5 +18,4 @@ class Index {
 		Index& operator=(const Index& src);
 
 		static std::vector<char> generateAutoindex(DataAdapter& adapter/* , Route *actualRoute */);
-	//	static bool checkListingConditions(DataAdapter& adapter, Route *actualRoute);
 	};
