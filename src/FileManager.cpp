@@ -24,10 +24,6 @@ FileManager& FileManager::operator=(const FileManager& src) {
 	return *this;
 }
 
-static bool isDirectory(const std::string& url) {
-	return (url.substr(url.size() - 1, 1) == "/") ? true : false;
-}
-
 static void chunkEncode(std::vector<char>& body, size_t maxPayload) {
 	std::stringstream	buffer;
 	std::vector<char>	_body(body);
@@ -60,7 +56,7 @@ HttpResponse::responseType	FileManager::readFile(DataAdapter& dataAdapter, Route
 	else	
 		target.append(server.getRoot().append(request.url));
 	
-	if (isDirectory(request.url))
+	if (Utils::isDirectory(request.url))
 		target.append(actualRoute->getDefault());
 	
 	if(access(target.c_str(), F_OK != 0))

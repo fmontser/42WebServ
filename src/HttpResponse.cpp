@@ -40,6 +40,15 @@ void	HttpResponse::setupResponse(enum responseType responseType, DataAdapter& da
 
 	version = HTTP_VERSION;
 	switch (responseType) {
+		case DIR_LIST:
+			statusCode = "200";
+			statusMsg = "OK";
+
+			//@@@@@@@@ listing! body = CLASE listing (USAR DATADAPTER COMO PARAMETRO)
+
+			addHeader(contentLength.append(Utils::getStringSizeStr(body.size())));
+			std::cout << "LISTING > ";
+			break;
 		case CONTINUE:
 			statusCode = "100";
 			statusMsg = "CONTINUE";

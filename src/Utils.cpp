@@ -2,6 +2,7 @@
 #include <sstream>
 #include <iostream>
 #include <cstdlib>
+#include <sys/stat.h>
 
 
 std::vector<std::string> Utils::splitString(const std::string& str, char delimiter) {
@@ -73,4 +74,14 @@ std::string	Utils::getUrlPath(std::string url) {
 	if (path.empty())
 		path.append("/");
 	return path;
+}
+
+bool	Utils::isDirectory(std::string path) {
+	struct stat file_info;
+
+	if (stat(path.c_str(), &file_info) == 0) {
+		if (S_ISDIR(file_info.st_mode))
+			return true;
+	}
+	return false;
 }

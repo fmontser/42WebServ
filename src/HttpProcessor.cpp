@@ -4,14 +4,32 @@
 #include "DataAdapter.hpp"
 #include "FileManager.hpp"
 #include "Utils.hpp"
+#include <unistd.h>
 
+static bool checkListingConditions(DataAdapter& adapter, Route *actualRoute) {
+	HttpRequest	request = adapter.getRequest();
+	std::string	path("..");
+	std::string _default;
 
+	path.append(adapter.getConnection()->getServer().getRoot());
+	path.append(request.url);
+	_default = std::string(path).append(actualRoute->getDefault());
 
-static	HttpResponse::responseType	validateRouteMethod(HttpRequest& request, Route *actualRoute) {
+	if (Utils::isDirectory(path)
+		&& actualRoute->getAutoIndex() == "on"
+		&& (_default.empty() || (access(actualRoute->getDefault().c_str(), F_OK != 0))))
+			return true;
+	return false;
+}
+
+static	HttpResponse::responseType	validateRouteMethod(DataAdapter& dataAdapter, Route *actualRoute) {
 	if(actualRoute == NULL)
 		return HttpResponse::NOT_FOUND;
-	if (!actualRoute->isMethodAllowed(request.method))
+	if (!actualRoute->isMethodAllowed(dataAdapter.getRequest().method))
 		return HttpResponse::METHOD_NOT_ALLOWED;
+	if (checkListingConditions(dataAdapter, actualRoute)) {
+		return HttpResponse::DIR_LIST;
+	}
 	return HttpResponse::EMPTY;
 }
 
@@ -24,7 +42,7 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter) {
 	Connection		*connection = dataAdapter.getConnection();
 	Route			*actualRoute = connection->getServer().getRequestedRoute(Utils::getUrlPath(request.url));
 
-	rtype = validateRouteMethod(request, actualRoute);
+	rtype = validateRouteMethod(dataAdapter, actualRoute);
 	if (rtype != HttpResponse::EMPTY) {
 		response.setupResponse(rtype, dataAdapter);
 		return;

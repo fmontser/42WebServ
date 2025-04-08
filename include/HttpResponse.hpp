@@ -7,6 +7,7 @@ class HttpResponse : public HttpMessage {
 	public:
 		enum responseType {
 			EMPTY = 0,
+			DIR_LIST = 1,
 			CONTINUE = 100,
 			OK = 200,
 			CREATED = 201,
