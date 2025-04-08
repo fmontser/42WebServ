@@ -11,6 +11,8 @@ static bool checkListingConditions(DataAdapter& adapter, Route *actualRoute) {
 	std::string	path("..");
 	std::string _default;
 
+	if (request.method != "GET")
+		return false;
 	path.append(adapter.getConnection()->getServer().getRoot());
 	path.append(request.url);
 	_default = std::string(path).append(actualRoute->getDefault());
