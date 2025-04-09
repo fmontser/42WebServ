@@ -171,7 +171,7 @@ HttpResponse::responseType FileManager::downloadFile(DataAdapter& adapter, Route
 		std::string filePath = ".." + adapter.getConnection()->getServer().getRoot() + request.url;
 		std::string fileName = request.url.substr(request.url.find_last_of('/') + 1);
 
-		if (!access(filePath.c_str(), F_OK)) {
+		if (access(filePath.c_str(), F_OK == -1)) {
 			return HttpResponse::NOT_FOUND;
 		}
 
@@ -193,7 +193,20 @@ HttpResponse::responseType FileManager::downloadFile(DataAdapter& adapter, Route
 		contentDispositionValue.name = "attachment; filename=\"" + fileName + "\"";
 		response.addHeader(contentDisposition);
 
-		std::vector<char> buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+		file.seekg(0, std::ios::end);
+		size_t fileSize = file.tellg();
+		file.seekg(0, std::ios::beg);
+
+		std::vector<char> buffer(fileSize);
+		file.read(buffer.data(), fileSize);
+		if (!file) {
+			file.close();
+			return HttpResponse::SERVER_ERROR;
+		}
+/* 		std::cout << "DEBUG Download requested for: " << request.url << std::endl;//
+		std::cout << "Resolved path: " << filePath << std::endl;
+		std::cout << "File exists: " << (access(filePath.c_str(), F_OK) == 0) << std::endl; */
+		//std::vector<char> buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 		response.body = buffer;
 		file.close();
     return HttpResponse::OK;

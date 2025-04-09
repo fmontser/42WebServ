@@ -97,7 +97,7 @@ std::vector<char> Index::generateAutoindex(DataAdapter& adapter) {
 	autoIndex += "		</tbody>\n";
 	autoIndex += "	</table>\n";
 	autoIndex += "	<hr>\n";
-	autoIndex += "	<p style=\"text-align: right; color: #666;\">By courtesy of your cpp 42WebServer</p>\n";
+	autoIndex += "	<p style=\"text-align: right; color: #666;\">By courtesy of your friendly cpp 42WebServer</p>\n";
 	autoIndex += "</div>\n";
 	autoIndex += "</body>\n</html>\n";
 	closedir(dir);
