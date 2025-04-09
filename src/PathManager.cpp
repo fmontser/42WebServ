@@ -28,24 +28,25 @@
 	std::string	PathManager::resolvePath(DataAdapter& dataAdapter) {
 		Server&			server = dataAdapter.getConnection()->getServer();
 		HttpRequest&	request = dataAdapter.getRequest();
-		Route&			route = *(server.getRequestedRoute(Utils::getUrlPath(request.url)));
-		std::string		_default(route.getDefault());
+		Route*			route = server.getRequestedRoute(Utils::getUrlPath(request.url));
+		std::string		_default(route->getDefault());
 		std::string		path;
 
-		if ((route.getRoot().empty() || route.getRoot().at(0) != '/')
-				&& server.getRoot().at(0) != '/') //TODO check!
-			path.append(_workDirectory);
+		if (route) {
+			if ((route->getRoot().empty() || route->getRoot().at(0) != '/')
+					&& server.getRoot().at(0) != '/') //TODO check!
+				path.append(_workDirectory);
 
-		if (route.getRoot().empty())
-			appendPath(path, server.getRoot());
-		else
-			appendPath(path, route.getRoot());
-
-		appendPath(path, request.url);
-
-		if (Utils::isDirectory(path) && !_default.empty())
-			appendPath(path, _default);
-		
+			if (route->getRoot().empty())
+				appendPath(path, server.getRoot());
+			else
+				appendPath(path, route->getRoot());
+				
+			appendPath(path, request.url);
+			if (Utils::isDirectory(path) && !_default.empty())
+				appendPath(path, _default);
+		} else
+			appendPath(path, request.url);
 		return (path);
 	}
 
