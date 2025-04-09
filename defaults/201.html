@@ -11,63 +11,19 @@
 		li { margin: 10px 0; }
 		.hidden { display: none; }
 		</style>
+		<script>
+			setTimeout(() => {
+				window.location.href = "http://localhost:8042/del/";
+			}, 2000); 
+		</script>
 </head>
 <body>
 	<h1>File uploaded</h1>
 	<p>Your file has been successfully uploaded.</p>
-	<!-- <p id="no-files">No files uploaded</p>
-	<ul id="file-list" class="hidden"></ul> -->
 	<br>
 	<a href="http://localhost:8042">Back to Home</a>
 	<br>
 	<hr>
-	
 	<a href="http://localhost:8042/del/">Directory listing</a>
-
-<!-- 	<script>
-		fetch('/list-uploads') // Endpoint to get uploaded files
-			.then(response => response.json())
-			.then(files => {
-				const fileList = document.getElementById("file-list");
-				const noFilesMessage = document.getElementById("no-files");
-
-				if (files.length > 0) {
-					noFilesMessage.classList.add("hidden");
-					fileList.classList.remove("hidden");
-
-					files.forEach(file => {
-						const li = document.createElement("li");
-						
-						// Create file link
-						const link = document.createElement("a");
-						link.href = `/upload/${file}`;
-						link.textContent = file;
-						link.target = "_blank";
-						
-						// Create delete button
-						const deleteBtn = document.createElement("button");
-						deleteBtn.textContent = "Delete";
-						deleteBtn.onclick = () => {
-							fetch(`/delete-upload?file=${file}`, { method: 'DELETE' })
-								.then(response => response.json())
-								.then(result => {
-									if (result.success) {
-										li.remove();
-										if (fileList.children.length === 0) {
-											noFilesMessage.classList.remove("hidden");
-										}
-									} else {
-										alert("Failed to delete file");
-									}
-								});
-						};
-						
-						li.appendChild(link);
-						li.appendChild(deleteBtn);
-						fileList.appendChild(li);
-					});
-				}
-			});
-	</script> -->
 </body>
 </html>

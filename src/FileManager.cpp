@@ -11,6 +11,7 @@
 #include "ServerConstants.hpp"
 #include "Connection.hpp"
 #include "Utils.hpp"
+#include "HttpHeader.hpp"
 
 FileManager::FileManager() {}
 FileManager::~FileManager() {}
@@ -160,4 +161,41 @@ HttpResponse::responseType	FileManager::deleteFile(DataAdapter& dataAdapter, Rou
 	if (remove(fileName.c_str()) != 0)
 		return HttpResponse::SERVER_ERROR;
 	return HttpResponse::NO_CONTENT;
+}
+
+HttpResponse::responseType FileManager::downloadFile(DataAdapter& adapter, Route* route) {
+		HttpRequest& request = adapter.getRequest();
+		HttpResponse& response = adapter.getResponse();
+		(void)route;
+
+		std::string filePath = ".." + adapter.getConnection()->getServer().getRoot() + request.url;
+		std::string fileName = request.url.substr(request.url.find_last_of('/') + 1);
+
+		if (!access(filePath.c_str(), F_OK)) {
+			return HttpResponse::NOT_FOUND;
+		}
+
+		std::ifstream file(filePath.c_str(), std::ios::binary);
+		if (!file.is_open()) {
+			return HttpResponse::FORBIDDEN;//maybe another errormessage
+		}
+		HttpHeader contentType;
+		
+		contentType.name = "Content-Type";
+		HeaderValue contentTypeValue;
+		contentTypeValue.name = "application/octet-stream";
+		contentType.addValue(contentTypeValue);
+		response.addHeader(contentType);
+		
+		HttpHeader contentDisposition;
+		contentDisposition.name = "Content-Disposition";
+		HeaderValue contentDispositionValue;
+		contentDispositionValue.name = "attachment; filename=\"" + fileName + "\"";
+		response.addHeader(contentDisposition);
+
+		std::vector<char> buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+		response.body = buffer;
+		file.close();
+    return HttpResponse::OK;
+
 }

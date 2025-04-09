@@ -60,10 +60,10 @@
 </head>
 <body>
 	<h1>404 Not Found - 42Webserv</h1>
-	<a href="http://localhost:8042">Back to Home</a>
 	<div class="container">
 		<img src="../tucan.png" class="toucan" id="toucan">
 	</div>
+	<a href="http://localhost:8042">Back to Home</a>
 
 	<script>
 		document.addEventListener("DOMContentLoaded", () => {
@@ -87,7 +87,7 @@
 					question.style.transform = "translateY(-50px)";
 					setTimeout(() => document.body.removeChild(question), 1000);
 				}, 1000);
-			}, 2000);
+			}, 500);
 		});
 	</script>
 </body>
