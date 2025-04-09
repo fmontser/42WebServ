@@ -11,6 +11,7 @@
 #include "ServerConstants.hpp"
 #include "Connection.hpp"
 #include "Utils.hpp"
+#include "PathManager.hpp"
 
 FileManager::FileManager() {}
 FileManager::~FileManager() {}
@@ -43,8 +44,8 @@ static void chunkEncode(std::vector<char>& body, size_t maxPayload) {
 		body.push_back(byte);
 }
 
-HttpResponse::responseType	FileManager::readFile(DataAdapter& dataAdapter, Route* actualRoute) {
-	std::string			target = "..";
+HttpResponse::responseType	FileManager::readFile(DataAdapter& dataAdapter) {
+	std::string			path;
 	int					fd, readSize, i;
 	Server&				server = dataAdapter.getConnection()->getServer();
 	HttpRequest&		request = dataAdapter.getRequest();
@@ -52,20 +53,17 @@ HttpResponse::responseType	FileManager::readFile(DataAdapter& dataAdapter, Route
 	char				readBuffer[READ_BUFFER] = {0};
 
 	if (!response.statusCode.empty())
-		target.append(request.url);
-	else	
-		target.append(server.getRoot().append(request.url));
+		path.append(request.url);
+	else
+		path = PathManager::resolvePath(dataAdapter);
 	
-	if (Utils::isDirectory(request.url))
-		target.append(actualRoute->getDefault());
-	
-	if(access(target.c_str(), F_OK != 0))
+	if(access(path.c_str(), F_OK != 0))
 		return HttpResponse::NOT_FOUND;
 	
-	if (access(target.c_str(), R_OK) != 0)
+	if (access(path.c_str(), R_OK) != 0)
 		return HttpResponse::FORBIDDEN;
 
-	fd = open(target.c_str(), O_RDONLY, 0644);
+	fd = open(path.c_str(), O_RDONLY, 0644);
 	if (fd < 0)
 		return HttpResponse::SERVER_ERROR;
 	do {
@@ -90,15 +88,16 @@ HttpResponse::responseType	FileManager::readFile(DataAdapter& dataAdapter, Route
 
 
 
-HttpResponse::responseType	FileManager::writeFile(DataAdapter& dataAdapter, Route* actualRoute) {
+HttpResponse::responseType	FileManager::writeFile(DataAdapter& dataAdapter) {
 	HttpRequest&	request = dataAdapter.getRequest();
 	std::string		fileName, uploadDir;
 	int				fd;
 
-	uploadDir.append("..");
+	//TODO fix pathManager
+/* 	uploadDir.append("..");
 	uploadDir.append(dataAdapter.getConnection()->getServer().getRoot());
 	uploadDir.append(actualRoute->getUrl());
-	uploadDir.append("/");
+	uploadDir.append("/"); */
 	
 	if (access(uploadDir.c_str(), F_OK) != 0)
 		mkdir(uploadDir.c_str(), 0777);
@@ -144,14 +143,17 @@ HttpResponse::responseType	FileManager::writeFile(DataAdapter& dataAdapter, Rout
 	return HttpResponse::CREATED;
 }
 
-HttpResponse::responseType	FileManager::deleteFile(DataAdapter& dataAdapter, Route* actualRoute) {
-	HttpRequest&	request = dataAdapter.getRequest();
+HttpResponse::responseType	FileManager::deleteFile(DataAdapter& dataAdapter) {
+	//HttpRequest&	request = dataAdapter.getRequest();
 	std::string		fileName("..");
 
-	fileName.append(dataAdapter.getConnection()->getServer().getRoot());
+	(void)dataAdapter;
+
+	//TODO fix pathManager
+/* 	fileName.append(dataAdapter.getConnection()->getServer().getRoot());
 	if (actualRoute)
 		fileName.append(actualRoute->getRoot());
-	fileName.append(request.url);
+	fileName.append(request.url); */
 
 	if (access(fileName.c_str(), F_OK) != 0)
 		return HttpResponse::NOT_FOUND;

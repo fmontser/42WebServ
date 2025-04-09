@@ -5,6 +5,7 @@
 #include "DataAdapter.hpp"
 
 
+
 class PathManager
 {
 	static std::string _workDirectory;
@@ -16,6 +17,7 @@ class PathManager
 		~PathManager();
 	public:
 
-		static std::string	resolvePath(DataAdapter& dataAdapter, Connection* connection);
+		static std::string	resolvePath(DataAdapter& dataAdapter);
+		static std::string	resolveErrorPage(DataAdapter& dataAdapter, std::string defaultPage);
 		static void			resolveHttpRedirection(DataAdapter& dataAdapter);
 };

@@ -1,7 +1,7 @@
 #include "PathManager.hpp"
 #include "Utils.hpp"
 
-	static std::string _workDirectory = "../";
+	std::string PathManager::_workDirectory = "../";
 
 	PathManager::PathManager() {}
 	PathManager::PathManager(const PathManager& src) { (void)src; }
@@ -11,24 +11,51 @@
 		return *this;
 	}
 
-	std::string PathManager::resolvePath(DataAdapter& dataAdapter, Connection* connection) {
-		Server		server = connection->getServer();
-		HttpRequest request = dataAdapter.getRequest();
-		Route		route = *(server.getRequestedRoute(Utils::getUrlPath(request.url)));
-		std::string path;
+	static void appendPath(std::string& path, std::string appendix) {
+		if (path.empty() || appendix.empty())
+			return ;
 
-		if (!(route.getRoot()[0] == '/' || server.getRoot()[0] == '/')) //TODO check!
+		if (path.at(path.size() - 1) == '/') {
+			if (appendix.at(0) == '/')
+				appendix.erase(appendix.begin());
+		} else if (appendix.at(0) != '/') {
+			appendix = std::string("/").append(appendix);
+		}
+		path.append(appendix);
+	}
+
+	//TODO probar todas las conbianciones de / antes y despues de url, directorios...
+	std::string	PathManager::resolvePath(DataAdapter& dataAdapter) {
+		Server&			server = dataAdapter.getConnection()->getServer();
+		HttpRequest&	request = dataAdapter.getRequest();
+		Route&			route = *(server.getRequestedRoute(Utils::getUrlPath(request.url)));
+		std::string		_default(route.getDefault());
+		std::string		path;
+
+		if ((route.getRoot().empty() || route.getRoot().at(0) != '/')
+				&& server.getRoot().at(0) != '/') //TODO check!
 			path.append(_workDirectory);
 
 		if (route.getRoot().empty())
-			path.append(server.getRoot());
+			appendPath(path, server.getRoot());
 		else
-			path.append(route.getRoot());
+			appendPath(path, route.getRoot());
 
-		path.append(request.url);
+		appendPath(path, request.url);
+
+		if (Utils::isDirectory(path) && !_default.empty())
+			appendPath(path, _default);
+		
+		return (path);
 	}
 
-	void			PathManager::resolveHttpRedirection(DataAdapter& dataAdapter){
+
+	std::string	PathManager::resolveErrorPage(DataAdapter& dataAdapter, std::string defaultPage){
+		return (dataAdapter.getConnection()->getServer().getDefaults()[defaultPage]);
+	}
+
+	void		PathManager::resolveHttpRedirection(DataAdapter& dataAdapter){
 		(void)dataAdapter;
+
 		//TODO implementar
 	}
