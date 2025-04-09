@@ -41,7 +41,7 @@
 				appendPath(path, server.getRoot());
 			else
 				appendPath(path, route->getRoot());
-				
+
 			appendPath(path, request.url);
 			if (Utils::isDirectory(path) && !_default.empty())
 				appendPath(path, _default);
@@ -52,7 +52,10 @@
 
 
 	std::string	PathManager::resolveErrorPage(DataAdapter& dataAdapter, std::string defaultPage){
-		return (dataAdapter.getConnection()->getServer().getDefaults()[defaultPage]);
+		std::string	path(_workDirectory);
+
+		path.append(dataAdapter.getConnection()->getServer().getDefaults()[defaultPage]);
+		return (path);
 	}
 
 	void		PathManager::resolveHttpRedirection(DataAdapter& dataAdapter){

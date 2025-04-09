@@ -70,7 +70,7 @@ HttpResponse::responseType	FileManager::readFile(DataAdapter& dataAdapter) {
 		i = 0;
 		readSize = read(fd, readBuffer, READ_BUFFER);
 		while (i < readSize)
-		response.body.push_back(readBuffer[i++]);
+			response.body.push_back(readBuffer[i++]);
 	} while (readSize);
 
 	if (response.body.size() > server.getMaxPayload()) {
@@ -93,12 +93,8 @@ HttpResponse::responseType	FileManager::writeFile(DataAdapter& dataAdapter) {
 	std::string		fileName, uploadDir;
 	int				fd;
 
-	//TODO fix pathManager
-/* 	uploadDir.append("..");
-	uploadDir.append(dataAdapter.getConnection()->getServer().getRoot());
-	uploadDir.append(actualRoute->getUrl());
-	uploadDir.append("/"); */
-	
+	uploadDir = PathManager::resolvePath(dataAdapter);
+
 	if (access(uploadDir.c_str(), F_OK) != 0)
 		mkdir(uploadDir.c_str(), 0777);
 

@@ -8,14 +8,16 @@
 #include "Connection.hpp"
 
 Server::Server() {
-	_defaults["default400"] = "/defaults/400.html";
-	_defaults["default403"] = "/defaults/403.html";
-	_defaults["default404"] = "/defaults/404.html";
-	_defaults["default405"] = "/defaults/405.html";
-	_defaults["default409"] = "/defaults/409.html";
-	_defaults["default413"] = "/defaults/413.html";
-	_defaults["default500"] = "/defaults/500.html";
-	_defaults["default501"] = "/defaults/501.html";
+	_defaults["default201"] = "defaults/201.html";
+	_defaults["default204"] = "defaults/204.html";
+	_defaults["default400"] = "defaults/400.html";
+	_defaults["default403"] = "defaults/403.html";
+	_defaults["default404"] = "defaults/404.html";
+	_defaults["default405"] = "defaults/405.html";
+	_defaults["default409"] = "defaults/409.html";
+	_defaults["default413"] = "defaults/413.html";
+	_defaults["default500"] = "defaults/500.html";
+	_defaults["default501"] = "defaults/501.html";
 }
 
 Server::~Server() {

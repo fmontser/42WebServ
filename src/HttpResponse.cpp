@@ -64,6 +64,7 @@ void	HttpResponse::setupResponse(enum responseType responseType, DataAdapter& da
 		case NO_CONTENT:
 			statusCode = "204";
 			statusMsg = "NO_CONTENT";
+			dataAdapter.getRequest().url = PathManager::resolveErrorPage(dataAdapter, "default204");
 			break;
 		case SEE_OTHER:
  			statusCode = "303";
