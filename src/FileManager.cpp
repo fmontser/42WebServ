@@ -95,10 +95,6 @@ HttpResponse::responseType	FileManager::writeFile(DataAdapter& dataAdapter) {
 
 	path = PathManager::resolveRoutePath(dataAdapter);
 
-	//TODO eliminar...no deberia poder crear directorios...
-/* 	if (access(path.c_str(), F_OK) != 0)
-		mkdir(path.c_str(), 0777); */
-
 	for (std::vector<HttpHeader>::iterator it = dataAdapter.getRequest().headers.begin();
 			it != dataAdapter.getRequest().headers.end(); ++it) {
 

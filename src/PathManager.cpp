@@ -42,7 +42,6 @@
 		}
 	}
 
-	//TODO manejar routes con y sin / al final!!!!
 	std::string	PathManager::resolveRoutePath(DataAdapter& dataAdapter) {
 		Server&			server = dataAdapter.getConnection()->getServer();
 		HttpRequest&	request = dataAdapter.getRequest();
@@ -53,7 +52,7 @@
 		if (route) {
 			if ((route->getRoot().empty() || route->getRoot().at(0) != '/')
 					&& server.getRoot().at(0) != '/'
-					&& route->getRoot() != "../") //TODO check!
+					&& route->getRoot() != "../")
 				path.append(_workingDir);
 
 			if (route->getRoot().empty())

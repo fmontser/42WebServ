@@ -8,9 +8,7 @@
 #include "Index.hpp"
 #include <unistd.h>
 
-
-
-static	HttpResponse::responseType	validateRouteMethod(DataAdapter& dataAdapter) {
+static	HttpResponse::responseType	validateRoute(DataAdapter& dataAdapter) {
 	HttpRequest	request = dataAdapter.getRequest();
 	Route	*actualRoute = dataAdapter.getConnection()
 			->getServer().getRequestedRoute(dataAdapter);
@@ -34,7 +32,7 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter) {
 	Connection		*connection = dataAdapter.getConnection();
 
 	if (connection->requestMode == Connection::SINGLE) {
-		rtype = validateRouteMethod(dataAdapter);
+		rtype = validateRoute(dataAdapter);
 		if (rtype != HttpResponse::EMPTY) {
 			response.setupResponse(rtype, dataAdapter);
 			return;

@@ -102,7 +102,7 @@ void	HttpResponse::setupResponse(enum responseType responseType, DataAdapter& da
 			dataAdapter.getRequest().url = PathManager::resolveErrorPage(dataAdapter, "default409");
 			FileManager::readFile(dataAdapter);
 			break;
-		case PAYLOAD_TOO_LARGE:	//TODO TEST
+		case PAYLOAD_TOO_LARGE:
 			statusCode = "413";
 			statusMsg = "PAYLOAD_TOO_LARGE";
 			dataAdapter.getRequest().url = PathManager::resolveErrorPage(dataAdapter, "default413");

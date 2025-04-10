@@ -143,14 +143,20 @@ Route	*Server::getRequestedRoute(DataAdapter& dataAdapter) {
 	url = dataAdapter.getRequest().url;
 	path = PathManager::resolveServerPath(dataAdapter);
 
-	//TODO cambiar el _workingdir ahora a esto???
-
-	if (!Utils::isDirectory(path))
+	if (!Utils::isDirectory(path)) {
+		if (!(access(path.c_str(), F_OK) == 0))
+			return NULL;
 		url = Utils::getUrlPath(url);
+	}
 
 	std::map<std::string, Route>::iterator it = _routes.find(url);
 	if (it !=  _routes.end())
 		return &it->second;
+
+	it = _routes.find(url.append("/"));
+	if (it !=  _routes.end())
+		return &it->second;
+	
 	return NULL;
 }
 

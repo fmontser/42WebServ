@@ -105,6 +105,7 @@ void	Connection::recieveData() {
 		else {
 			adapter.deserializeRequest();
 
+			//TODO borrar debug para entrega
 			std::cout	<< BLUE << "Fd: " << adapter.getConnection()->getPollFd().fd
 						<< " requested: " << adapter.getRequest().url << END << std::endl;
 
