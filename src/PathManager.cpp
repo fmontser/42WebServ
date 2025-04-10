@@ -13,7 +13,7 @@
 		return *this;
 	}
 
-	void PathManager::stackPath(std::string& path, std::string appendix) {
+	void			PathManager::stackPath(std::string& path, std::string appendix) {
 
 		if (!path.empty() && path.at(path.size() - 1) == '/')
 			path.erase(path.size() - 1, 1);
@@ -23,7 +23,7 @@
 		path.append(appendix);
 	}
 
-	std::string	PathManager::getWorkingDir() {
+	std::string		PathManager::getWorkingDir() {
 		char buffer[PATH_MAX] = {0};
 
 		if(_workingDir.empty()) {
@@ -33,7 +33,7 @@
 		return _workingDir;
 	}
 
-	void		PathManager::setWorkingDir(std::string dir) {
+	void			PathManager::setWorkingDir(std::string dir) {
 		char buffer[PATH_MAX] = {0};
 
 		if (!dir.empty() && chdir(dir.c_str()) == 0) {
@@ -42,7 +42,7 @@
 		}
 	}
 
-	std::string	PathManager::resolveRoutePath(DataAdapter& dataAdapter) {
+	std::string		PathManager::resolveRoutePath(DataAdapter& dataAdapter) {
 		Server&			server = dataAdapter.getConnection()->getServer();
 		HttpRequest&	request = dataAdapter.getRequest();
 		Route*			route = server.getRequestedRoute(dataAdapter);
@@ -69,7 +69,7 @@
 	}
 
 
-	std::string	PathManager::resolveServerPath(DataAdapter& dataAdapter) {
+	std::string		PathManager::resolveServerPath(DataAdapter& dataAdapter) {
 		Server&			server = dataAdapter.getConnection()->getServer();
 		HttpRequest&	request = dataAdapter.getRequest();
 		std::string		path;
@@ -82,15 +82,17 @@
 	}
 
 
-	std::string	PathManager::resolveErrorPage(DataAdapter& dataAdapter, std::string defaultPage){
+	std::string		PathManager::resolveErrorPage(DataAdapter& dataAdapter, std::string defaultPage){
 		std::string	path(_workingDir);
 
 		stackPath(path, dataAdapter.getConnection()->getServer().getDefaults()[defaultPage]);
 		return (path);
 	}
 
-	void		PathManager::resolveHttpRedirection(DataAdapter& dataAdapter){
-		(void)dataAdapter;
+	std::string		PathManager::resolveHttpRedirection(DataAdapter& dataAdapter){
+		std::string	location = "Location: ";
+		Route*		route = dataAdapter.getConnection()->getServer().getRequestedRoute(dataAdapter);
 
-		//TODO implementar
+		stackPath(location, route->getRedirect());
+		return (location);
 	}

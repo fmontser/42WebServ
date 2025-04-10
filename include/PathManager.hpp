@@ -4,8 +4,6 @@
 #include "Connection.hpp"
 #include "DataAdapter.hpp"
 
-
-
 class PathManager
 {
 	static std::string _workingDir;
@@ -24,5 +22,5 @@ class PathManager
 		static std::string	resolveRoutePath(DataAdapter& dataAdapter);
 		static std::string	resolveServerPath(DataAdapter& dataAdapter);
 		static std::string	resolveErrorPage(DataAdapter& dataAdapter, std::string defaultPage);
-		static void			resolveHttpRedirection(DataAdapter& dataAdapter);
+		static std::string	resolveHttpRedirection(DataAdapter& dataAdapter);
 };
