@@ -171,8 +171,7 @@ HttpResponse::responseType FileManager::downloadFile(DataAdapter& adapter, Route
 		std::string filePath = ".." + adapter.getConnection()->getServer().getRoot() + request.url;
 		std::string fileName = request.url.substr(request.url.find_last_of('/') + 1);
 
-		if (access(filePath.c_str(), F_OK == -1)) {
-			return HttpResponse::NOT_FOUND;
+		if (access(filePath.c_str(), F_OK) == -1) {
 		}
 
 		std::ifstream file(filePath.c_str(), std::ios::binary);
