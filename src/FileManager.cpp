@@ -184,10 +184,10 @@ HttpResponse::responseType FileManager::downloadFile(DataAdapter& adapter, Route
 		file.seekg(0, std::ios::end);
 		size_t fileSize = file.tellg();
 		file.seekg(0, std::ios::beg);
-		//HttpHeader contentType;
+
 		std::string contentType;
 
-		//std::string contentTypeFileType;
+
 		std::string ext = Utils::getFileType(fileName);
 
 		if (ext == "html" || ext == "htm") {
@@ -239,23 +239,7 @@ HttpResponse::responseType FileManager::downloadFile(DataAdapter& adapter, Route
 		contentLengthHeader.addValue(clValue);
 		response.addHeader(contentLengthHeader);
 		
-		/* HeaderValue contentTypeValue;
-		contentType.name = "Content-Type";
-		contentTypeValue.name = contentTypeFileType;
-		contentType.addValue(contentTypeValue);
-		response.addHeader(contentType);
-		
-		HttpHeader contentDisposition;
-		contentDisposition.name = "Content-Disposition";
-		HeaderValue contentDispositionValue;
-		contentDispositionValue.name = "attachment; filename=\"" + fileName + "\"";
-		response.addHeader(contentDisposition); */
 
-
-std::cout << "Final Headers:\n";
-std::cout << "Content-Type: " << contentType << "\n";
-std::cout << "Content-Disposition: " << "attachment; filename=\"" << fileName << "\"\n";
-std::cout << "Content-Length: " << fileSize << "\n";
 
 		std::vector<char> buffer(fileSize);
 		file.read(buffer.data(), fileSize);
@@ -264,15 +248,7 @@ std::cout << "Content-Length: " << fileSize << "\n";
 			return HttpResponse::SERVER_ERROR;
 		}
 
-/* 		std::cout << "Download headers:\n";
-		std::cout << "" << "Hasdfasdfg       "<< contentTypeValue.name << std::endl;
-std::cout << "Content-Type: " << contentType.name.data() << "\n";
-std::cout << "Content-Disposition: attachment; filename=\"" << fileName << "\"\n";
-std::cout << "Content-Length: " << fileSize << "\n"; */
-/* 		std::cout << "DEBUG Download requested for: " << request.url << std::endl;//
-		std::cout << "Resolved path: " << filePath << std::endl;
-		std::cout << "File exists: " << (access(filePath.c_str(), F_OK) == 0) << std::endl; */
-		//std::vector<char> buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+
 		response.body = buffer;
 		file.close();
     return HttpResponse::OK;
