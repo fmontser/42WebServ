@@ -12,6 +12,7 @@ private:
 	static Server*							_actualServer;
 	static bool								_insideRouteBlock;
 
+	static void addDefaultsRoute();
 	static void addRoute(std::vector<std::pair<std::string, std::vector<std::string> > >::iterator &it);
 	static void addServer(std::vector<std::pair<std::string, std::vector<std::string> > >::iterator &it);
 	static bool isValidConfig(Server &server);

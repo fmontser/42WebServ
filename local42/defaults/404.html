@@ -1,24 +1,9 @@
-<!-- <!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>404 Not Found</title>
-	<link rel="stylesheet" href="default/style.css">
-
-</head>
-<body>
-	<h1>404 Not Found - 42Webserv</h1>
-</body>
-</html>
- -->
-
  <!DOCTYPE html>
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>409 Conflict</title>
+	<title>404 Not Found</title>
 	<style>
 		body {
 			display: flex;
@@ -26,7 +11,7 @@
 			justify-content: center;
 			align-items: center;
 			height: 100vh;
-			background-color: #f0f0f0;
+			background-color: #7e3333;
 			position: relative;
 			overflow: hidden;
 		}
@@ -46,7 +31,7 @@
 		.question {
 			position: absolute;
 			font-size: 40px;
-			color: #ff0008;
+			color: #ff9800;
 			opacity: 0;
 			transition: opacity 0.5s, transform 1s ease-in-out;
 		}
@@ -56,12 +41,11 @@
 			100% { transform: rotate(15deg); }
 		}
 		</style>
-		<!-- <link rel="stylesheet" href="default/style.css"> -->
 </head>
 <body>
-	<h1>409 Conflict - 42Webserv</h1>
+	<h1>404 Not Found - 42Webserv</h1>
 	<div class="container">
-		<img src="../crow.png" class="toucan" id="toucan">
+		<img src="defaults/crow.png" class="toucan" id="toucan">
 	</div>
 
 	<script>
@@ -71,7 +55,7 @@
 			setInterval(() => {
 				let question = document.createElement("div");
 				question.className = "question";
-				question.innerText = "X";
+				question.innerText = "?";
 				document.body.appendChild(question);
 
 				let x = Math.random() * window.innerWidth;

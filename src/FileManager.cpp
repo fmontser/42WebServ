@@ -11,6 +11,7 @@
 #include "ServerConstants.hpp"
 #include "Connection.hpp"
 #include "Utils.hpp"
+#include "PathManager.hpp"
 
 FileManager::FileManager() {}
 FileManager::~FileManager() {}
@@ -43,8 +44,8 @@ static void chunkEncode(std::vector<char>& body, size_t maxPayload) {
 		body.push_back(byte);
 }
 
-HttpResponse::responseType	FileManager::readFile(DataAdapter& dataAdapter, Route* actualRoute) {
-	std::string			target = "..";
+HttpResponse::responseType	FileManager::readFile(DataAdapter& dataAdapter) {
+	std::string			path;
 	int					fd, readSize, i;
 	Server&				server = dataAdapter.getConnection()->getServer();
 	HttpRequest&		request = dataAdapter.getRequest();
@@ -52,27 +53,24 @@ HttpResponse::responseType	FileManager::readFile(DataAdapter& dataAdapter, Route
 	char				readBuffer[READ_BUFFER] = {0};
 
 	if (!response.statusCode.empty())
-		target.append(request.url);
-	else	
-		target.append(server.getRoot().append(request.url));
+		path.append(request.url);
+	else
+		path = PathManager::resolveRoutePath(dataAdapter);
 	
-	if (Utils::isDirectory(request.url))
-		target.append(actualRoute->getDefault());
-	
-	if(access(target.c_str(), F_OK != 0))
+	if(access(path.c_str(), F_OK != 0))
 		return HttpResponse::NOT_FOUND;
 	
-	if (access(target.c_str(), R_OK) != 0)
+	if (access(path.c_str(), R_OK) != 0)
 		return HttpResponse::FORBIDDEN;
 
-	fd = open(target.c_str(), O_RDONLY, 0644);
+	fd = open(path.c_str(), O_RDONLY, 0644);
 	if (fd < 0)
 		return HttpResponse::SERVER_ERROR;
 	do {
 		i = 0;
 		readSize = read(fd, readBuffer, READ_BUFFER);
 		while (i < readSize)
-		response.body.push_back(readBuffer[i++]);
+			response.body.push_back(readBuffer[i++]);
 	} while (readSize);
 
 	if (response.body.size() > server.getMaxPayload()) {
@@ -90,18 +88,12 @@ HttpResponse::responseType	FileManager::readFile(DataAdapter& dataAdapter, Route
 
 
 
-HttpResponse::responseType	FileManager::writeFile(DataAdapter& dataAdapter, Route* actualRoute) {
+HttpResponse::responseType	FileManager::writeFile(DataAdapter& dataAdapter) {
 	HttpRequest&	request = dataAdapter.getRequest();
-	std::string		fileName, uploadDir;
+	std::string		fileName, path;
 	int				fd;
 
-	uploadDir.append("..");
-	uploadDir.append(dataAdapter.getConnection()->getServer().getRoot());
-	uploadDir.append(actualRoute->getUrl());
-	uploadDir.append("/");
-	
-	if (access(uploadDir.c_str(), F_OK) != 0)
-		mkdir(uploadDir.c_str(), 0777);
+	path = PathManager::resolveRoutePath(dataAdapter);
 
 	for (std::vector<HttpHeader>::iterator it = dataAdapter.getRequest().headers.begin();
 			it != dataAdapter.getRequest().headers.end(); ++it) {
@@ -115,15 +107,15 @@ HttpResponse::responseType	FileManager::writeFile(DataAdapter& dataAdapter, Rout
 				if (!propertie.value.empty()){
 					std::string	cropped = propertie.value;
 					Utils::nestedQuoteExtract('"', cropped);
-					fileName.append(uploadDir);
-					fileName.append(cropped);
+					PathManager::stackPath(fileName, path);
+					PathManager::stackPath(fileName, cropped);
 					break;
 				}
 			}
 		}
 	}
 
-	if (access(uploadDir.c_str(), W_OK) != 0)
+	if (access(path.c_str(), W_OK) != 0)
 		return HttpResponse::FORBIDDEN;
 	if ((access(fileName.c_str(), F_OK) == 0 && dataAdapter.allowFileAppend)
 		|| access(fileName.c_str(), F_OK) != 0) {
@@ -144,20 +136,16 @@ HttpResponse::responseType	FileManager::writeFile(DataAdapter& dataAdapter, Rout
 	return HttpResponse::CREATED;
 }
 
-HttpResponse::responseType	FileManager::deleteFile(DataAdapter& dataAdapter, Route* actualRoute) {
-	HttpRequest&	request = dataAdapter.getRequest();
-	std::string		fileName("..");
+HttpResponse::responseType	FileManager::deleteFile(DataAdapter& dataAdapter) {
+	std::string	path;
 
-	fileName.append(dataAdapter.getConnection()->getServer().getRoot());
-	if (actualRoute)
-		fileName.append(actualRoute->getRoot());
-	fileName.append(request.url);
+	path = PathManager::resolveRoutePath(dataAdapter);
 
-	if (access(fileName.c_str(), F_OK) != 0)
+	if (access(path.c_str(), F_OK) != 0)
 		return HttpResponse::NOT_FOUND;
-	if (access(fileName.c_str(), W_OK) != 0)
+	if (access(path.c_str(), W_OK) != 0)
 		return HttpResponse::FORBIDDEN;
-	if (remove(fileName.c_str()) != 0)
+	if (remove(path.c_str()) != 0)
 		return HttpResponse::SERVER_ERROR;
 	return HttpResponse::NO_CONTENT;
 }

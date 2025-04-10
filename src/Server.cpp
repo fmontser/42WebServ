@@ -6,16 +6,20 @@
 #include "Server.hpp"
 #include "ServerConstants.hpp"
 #include "Connection.hpp"
+#include "PathManager.hpp"
+#include "Utils.hpp"
 
 Server::Server() {
-	_defaults["default400"] = "/defaults/400.html";
-	_defaults["default403"] = "/defaults/403.html";
-	_defaults["default404"] = "/defaults/404.html";
-	_defaults["default405"] = "/defaults/405.html";
-	_defaults["default409"] = "/defaults/409.html";
-	_defaults["default413"] = "/defaults/413.html";
-	_defaults["default500"] = "/defaults/500.html";
-	_defaults["default501"] = "/defaults/501.html";
+	_defaults["default201"] = "defaults/201.html";
+	_defaults["default204"] = "defaults/204.html";
+	_defaults["default400"] = "defaults/400.html";
+	_defaults["default403"] = "defaults/403.html";
+	_defaults["default404"] = "defaults/404.html";
+	_defaults["default405"] = "defaults/405.html";
+	_defaults["default409"] = "defaults/409.html";
+	_defaults["default413"] = "defaults/413.html";
+	_defaults["default500"] = "defaults/500.html";
+	_defaults["default501"] = "defaults/501.html";
 }
 
 Server::~Server() {
@@ -133,11 +137,26 @@ void	Server::setMaxPayLoad(const std::string& maxPayLoad) {
 	_maxPayload = payloadSize;
 }
 
-//TODO check!
-Route	*Server::getRequestedRoute(std::string url) {
+Route	*Server::getRequestedRoute(DataAdapter& dataAdapter) {
+	std::string path, url;
+	
+	url = dataAdapter.getRequest().url;
+	path = PathManager::resolveServerPath(dataAdapter);
+
+	if (!Utils::isDirectory(path)) {
+		if (!(access(path.c_str(), F_OK) == 0))
+			return NULL;
+		url = Utils::getUrlPath(url);
+	}
+
 	std::map<std::string, Route>::iterator it = _routes.find(url);
 	if (it !=  _routes.end())
 		return &it->second;
+
+	it = _routes.find(url.append("/"));
+	if (it !=  _routes.end())
+		return &it->second;
+	
 	return NULL;
 }
 
