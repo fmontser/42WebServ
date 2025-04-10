@@ -69,7 +69,7 @@ void	HttpResponse::setupResponse(enum responseType responseType, DataAdapter& da
 		case SEE_OTHER:
  			statusCode = "303";
 			statusMsg = "SEE_OTHER";
-			addHeader("Location: /");
+			addHeader(PathManager::resolveHttpRedirection(dataAdapter));
  			addHeader(contentLength.append(Utils::getStringSizeStr(body.size())));
 			break;
 		case BAD_REQUEST:

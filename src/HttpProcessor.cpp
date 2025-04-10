@@ -14,7 +14,9 @@ static	HttpResponse::responseType	validateRoute(DataAdapter& dataAdapter) {
 			->getServer().getRequestedRoute(dataAdapter);
 
 	if(actualRoute == NULL)
-		return HttpResponse::NOT_FOUND; 
+		return HttpResponse::NOT_FOUND;
+	if (!actualRoute->getRedirect().empty())
+		return HttpResponse::SEE_OTHER;
 	if (!actualRoute->isMethodAllowed(request.method))
 		return HttpResponse::METHOD_NOT_ALLOWED;
 	if (Index::isIndexRoute(dataAdapter, actualRoute)) {
