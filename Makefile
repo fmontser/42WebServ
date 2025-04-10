@@ -20,7 +20,7 @@ SRCS			:=	main.cpp			Config.cpp  Route.cpp Server.cpp HttpMessage.cpp HttpReques
 					HeaderValue.cpp HeaderProperty.cpp Utils.cpp Index.cpp PathManager.cpp
 
 OBJS			:=	$(SRCS:.cpp=.o)
-INPUT			:=	"../config/config.cfg"
+INPUT			:=	"config/config.cfg"
 
 CC				:=	g++ #c++
 CC_FLAGS		:=	-Wall -Werror -Wextra -g -c -std=c++98

@@ -8,7 +8,7 @@
 
 class PathManager
 {
-	static std::string _workDirectory;
+	static std::string _workingDir;
 
 	private:
 		PathManager();
@@ -16,6 +16,9 @@ class PathManager
 		PathManager& operator=(const PathManager& src);
 		~PathManager();
 	public:
+
+		static std::string	getWorkingDir();
+		static void			setWorkingDir(std::string dir);
 
 		static std::string	resolveRoutePath(DataAdapter& dataAdapter);
 		static std::string	resolveServerPath(DataAdapter& dataAdapter);

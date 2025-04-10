@@ -141,7 +141,6 @@ void Config::addDefaultsRoute() {
 	Route _defaults;
 	_defaults.setUrl("/defaults");
 	_defaults.addMethod(std::make_pair("methods", "GET"));
-	_defaults.setRoot("../");
 	_actualServer->getRoutes().insert(std::make_pair(_defaults.getUrl(), _defaults));
 }
 

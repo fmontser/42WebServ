@@ -1,7 +1,9 @@
 #include "PathManager.hpp"
 #include "Utils.hpp"
+#include <unistd.h>
+#include <limits.h>
 
-	std::string PathManager::_workDirectory = "../";
+	std::string PathManager::_workingDir;
 
 	PathManager::PathManager() {}
 	PathManager::PathManager(const PathManager& src) { (void)src; }
@@ -11,15 +13,33 @@
 		return *this;
 	}
 
-	static void appendPath(std::string& path, std::string appendix) {
-		if (!path.empty() && path.at(path.size() - 1) == '/') {
-			if (appendix.at(0) == '/')
-				appendix.erase(appendix.begin());
-		} else if (!appendix.empty() && appendix.at(0) != '/') {
-			if (appendix != "../")
-				appendix = std::string("/").append(appendix);
-		}
+	static void stackPath(std::string& path, std::string appendix) {
+
+		if (!path.empty() && path.at(path.size() - 1) == '/')
+			path.erase(path.size() - 1, 1);
+		if (!appendix.empty() && appendix.at(0) == '/')
+			appendix.erase(0,1);
+		path.append("/");
 		path.append(appendix);
+	}
+
+	std::string	PathManager::getWorkingDir() {
+		char buffer[PATH_MAX] = {0};
+
+		if(_workingDir.empty()) {
+			getcwd(buffer, PATH_MAX);
+			_workingDir = buffer;
+		}
+		return _workingDir;
+	}
+
+	void		PathManager::setWorkingDir(std::string dir) {
+		char buffer[PATH_MAX] = {0};
+
+		if (!dir.empty() && chdir(dir.c_str()) == 0) {
+			getcwd(buffer, PATH_MAX);
+			_workingDir = buffer;
+		}
 	}
 
 	//TODO probar todas las conbianciones de / antes y despues de url, directorios...
@@ -34,18 +54,18 @@
 			if ((route->getRoot().empty() || route->getRoot().at(0) != '/')
 					&& server.getRoot().at(0) != '/'
 					&& route->getRoot() != "../") //TODO check!
-				path.append(_workDirectory);
+				path.append(_workingDir);
 
 			if (route->getRoot().empty())
-				appendPath(path, server.getRoot());
+				stackPath(path, server.getRoot());
 			else
-				appendPath(path, route->getRoot());
+				stackPath(path, route->getRoot());
 
-			appendPath(path, request.url);
+			stackPath(path, request.url);
 			if (Utils::isDirectory(path) && !_default.empty())
-				appendPath(path, _default);
+				stackPath(path, _default);
 		} else
-			appendPath(path, request.url);
+			stackPath(path, request.url);
 		return (path);
 	}
 
@@ -55,18 +75,18 @@
 		HttpRequest&	request = dataAdapter.getRequest();
 		std::string		path;
 
-		path.append(_workDirectory);
-		appendPath(path, server.getRoot());
-		appendPath(path, request.url);
+		path.append(_workingDir);
+		stackPath(path, server.getRoot());
+		stackPath(path, request.url);
 
 		return (path);
 	}
 
 
 	std::string	PathManager::resolveErrorPage(DataAdapter& dataAdapter, std::string defaultPage){
-		std::string	path(_workDirectory);
+		std::string	path(_workingDir);
 
-		path.append(dataAdapter.getConnection()->getServer().getDefaults()[defaultPage]);
+		stackPath(path, dataAdapter.getConnection()->getServer().getDefaults()[defaultPage]);
 		return (path);
 	}
 

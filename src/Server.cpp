@@ -142,6 +142,9 @@ Route	*Server::getRequestedRoute(DataAdapter& dataAdapter) {
 	
 	url = dataAdapter.getRequest().url;
 	path = PathManager::resolveServerPath(dataAdapter);
+
+	//TODO cambiar el _workingdir ahora a esto???
+
 	if (!Utils::isDirectory(path))
 		url = Utils::getUrlPath(url);
 

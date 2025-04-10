@@ -5,23 +5,10 @@
 #include "FileManager.hpp"
 #include "PathManager.hpp"
 #include "Utils.hpp"
+#include "Index.hpp"
 #include <unistd.h>
 
-static bool checkListingConditions(DataAdapter& dataAdapter) {
-	std::string	path;
-	HttpRequest	request = dataAdapter.getRequest();
-	Route		*actualRoute = dataAdapter.getConnection()
-				->getServer().getRequestedRoute(dataAdapter);
-				path = PathManager::resolveRoutePath(dataAdapter);
 
-	if (request.method == "GET"
-		&& Utils::isDirectory(path)
-		&& actualRoute->getAutoIndex() == "on"
-		&& ((access(path.c_str(), F_OK != 0)))	//TODO check con diferentes inputs...
-		&& actualRoute->getDefault().empty())
-			return true;
-	return false;
-}
 
 static	HttpResponse::responseType	validateRouteMethod(DataAdapter& dataAdapter) {
 	HttpRequest	request = dataAdapter.getRequest();
@@ -32,7 +19,7 @@ static	HttpResponse::responseType	validateRouteMethod(DataAdapter& dataAdapter) 
 		return HttpResponse::NOT_FOUND; 
 	if (!actualRoute->isMethodAllowed(request.method))
 		return HttpResponse::METHOD_NOT_ALLOWED;
-	if (checkListingConditions(dataAdapter)) {
+	if (Index::isIndexRoute(dataAdapter, actualRoute)) {
 		return HttpResponse::DIR_LIST;
 	}
 	return HttpResponse::EMPTY;

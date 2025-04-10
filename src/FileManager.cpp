@@ -90,13 +90,13 @@ HttpResponse::responseType	FileManager::readFile(DataAdapter& dataAdapter) {
 
 HttpResponse::responseType	FileManager::writeFile(DataAdapter& dataAdapter) {
 	HttpRequest&	request = dataAdapter.getRequest();
-	std::string		fileName, uploadDir;
+	std::string		fileName, path;
 	int				fd;
 
-	uploadDir = PathManager::resolveRoutePath(dataAdapter);
+	path = PathManager::resolveRoutePath(dataAdapter);
 
-	if (access(uploadDir.c_str(), F_OK) != 0)
-		mkdir(uploadDir.c_str(), 0777);
+	if (access(path.c_str(), F_OK) != 0)
+		mkdir(path.c_str(), 0777);
 
 	for (std::vector<HttpHeader>::iterator it = dataAdapter.getRequest().headers.begin();
 			it != dataAdapter.getRequest().headers.end(); ++it) {
@@ -110,7 +110,7 @@ HttpResponse::responseType	FileManager::writeFile(DataAdapter& dataAdapter) {
 				if (!propertie.value.empty()){
 					std::string	cropped = propertie.value;
 					Utils::nestedQuoteExtract('"', cropped);
-					fileName.append(uploadDir);
+					fileName.append(path);
 					fileName.append(cropped);
 					break;
 				}
@@ -118,7 +118,7 @@ HttpResponse::responseType	FileManager::writeFile(DataAdapter& dataAdapter) {
 		}
 	}
 
-	if (access(uploadDir.c_str(), W_OK) != 0)
+	if (access(path.c_str(), W_OK) != 0)
 		return HttpResponse::FORBIDDEN;
 	if ((access(fileName.c_str(), F_OK) == 0 && dataAdapter.allowFileAppend)
 		|| access(fileName.c_str(), F_OK) != 0) {
