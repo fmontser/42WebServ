@@ -11,14 +11,14 @@ static bool checkListingConditions(DataAdapter& dataAdapter) {
 	std::string	path;
 	HttpRequest	request = dataAdapter.getRequest();
 	Route		*actualRoute = dataAdapter.getConnection()
-				->getServer().getRequestedRoute(Utils::getUrlPath(request.url));
-
-	path = PathManager::resolvePath(dataAdapter);
+				->getServer().getRequestedRoute(dataAdapter);
+				path = PathManager::resolveRoutePath(dataAdapter);
 
 	if (request.method == "GET"
 		&& Utils::isDirectory(path)
 		&& actualRoute->getAutoIndex() == "on"
-		&& ((access(path.c_str(), F_OK != 0))))
+		&& ((access(path.c_str(), F_OK != 0)))	//TODO check con diferentes inputs...
+		&& actualRoute->getDefault().empty())
 			return true;
 	return false;
 }
@@ -26,10 +26,10 @@ static bool checkListingConditions(DataAdapter& dataAdapter) {
 static	HttpResponse::responseType	validateRouteMethod(DataAdapter& dataAdapter) {
 	HttpRequest	request = dataAdapter.getRequest();
 	Route	*actualRoute = dataAdapter.getConnection()
-			->getServer().getRequestedRoute(Utils::getUrlPath(request.url));
+			->getServer().getRequestedRoute(dataAdapter);
 
 	if(actualRoute == NULL)
-		return HttpResponse::NOT_FOUND;
+		return HttpResponse::NOT_FOUND; 
 	if (!actualRoute->isMethodAllowed(request.method))
 		return HttpResponse::METHOD_NOT_ALLOWED;
 	if (checkListingConditions(dataAdapter)) {

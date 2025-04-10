@@ -6,6 +6,8 @@
 #include "Server.hpp"
 #include "ServerConstants.hpp"
 #include "Connection.hpp"
+#include "PathManager.hpp"
+#include "Utils.hpp"
 
 Server::Server() {
 	_defaults["default201"] = "defaults/201.html";
@@ -135,8 +137,14 @@ void	Server::setMaxPayLoad(const std::string& maxPayLoad) {
 	_maxPayload = payloadSize;
 }
 
-//TODO check!
-Route	*Server::getRequestedRoute(std::string url) {
+Route	*Server::getRequestedRoute(DataAdapter& dataAdapter) {
+	std::string path, url;
+	
+	url = dataAdapter.getRequest().url;
+	path = PathManager::resolveServerPath(dataAdapter);
+	if (!Utils::isDirectory(path))
+		url = Utils::getUrlPath(url);
+
 	std::map<std::string, Route>::iterator it = _routes.find(url);
 	if (it !=  _routes.end())
 		return &it->second;

@@ -137,6 +137,14 @@ void Config::addRoute(std::vector<std::pair<std::string, std::vector<std::string
 	_actualServer->getRoutes().insert(std::make_pair(route.getUrl(), route));
 }
 
+void Config::addDefaultsRoute() {
+	Route _defaults;
+	_defaults.setUrl("/defaults");
+	_defaults.addMethod(std::make_pair("methods", "GET"));
+	_defaults.setRoot("../");
+	_actualServer->getRoutes().insert(std::make_pair(_defaults.getUrl(), _defaults));
+}
+
 void Config::addServer(std::vector<std::pair<std::string, std::vector<std::string> > >::iterator &it) {
 	Server server;
 	_actualServer = &server;
@@ -186,6 +194,7 @@ void Config::addServer(std::vector<std::pair<std::string, std::vector<std::strin
 	if (_servers.find(server.getName()) != _servers.end())
 		printError("server " + server.getName() + " is duplicated.");
 	else {
+		addDefaultsRoute();
 		_servers.insert(std::make_pair(server.getName(), server));
 		_actualServer = &(_servers[server.getName()]);
 	}
@@ -218,14 +227,8 @@ bool Config::isValidConfig(Server &server) {
 
 		if (route.getUrl().empty())
 			return printFalse("Route: " + it->first + " url is missing");
-/* 		if (route.getRoot().empty())
-			return printFalse("Route: " + it->first + " root is missing");
-		if (route.getAutoIndex().empty())
-			return printFalse("Route: " + it->first + " autoindex is missing");
-		if (route.getRedirect().empty())
-			return printFalse("Route: " + it->first + " redirect is missing");
-		if (route.getDefault().empty())
-			return printFalse("Route: " + it->first + " default is missing"); */
+		if (route.getUrl() == "/defaults")
+			return printFalse("Route: " + it->first + " is a reserved route");
 
 		const std::multimap<std::string, std::string>& methods = route.getMethods();
 		for (std::multimap<std::string, std::string>::const_iterator mit = methods.begin(); mit != methods.end(); ++mit) {

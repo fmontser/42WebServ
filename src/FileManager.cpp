@@ -55,7 +55,7 @@ HttpResponse::responseType	FileManager::readFile(DataAdapter& dataAdapter) {
 	if (!response.statusCode.empty())
 		path.append(request.url);
 	else
-		path = PathManager::resolvePath(dataAdapter);
+		path = PathManager::resolveRoutePath(dataAdapter);
 	
 	if(access(path.c_str(), F_OK != 0))
 		return HttpResponse::NOT_FOUND;
@@ -93,7 +93,7 @@ HttpResponse::responseType	FileManager::writeFile(DataAdapter& dataAdapter) {
 	std::string		fileName, uploadDir;
 	int				fd;
 
-	uploadDir = PathManager::resolvePath(dataAdapter);
+	uploadDir = PathManager::resolveRoutePath(dataAdapter);
 
 	if (access(uploadDir.c_str(), F_OK) != 0)
 		mkdir(uploadDir.c_str(), 0777);
@@ -142,7 +142,7 @@ HttpResponse::responseType	FileManager::writeFile(DataAdapter& dataAdapter) {
 HttpResponse::responseType	FileManager::deleteFile(DataAdapter& dataAdapter) {
 	std::string	path;
 
-	path = PathManager::resolvePath(dataAdapter);
+	path = PathManager::resolveRoutePath(dataAdapter);
 
 	if (access(path.c_str(), F_OK) != 0)
 		return HttpResponse::NOT_FOUND;

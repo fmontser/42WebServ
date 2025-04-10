@@ -12,29 +12,28 @@
 	}
 
 	static void appendPath(std::string& path, std::string appendix) {
-		if (path.empty() || appendix.empty())
-			return ;
-
-		if (path.at(path.size() - 1) == '/') {
+		if (!path.empty() && path.at(path.size() - 1) == '/') {
 			if (appendix.at(0) == '/')
 				appendix.erase(appendix.begin());
-		} else if (appendix.at(0) != '/') {
-			appendix = std::string("/").append(appendix);
+		} else if (!appendix.empty() && appendix.at(0) != '/') {
+			if (appendix != "../")
+				appendix = std::string("/").append(appendix);
 		}
 		path.append(appendix);
 	}
 
 	//TODO probar todas las conbianciones de / antes y despues de url, directorios...
-	std::string	PathManager::resolvePath(DataAdapter& dataAdapter) {
+	std::string	PathManager::resolveRoutePath(DataAdapter& dataAdapter) {
 		Server&			server = dataAdapter.getConnection()->getServer();
 		HttpRequest&	request = dataAdapter.getRequest();
-		Route*			route = server.getRequestedRoute(Utils::getUrlPath(request.url));
+		Route*			route = server.getRequestedRoute(dataAdapter);
 		std::string		_default(route->getDefault());
 		std::string		path;
 
 		if (route) {
 			if ((route->getRoot().empty() || route->getRoot().at(0) != '/')
-					&& server.getRoot().at(0) != '/') //TODO check!
+					&& server.getRoot().at(0) != '/'
+					&& route->getRoot() != "../") //TODO check!
 				path.append(_workDirectory);
 
 			if (route->getRoot().empty())
@@ -47,6 +46,19 @@
 				appendPath(path, _default);
 		} else
 			appendPath(path, request.url);
+		return (path);
+	}
+
+
+	std::string	PathManager::resolveServerPath(DataAdapter& dataAdapter) {
+		Server&			server = dataAdapter.getConnection()->getServer();
+		HttpRequest&	request = dataAdapter.getRequest();
+		std::string		path;
+
+		path.append(_workDirectory);
+		appendPath(path, server.getRoot());
+		appendPath(path, request.url);
+
 		return (path);
 	}
 
