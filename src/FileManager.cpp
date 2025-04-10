@@ -177,13 +177,71 @@ HttpResponse::responseType FileManager::downloadFile(DataAdapter& adapter, Route
 
 		std::ifstream file(filePath.c_str(), std::ios::binary);
 		if (!file.is_open()) {
-			return HttpResponse::FORBIDDEN;//maybe another errormessage
+			return HttpResponse::SERVER_ERROR;
 		}
-		HttpHeader contentType;
+
+
+		file.seekg(0, std::ios::end);
+		size_t fileSize = file.tellg();
+		file.seekg(0, std::ios::beg);
+		//HttpHeader contentType;
+		std::string contentType;
+
+		//std::string contentTypeFileType;
+		std::string ext = Utils::getFileType(fileName);
+
+		if (ext == "html" || ext == "htm") {
+			contentType = "text/html";
+		} else if (ext == "css") {
+			contentType = "text/css";
+		} else if (ext == "js") {
+			contentType = "application/javascript";
+		} else if (ext == "png") {
+			contentType = "image/png";
+		} else if (ext == "jpg" || ext == "jpeg") {
+			contentType = "image/jpeg";
+		} else if (ext == "gif") {
+			contentType = "image/gif";
+		} else if (ext == "svg") {
+			contentType = "image/svg+xml";
+		} else if (ext == "txt") {
+			contentType = "text/plain";
+		} else if (ext == "pdf") {
+			contentType = "application/pdf";
+		} else if (ext == "zip") {
+			contentType = "application/zip";
+		} else if (ext == "json") {
+			contentType = "application/json";
+		} else if (ext == "xml") {
+			contentType = "application/xml";
+		} else {
+			contentType = "application/octet-stream";
+		}
+
+		HttpHeader contentTypeHeader;
+		contentTypeHeader.name = "Content-Type";
+		HeaderValue ctValue;
+		ctValue.name = contentType;
+		contentTypeHeader.addValue(ctValue);
+		response.addHeader(contentTypeHeader);
+
+		HttpHeader contentDispHeader;
+		contentDispHeader.name = "Content-Disposition";
+		HeaderValue cdValue;
+		cdValue.name = "attachment; filename=\"" + fileName + "\"";
+		contentDispHeader.addValue(cdValue);
+		response.addHeader(contentDispHeader);
+
+		HttpHeader contentLengthHeader;
+		contentLengthHeader.name = "Content-Length";
+		HeaderValue clValue;
+		clValue.name = Utils::toString(fileSize);
+		contentLengthHeader.addValue(clValue);
+		response.addHeader(contentLengthHeader);
 		
+		/* HeaderValue contentTypeValue;
 		contentType.name = "Content-Type";
-		HeaderValue contentTypeValue;
-		contentTypeValue.name = "application/octet-stream";
+		contentTypeValue.name = contentTypeFileType;
 		contentType.addValue(contentTypeValue);
 		response.addHeader(contentType);
 		
@@ -191,11 +249,13 @@ HttpResponse::responseType FileManager::downloadFile(DataAdapter& adapter, Route
 		contentDisposition.name = "Content-Disposition";
 		HeaderValue contentDispositionValue;
 		contentDispositionValue.name = "attachment; filename=\"" + fileName + "\"";
-		response.addHeader(contentDisposition);
+		response.addHeader(contentDisposition); */
 
-		file.seekg(0, std::ios::end);
-		size_t fileSize = file.tellg();
-		file.seekg(0, std::ios::beg);
+
+std::cout << "Final Headers:\n";
+std::cout << "Content-Type: " << contentType << "\n";
+std::cout << "Content-Disposition: " << "attachment; filename=\"" << fileName << "\"\n";
+std::cout << "Content-Length: " << fileSize << "\n";
 
 		std::vector<char> buffer(fileSize);
 		file.read(buffer.data(), fileSize);
@@ -203,6 +263,12 @@ HttpResponse::responseType FileManager::downloadFile(DataAdapter& adapter, Route
 			file.close();
 			return HttpResponse::SERVER_ERROR;
 		}
+
+/* 		std::cout << "Download headers:\n";
+		std::cout << "" << "Hasdfasdfg       "<< contentTypeValue.name << std::endl;
+std::cout << "Content-Type: " << contentType.name.data() << "\n";
+std::cout << "Content-Disposition: attachment; filename=\"" << fileName << "\"\n";
+std::cout << "Content-Length: " << fileSize << "\n"; */
 /* 		std::cout << "DEBUG Download requested for: " << request.url << std::endl;//
 		std::cout << "Resolved path: " << filePath << std::endl;
 		std::cout << "File exists: " << (access(filePath.c_str(), F_OK) == 0) << std::endl; */
