@@ -33,10 +33,12 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter) {
 	HttpResponse&	response = dataAdapter.getResponse();
 	Connection		*connection = dataAdapter.getConnection();
 
-	rtype = validateRouteMethod(dataAdapter);
-	if (rtype != HttpResponse::EMPTY) {
-		response.setupResponse(rtype, dataAdapter);
-		return;
+	if (connection->requestMode == Connection::SINGLE) {
+		rtype = validateRouteMethod(dataAdapter);
+		if (rtype != HttpResponse::EMPTY) {
+			response.setupResponse(rtype, dataAdapter);
+			return;
+		}
 	}
 
 	if (connection->isOverPayloadLimit) {

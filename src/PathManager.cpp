@@ -13,7 +13,7 @@
 		return *this;
 	}
 
-	static void stackPath(std::string& path, std::string appendix) {
+	void PathManager::stackPath(std::string& path, std::string appendix) {
 
 		if (!path.empty() && path.at(path.size() - 1) == '/')
 			path.erase(path.size() - 1, 1);
@@ -42,7 +42,7 @@
 		}
 	}
 
-	//TODO probar todas las conbianciones de / antes y despues de url, directorios...
+	//TODO manejar routes con y sin / al final!!!!
 	std::string	PathManager::resolveRoutePath(DataAdapter& dataAdapter) {
 		Server&			server = dataAdapter.getConnection()->getServer();
 		HttpRequest&	request = dataAdapter.getRequest();

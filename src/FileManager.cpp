@@ -95,8 +95,9 @@ HttpResponse::responseType	FileManager::writeFile(DataAdapter& dataAdapter) {
 
 	path = PathManager::resolveRoutePath(dataAdapter);
 
-	if (access(path.c_str(), F_OK) != 0)
-		mkdir(path.c_str(), 0777);
+	//TODO eliminar...no deberia poder crear directorios...
+/* 	if (access(path.c_str(), F_OK) != 0)
+		mkdir(path.c_str(), 0777); */
 
 	for (std::vector<HttpHeader>::iterator it = dataAdapter.getRequest().headers.begin();
 			it != dataAdapter.getRequest().headers.end(); ++it) {
@@ -110,8 +111,8 @@ HttpResponse::responseType	FileManager::writeFile(DataAdapter& dataAdapter) {
 				if (!propertie.value.empty()){
 					std::string	cropped = propertie.value;
 					Utils::nestedQuoteExtract('"', cropped);
-					fileName.append(path);
-					fileName.append(cropped);
+					PathManager::stackPath(fileName, path);
+					PathManager::stackPath(fileName, cropped);
 					break;
 				}
 			}
