@@ -7,7 +7,7 @@
 #include "Connection.hpp"
 #include "ConnectionManager.hpp"
 #include "DataAdapter.hpp"
-#include "RequestProcessor.hpp"
+#include "HttpProcessor.hpp"
 #include "Utils.hpp"
 
 Connection::Connection(Server& server) : _server(server), _multiDataAdapter(NULL) {
@@ -19,6 +19,7 @@ Connection::Connection(Server& server) : _server(server), _multiDataAdapter(NULL
 		std::cerr << RED << "Error: client connection error " << END << std::endl;
 	}
 
+	isOverPayloadLimit = false;
 	isChunkedResponse = false;
 	requestMode = SINGLE;
 	contentLength = 0;
@@ -37,6 +38,7 @@ Connection::Connection(const Connection& src) : _server(src._server) {
 	_pollfd = src._pollfd;
 	recvBuffer = src.recvBuffer;
 	sendBuffer = src.sendBuffer;
+	isOverPayloadLimit = src.isOverPayloadLimit;
 	isChunkedResponse = src.isChunkedResponse;
 	requestMode = src.requestMode;
 	boundarie = src.boundarie;
@@ -49,6 +51,7 @@ Connection& Connection::operator=(const Connection& src) {
 		_pollfd = src._pollfd;
 		recvBuffer = src.recvBuffer;
 		sendBuffer = src.sendBuffer;
+		isOverPayloadLimit = src.isOverPayloadLimit;
 		isChunkedResponse = src.isChunkedResponse;
 		requestMode = src.requestMode;
 		boundarie = src.boundarie;
@@ -65,13 +68,16 @@ Server&			Connection::getServer() const { return _server; }
 struct pollfd	Connection::getPollFd() const { return _pollfd; }
 
 void	Connection::recieveData() {
+
 	DataAdapter adapter = DataAdapter(this);
 	char		buffer[READ_BUFFER] = {0};
 	int			len;
 
 	len = recv(_socketFd, buffer, READ_BUFFER, 0);
-	if (len == -1)
+	if (len == -1) {
 		std::cerr << RED << "Error: client error " << _socketFd << END << std::endl;
+		ConnectionManager::deleteConnection(_server, this);
+	}
 	else if (len == 0) {
 		std::cout << BLUE << "Info: client closed connection " << _socketFd << END << std::endl;
 		ConnectionManager::deleteConnection(_server, this);
@@ -79,8 +85,6 @@ void	Connection::recieveData() {
 	else if (len > 0) {
 		recvBuffer.assign(buffer, buffer + len);
 		if (requestMode == MULTIPART) {
-			if (_multiDataAdapter == NULL)
-				_multiDataAdapter = new DataAdapter(adapter);
 			contentLength -= len;
 			_multiDataAdapter->deserializeRequest();
 			_multiDataAdapter->getRequest().method = "POST";
@@ -100,8 +104,17 @@ void	Connection::recieveData() {
 		}
 		else {
 			adapter.deserializeRequest();
+
+			//TODO borrar debug para entrega
+			std::cout	<< BLUE << "Fd: " << adapter.getConnection()->getPollFd().fd
+						<< " requested: " << adapter.getRequest().url << END << std::endl;
+
 			HttpProcessor::processHttpRequest(adapter);
 			adapter.serializeResponse();
+			if (requestMode == Connection::MULTIPART) {
+				_multiDataAdapter = new DataAdapter(adapter);
+				_multiDataAdapter->getResponse().statusCode = "";
+			}
 			recvBuffer.clear();
 		}
 	}
@@ -134,16 +147,21 @@ void	Connection::sendData() {
 			chunkHeadSent = false;
 			sendBuffer.clear();
 		}
-		if (send(_socketFd, chunk.c_str(), chunk.size(), 0) == -1) {
+		if (send(_socketFd, chunk.c_str(), chunk.size(), 0) < 1) {
 			std::cerr << RED << "Send error: Server connection error" << END << std::endl;
+			ConnectionManager::deleteConnection(_server, this);
 		}
 		return ;
 	}
-	else if (send(_socketFd, &sendBuffer[0], sendBuffer.size(), 0) == -1) {
+	else if (send(_socketFd, &sendBuffer[0], sendBuffer.size(), 0) < 1) {
 		std::cerr << RED << "Send error: Server connection error" << END << std::endl;
+		ConnectionManager::deleteConnection(_server, this);
 	}
+	if (isOverPayloadLimit)
+		ConnectionManager::deleteConnection(_server, this);
 	sendBuffer.clear();
 }
+
 
 void	Connection::updatePollFd(struct pollfd pfd) { _pollfd = pfd; }
 bool	Connection::hasPollErr() const { return _pollfd.revents & POLLERR; }

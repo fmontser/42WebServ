@@ -1,6 +1,12 @@
-#include "HttpResponse.hpp"
-#include "ServerConstants.hpp"
 #include <iostream>
+#include <sstream>
+#include "DataAdapter.hpp"
+#include "HttpResponse.hpp"
+#include "FileManager.hpp"
+#include "PathManager.hpp"
+#include "Index.hpp"
+#include "ServerConstants.hpp"
+#include "Utils.hpp"
 
 HttpResponse::HttpResponse() : HttpMessage() {}
 
@@ -29,17 +35,21 @@ bool	HttpResponse::isChunked() {
 	return false;
 }
 
-void	HttpResponse::setupResponse(enum responseType responseType) {
+void	HttpResponse::setupResponse(enum responseType responseType, DataAdapter& dataAdapter) {
+	std::string contentLength ("Content-Length: ");
+
 	version = HTTP_VERSION;
-
-	//TODO test borrrar
-	std::string cbody("<!DOCTYPE html><html><body><h1>DONE!!</h1></body></html>");
-
 	switch (responseType) {
+		case DIR_LIST:
+			statusCode = "200";
+			statusMsg = "OK";
+			body = Index::generateAutoindex(dataAdapter);
+			addHeader(contentLength.append(Utils::getStringSizeStr(body.size())));
+			std::cout << "LISTING > ";
+			break;
 		case CONTINUE:
 			statusCode = "100";
 			statusMsg = "CONTINUE";
-			addHeader("Content-Length: 0");
 			break;
 		case OK:
 			statusCode = "200";
@@ -48,43 +58,67 @@ void	HttpResponse::setupResponse(enum responseType responseType) {
 		case CREATED:
 			statusCode = "201";
 			statusMsg = "CREATED";
-			addHeader("Content-Length: 0");
- 			body.assign(cbody.begin(), cbody.end()); //TODO asignar el body el default correspondiente.
+			dataAdapter.getRequest().url = PathManager::resolveErrorPage(dataAdapter, "default201");
+			FileManager::readFile(dataAdapter);
 			break;
 		case NO_CONTENT:
 			statusCode = "204";
 			statusMsg = "NO_CONTENT";
-			addHeader("Content-Length: 0");
+			dataAdapter.getRequest().url = PathManager::resolveErrorPage(dataAdapter, "default204");
 			break;
 		case SEE_OTHER:
  			statusCode = "303";
-			statusMsg = "See Other";
-			addHeader("Location: /");	//TODO obtener location de server config...?
- 			addHeader("Content-Length: 0");
+			statusMsg = "SEE_OTHER";
+			addHeader(PathManager::resolveHttpRedirection(dataAdapter));
+ 			addHeader(contentLength.append(Utils::getStringSizeStr(body.size())));
+			break;
+		case BAD_REQUEST:
+			statusCode = "400";
+			statusMsg = "BAD_REQUEST";
+			dataAdapter.getRequest().url = PathManager::resolveErrorPage(dataAdapter, "default400");
+			FileManager::readFile(dataAdapter);
+			break;
 		case FORBIDDEN:
 			statusCode = "403";
 			statusMsg = "FORBIDDEN";
-			addHeader("Content-Length: 0");
+			dataAdapter.getRequest().url = PathManager::resolveErrorPage(dataAdapter, "default403");
+			FileManager::readFile(dataAdapter);
 			break;
 		case NOT_FOUND:
 			statusCode = "404";
 			statusMsg = "NOT_FOUND";
-			addHeader("Content-Length: 0");
+			dataAdapter.getRequest().url = PathManager::resolveErrorPage(dataAdapter, "default404");
+			FileManager::readFile(dataAdapter);
+			break;
+		case METHOD_NOT_ALLOWED:
+			statusCode = "405";
+			statusMsg = "METHOD_NOT_ALLOWED";
+			dataAdapter.getRequest().url = PathManager::resolveErrorPage(dataAdapter, "default405");
+			FileManager::readFile(dataAdapter);
 			break;
 		case CONFLICT:
 			statusCode = "409";
 			statusMsg = "CONFLICT";
-			addHeader("Content-Length: 0");
+			dataAdapter.getRequest().url = PathManager::resolveErrorPage(dataAdapter, "default409");
+			FileManager::readFile(dataAdapter);
+			break;
+		case PAYLOAD_TOO_LARGE:
+			statusCode = "413";
+			statusMsg = "PAYLOAD_TOO_LARGE";
+			dataAdapter.getRequest().url = PathManager::resolveErrorPage(dataAdapter, "default413");
+			FileManager::readFile(dataAdapter);
 			break;
 		case SERVER_ERROR:
 			statusCode = "500";
 			statusMsg = "SERVER_ERROR";
-			addHeader("Content-Length: 0");
+			dataAdapter.getRequest().url = PathManager::resolveErrorPage(dataAdapter, "default500");
+			FileManager::readFile(dataAdapter);
 			break;
 		case METHOD_NOT_IMPLEMENTED:
 			statusCode = "501";
 			statusMsg = "METHOD_NOT_IMPLEMENTED";
-			addHeader("Content-Length: 0");
+			dataAdapter.getRequest().url = PathManager::resolveErrorPage(dataAdapter, "default501");
+			FileManager::readFile(dataAdapter);
 			break;
 		default:
 			break;

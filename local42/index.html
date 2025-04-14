@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>TUCAN-KAMON!</title>
+	<link rel="icon" href="/favicon.png" type="image/x-icon">
+	<link rel="stylesheet" href="style.css">
+	<style>
+		@keyframes popInOut {
+	from {
+		opacity: 0;
+		transform: scale(0.5);
+		font-weight: 100;
+	}
+	50% {
+		opacity: 1;
+		transform: scale(1.5);
+		font-weight: 900;
+	}
+	to {
+		opacity: 0;
+		transform: scale(0.5);
+		font-weight: 100;
+	}
+}
+
+.tutu span {
+	display: inline-block;
+	animation: popInOut 2s ease-in-out infinite;
+}
+	</style>
+
+
+
+</head>
+<body>
+	<h1>TUCAN-KAMON!</h1>
+
+	<img src="/tucan.png" alt="tucan image">
+
+	<!-- <p>TU TU TU TUUUU!!</p> -->
+	<p class="tutu">
+		<span style="animation-delay: 0s">T</span>
+		<span style="animation-delay: 0.2s">U</span>
+		<span style="animation-delay: 0.4s">&nbsp;</span>
+		<span style="animation-delay: 0.6s">T</span>
+		<span style="animation-delay: 0.8s">U</span>
+		<span style="animation-delay: 1.0s">&nbsp;</span>
+		<span style="animation-delay: 1.2s">T</span>
+		<span style="animation-delay: 1.4s">U</span>
+		<span style="animation-delay: 1.6s">&nbsp;</span>
+		<span style="animation-delay: 1.8s">T</span>
+		<span style="animation-delay: 2.0s">U</span>
+		<span style="animation-delay: 2.2s">U</span>
+		<span style="animation-delay: 2.4s">U</span>
+		<span style="animation-delay: 2.6s">U</span>
+		<span style="animation-delay: 2.8s">!!</span>
+	</p>
+	
+	<hr>
+
+	<form action="/del" method="post" enctype="multipart/form-data">
+		<input type="file" name="archivo" id="archivo">
+		<button type="submit">Subir Archivo (POST)</button>
+	</form>
+
+	<hr>
+
+	<button>
+		<a href="http://localhost:8042/del">Directory listing</a>
+	</button>
+
+	<hr>
+
+	<button id="deleteButton">Borrar deleteme (DELETE)</button>
+	<script>
+		document.getElementById('deleteButton').addEventListener('click', function() {
+			fetch('/del/deleteme', {
+			method: 'DELETE'
+			});
+		});
+	</script>
+
+	<hr>
+
+	<button id="updateButton">Actualizar archivo deleteme (PUT)</button>
+	<script>
+		document.getElementById('updateButton').addEventListener('click', function() {
+		var nuevoContenido = prompt("Ingrese el nuevo contenido del archivo:");
+
+		if (nuevoContenido) {
+			fetch('/del/deleteme', {
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'text/plain'
+			},
+			body: nuevoContenido
+			});
+		}
+		});
+	</script>
+
+</body>
+</html>

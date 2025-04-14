@@ -2,7 +2,14 @@
 #include <sstream>
 #include <iostream>
 #include <cstdlib>
+#include <sys/stat.h>
+#include <algorithm>
 
+std::string Utils::toString(size_t value) {
+	std::stringstream ss;
+	ss << value;
+	return ss.str();
+}
 
 std::vector<std::string> Utils::splitString(const std::string& str, char delimiter) {
 	std::vector<std::string> tokens;
@@ -59,4 +66,47 @@ size_t	Utils::getStringStreamLength(std::stringstream& ss) {
 	std::streampos length = ss.tellg();
 	ss.seekg(pos);
 	return length;
+}
+
+std::string Utils::getStringSizeStr(size_t size) {
+	std::stringstream ss;
+	
+	ss << size;
+	return ss.str();
+}
+
+std::string	Utils::getUrlPath(std::string url) {
+	std::string path;
+	path = url.substr(0, url.find_last_of('/', url.size()));
+	if (path.empty())
+		path.append("/");
+	return path;
+}
+
+bool	Utils::isDirectory(std::string path) {
+	struct stat file_info;
+
+	if (stat(path.c_str(), &file_info) == 0) {
+		if (S_ISDIR(file_info.st_mode))
+			return true;
+	}
+	return false;
+}
+std::string Utils::getFileType(std::string path) {
+	size_t pos = path.find_last_of('.');
+	if (pos != std::string::npos) {
+		std::string ext (path.substr(pos + 1));
+		return ext;
+	}
+	return "";
+}
+
+//TODO testing
+std::string Utils::getFileName(std::string path) {
+	size_t pos = path.find_last_of('/');
+	if (pos != std::string::npos) {
+		std::string fileName (path.substr(pos + 1));
+		return fileName;
+	}
+	return "";
 }

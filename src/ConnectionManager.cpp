@@ -56,12 +56,12 @@ static void	manageServerConnections(Server& server) {
 	std::list<Connection *>	cachedList(server.getConnectionList());
 	for (std::list<Connection *>::iterator it = cachedList.begin(); it != cachedList.end(); ++it) {
 		Connection&	connection = *(*it);
-	if (connection.hasPollErr())
-		ConnectionManager::deleteConnection(server, &connection);
-	if (connection.hasPollOut() && !connection.sendBuffer.empty())
-		connection.sendData();
-	if (connection.hasPollIn())
-		connection.recieveData();
+		if (connection.hasPollErr())
+			ConnectionManager::deleteConnection(server, &connection);
+		else if (connection.hasPollOut() && !connection.sendBuffer.empty())
+			connection.sendData();
+		else if (connection.hasPollIn() && !connection.isOverPayloadLimit)
+			connection.recieveData();
 	}
 	cachedList.clear();
 }

@@ -14,6 +14,7 @@ class HttpRequest : public HttpMessage {
 		HttpRequest(const HttpRequest& src);
 		HttpRequest& operator=(const HttpRequest& src);
 
+		bool	isBinaryDownload;
 		bool	handleMultipart(Connection *connection);
 };
 

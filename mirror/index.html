@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>TUCAN-KAMON!</title>
+	<link rel="icon" href="/favicon.png" type="image/x-icon">
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+	<h1>TUCAN-KAMON!</h1>
+
+	<img src="/tucan.png" alt="tucan image">
+
+	<p>TU TU TU TUUUU!!</p>
+	
+	<hr>
+
+	<form action="/del/" method="post" enctype="multipart/form-data">
+		<input type="file" name="archivo" id="archivo">
+		<button type="submit">Subir Archivo (POST)</button>
+	</form>
+
+	<hr>
+
+	<button>
+		<a href="http://localhost:8042/del/">Directory listing</a>
+	</button>
+
+	<hr>
+
+	<button id="deleteButton">Borrar deleteme (DELETE)</button>
+	<script>
+		document.getElementById('deleteButton').addEventListener('click', function() {
+			fetch('/del/deleteme', {
+			method: 'DELETE'
+			});
+		});
+	</script>
+
+	<hr>
+
+	<button id="updateButton">Actualizar archivo deleteme (PUT)</button>
+	<script>
+		document.getElementById('updateButton').addEventListener('click', function() {
+		var nuevoContenido = prompt("Ingrese el nuevo contenido del archivo:");
+
+		if (nuevoContenido) {
+			fetch('/del/deleteme', {
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'text/plain'
+			},
+			body: nuevoContenido
+			});
+		}
+		});
+	</script>
+
+</body>
+</html>

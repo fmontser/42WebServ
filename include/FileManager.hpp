@@ -1,6 +1,7 @@
 #pragma once
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
+#include "Route.hpp"
 
 class DataAdapter;
 
@@ -13,7 +14,9 @@ class FileManager {
 		FileManager& operator=(const FileManager& src);
 
 	public:
-
+  
 		static HttpResponse::responseType	readFile(DataAdapter& dataAdapter);
 		static HttpResponse::responseType	writeFile(DataAdapter& dataAdapter);
+		static HttpResponse::responseType	deleteFile(DataAdapter& dataAdapter);
+		static HttpResponse::responseType	downloadFile(DataAdapter& dataAdapter);
 };
