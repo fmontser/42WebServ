@@ -48,7 +48,19 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter) {
 	}
 	
 	if (request.method == "GET") {
-		rtype  = FileManager::readFile(dataAdapter);
+    
+    
+		// std::cout << "DEBUG: Request URL: " << request.url << std::endl;
+		 size_t downloadParamPos = request.url.find("?download=true");//new
+		if (downloadParamPos != std::string::npos) {//new
+			request.url = request.url.substr(0, downloadParamPos);//new
+			rtype = FileManager::downloadFile(dataAdapter, actualRoute);//new
+		} else {
+			rtype  = FileManager::readFile(dataAdapter, actualRoute);
+		}
+    
+    
+
 		response.setupResponse(rtype, dataAdapter);
 		connection->isChunkedResponse = response.isChunked();
 	}

@@ -12,6 +12,5 @@ class Index {
 		Index(const Index& src);
 		Index& operator=(const Index& src);
 
-		static std::vector<char> generateAutoindex(DataAdapter& dataAdapter);
-		static bool isIndexRoute(DataAdapter& adapter, Route *actualRoute);
+		static std::vector<char> generateAutoindex(DataAdapter& adapter/* , Route *actualRoute */);
 	};

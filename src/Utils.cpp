@@ -3,6 +3,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <sys/stat.h>
+#include <algorithm>
 
 
 std::vector<std::string> Utils::splitString(const std::string& str, char delimiter) {
@@ -85,4 +86,19 @@ bool	Utils::isDirectory(std::string path) {
 			return true;
 	}
 	return false;
+}
+std::string Utils::getFileType(std::string path) {
+	size_t pos = path.find_last_of('.');
+	if (pos != std::string::npos) {
+		std::string ext = path.substr(pos + 1);
+		std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+		return ext;
+	}
+	return "";
+}
+
+std::string Utils::toString(size_t value) {
+	std::stringstream ss;
+	ss << value;
+	return ss.str();
 }

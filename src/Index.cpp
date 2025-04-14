@@ -24,24 +24,85 @@ std::vector<char> Index::generateAutoindex(DataAdapter& dataAdapter) {
 	if (dir == NULL)
 		return body;
 
-	autoIndex += "<html><head><title>Index of " + path + "</title></head><body>";
-	autoIndex += "<style>body { font-family: Arial, sans-serif; }</style>";
-	autoIndex += "<style>pre { font-family: monospace; }</style>";
-	autoIndex += "<style>h1 { color: #333; }</style>";
-	autoIndex += "<style>hr { border: 1px solid #ccc; }</style>";
-	autoIndex += "<style>a { text-decoration: none; color: #007BFF; }</style>";
-	autoIndex += "<style>a:hover { text-decoration: underline; }</style>";
-	autoIndex += "<h1>Index of " + path + "</h1><hr><pre>";
-	autoIndex += "<a href=\"..\">Home</a>\n";
-	autoIndex += "<hr> <br>";
+	autoIndex += "<!DOCTYPE html>\n";
+	autoIndex += "<html>\n<head>\n";
+	autoIndex += "<title>Index of " + path + "</title>";
+	autoIndex += "	<style>\n";
+	autoIndex += "		body { font-family: Arial, sans-serif; margin: 40px; background-color: #f5f5f5; }\n";
+	autoIndex += "		.container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }\n";
+	autoIndex += "		h1 { color: #333; margin-bottom: 20px; }\n";
+	autoIndex += "		hr { border: 0; height: 1px; background: #ddd; margin: 20px 0; }\n";
+	autoIndex += "		.file-list { width: 100%; border-collapse: collapse; }\n";
+	autoIndex += "		.file-list th { text-align: left; padding: 10px; background: #f0f0f0; }\n";
+	autoIndex += "		.file-list td { padding: 10px; border-bottom: 1px solid #eee; }\n";
+	autoIndex += "		.file-list tr:hover { background: #f9f9f9; }\n";
+	autoIndex += "		a { color: #007BFF; text-decoration: none; }\n";
+	autoIndex += "		a:hover { text-decoration: underline; }\n";
+	autoIndex += "		.btn { padding: 5px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; }\n";
+	autoIndex += "		.download-btn { background: #28a745; color: white; border: none; }\n";
+	autoIndex += "		.delete-btn { background: #dc3545; color: white; border: none; }\n";
+	autoIndex += "		.home-link { display: inline-block; margin-bottom: 20px; }\n";
+	autoIndex += "	</style>\n";
+
+	autoIndex += "	<script>\n";
+	autoIndex += "		function deleteFile(filename) {\n";
+	autoIndex += "			if (confirm('Are you sure you want to delete ' + filename + '?')) {\n";
+	autoIndex += "				fetch(filename, {\n";
+	autoIndex += "					method: 'DELETE',\n";
+	autoIndex += "					headers: { 'Content-Type': 'application/json' }\n";
+	autoIndex += "				}).then(response => {\n";
+	autoIndex += "					if (response.ok) {\n";
+	autoIndex += "						window.location.reload(); // Refresh the page after delete\n";
+	autoIndex += "					} else {\n";
+	autoIndex += "						alert('Failed to delete file');\n";
+	autoIndex += "					}\n";
+	autoIndex += "				});\n";
+	autoIndex += "			}\n";
+	autoIndex += "		}\n";
+	autoIndex += "		function downloadFile(filename) {\n";//****
+	autoIndex += "			window.location.href = filename + '?download=true';\n";//*** 
+	autoIndex += "		}\n";
+	autoIndex += "	</script>\n";
+
+
+
+	autoIndex += "</head>\n<body>\n";
+	autoIndex += "<div class=\"container\">\n";
+	autoIndex += "	<h1>Index of " + path + "</h1>\n";
+	autoIndex += "	<a href=\"http://localhost:8042\" class=\"home-link\">Back to parent directory</a>\n";
+	autoIndex += "	<hr>\n";
+	autoIndex += "	<table class=\"file-list\">\n";
+	autoIndex += "	<thead><tr><th>Name</th><th>Actions</th></tr></thead>\n";
+	autoIndex += "<tbody>\n";
+
 
 	while ((entry = readdir(dir)) != NULL) {
-		if (entry->d_name[0] != '.') {
-			autoIndex += "<a href=\"" + std::string(entry->d_name) + "\">" + std::string(entry->d_name) + "</a>\n";
-		}
+			if (entry->d_name[0] != '.') {
+					std::string name = entry->d_name;
+ 					std::string fullPath = path + "/" + name;
+					bool isDir = false;
+					struct stat statbuf;
+					if (stat(fullPath.c_str(), &statbuf) == 0) {
+							isDir = S_ISDIR(statbuf.st_mode);
+					}
+					autoIndex += "		<tr>\n";
+					autoIndex += "			<td><a href=\"" + name + (isDir ? "/" : "") + "\" target=\"_blank\" >" + name + (isDir ? "/" : "") + "</a></td>\n";
+					autoIndex += "			<td>\n";
+					if (!isDir) {
+							autoIndex += "<button class=\"btn download-btn\" onclick=\"downloadFile('" + name + "')\">Download</button>\n";
+							autoIndex += "<button class=\"btn delete-btn\" onclick=\"deleteFile('" + name + "')\">Delete</button>\n";
+					}
+					autoIndex += "			</td>\n";
+					autoIndex += "		</tr>\n";
+			}
 	}
 
-	autoIndex += "</pre><hr></body></html>";
+	autoIndex += "		</tbody>\n";
+	autoIndex += "	</table>\n";
+	autoIndex += "	<hr>\n";
+	autoIndex += "	<p style=\"text-align: right; color: #666;\">By courtesy of your friendly cpp 42WebServer</p>\n";
+	autoIndex += "</div>\n";
+	autoIndex += "</body>\n</html>\n";
 	closedir(dir);
 	return body = std::vector<char>(autoIndex.begin(), autoIndex.end());
 }
