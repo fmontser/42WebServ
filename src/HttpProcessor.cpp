@@ -33,6 +33,12 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter) {
 	HttpResponse&	response = dataAdapter.getResponse();
 	Connection		*connection = dataAdapter.getConnection();
 
+	size_t downloadParamPos = request.url.find("?download=true");
+	if (downloadParamPos != std::string::npos) {
+		request.url = request.url.substr(0, downloadParamPos);
+		request.isBinaryDownload =  true;
+	}
+
 	if (connection->requestMode == Connection::SINGLE) {
 		rtype = validateRoute(dataAdapter);
 		if (rtype != HttpResponse::EMPTY) {
@@ -48,19 +54,7 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter) {
 	}
 	
 	if (request.method == "GET") {
-    
-    
-		// std::cout << "DEBUG: Request URL: " << request.url << std::endl;
-		 size_t downloadParamPos = request.url.find("?download=true");//new
-		if (downloadParamPos != std::string::npos) {//new
-			request.url = request.url.substr(0, downloadParamPos);//new
-			rtype = FileManager::downloadFile(dataAdapter, actualRoute);//new
-		} else {
-			rtype  = FileManager::readFile(dataAdapter, actualRoute);
-		}
-    
-    
-
+		rtype  = FileManager::readFile(dataAdapter);
 		response.setupResponse(rtype, dataAdapter);
 		connection->isChunkedResponse = response.isChunked();
 	}

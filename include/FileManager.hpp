@@ -18,6 +18,5 @@ class FileManager {
 		static HttpResponse::responseType	readFile(DataAdapter& dataAdapter);
 		static HttpResponse::responseType	writeFile(DataAdapter& dataAdapter);
 		static HttpResponse::responseType	deleteFile(DataAdapter& dataAdapter);
-  
-  	static HttpResponse::responseType downloadFile(DataAdapter& adapter, Route* route); //TODO check
+		static HttpResponse::responseType	downloadFile(DataAdapter& dataAdapter);
 };

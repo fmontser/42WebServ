@@ -19,6 +19,7 @@ class PathManager
 		static void			setWorkingDir(std::string dir);
 
 		static void			stackPath(std::string& path, std::string appendix);
+		static void			stackRelativePath(std::string& path, std::string appendix);
 		static std::string	resolveRoutePath(DataAdapter& dataAdapter);
 		static std::string	resolveServerPath(DataAdapter& dataAdapter);
 		static std::string	resolveErrorPage(DataAdapter& dataAdapter, std::string defaultPage);

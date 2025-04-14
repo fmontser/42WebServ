@@ -23,6 +23,18 @@
 		path.append(appendix);
 	}
 
+	void			PathManager::stackRelativePath(std::string& path, std::string appendix) {
+
+		if (!path.empty() && path.at(path.size() - 1) == '/')
+			path.erase(path.size() - 1, 1);
+		if (!appendix.empty() && appendix.at(0) == '/')
+			appendix.erase(0,1);
+		path.append("/");
+		if (path.at(0) == '/')
+			path.erase(0,1);
+		path.append(appendix);
+	}
+
 	std::string		PathManager::getWorkingDir() {
 		char buffer[PATH_MAX] = {0};
 

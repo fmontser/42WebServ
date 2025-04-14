@@ -5,6 +5,11 @@
 #include <sys/stat.h>
 #include <algorithm>
 
+std::string Utils::toString(size_t value) {
+	std::stringstream ss;
+	ss << value;
+	return ss.str();
+}
 
 std::vector<std::string> Utils::splitString(const std::string& str, char delimiter) {
 	std::vector<std::string> tokens;
@@ -90,15 +95,18 @@ bool	Utils::isDirectory(std::string path) {
 std::string Utils::getFileType(std::string path) {
 	size_t pos = path.find_last_of('.');
 	if (pos != std::string::npos) {
-		std::string ext = path.substr(pos + 1);
-		std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+		std::string ext (path.substr(pos + 1));
 		return ext;
 	}
 	return "";
 }
 
-std::string Utils::toString(size_t value) {
-	std::stringstream ss;
-	ss << value;
-	return ss.str();
+//TODO testing
+std::string Utils::getFileName(std::string path) {
+	size_t pos = path.find_last_of('/');
+	if (pos != std::string::npos) {
+		std::string fileName (path.substr(pos + 1));
+		return fileName;
+	}
+	return "";
 }

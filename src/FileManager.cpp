@@ -50,6 +50,25 @@ static void chunkEncode(std::vector<char>& body, size_t maxPayload) {
 		body.push_back(byte);
 }
 
+//TODO testing
+static void setDownloadResponse(DataAdapter& dataAdapter, std::string path) {
+	
+	std::string contentType, fileName;
+
+	
+	fileName = Utils::getFileName(path);
+
+
+	HttpHeader contentDispHeader;
+	contentDispHeader.name = "Content-Disposition";
+	HeaderValue cdValue;
+	cdValue.name = "attachment; filename=\"" + fileName + "\"";
+	contentDispHeader.addValue(cdValue);
+	dataAdapter.getResponse().addHeader(contentDispHeader);
+
+}
+
+
 HttpResponse::responseType	FileManager::readFile(DataAdapter& dataAdapter) {
 	std::string			path;
 	int					fd, readSize, i;
@@ -78,6 +97,9 @@ HttpResponse::responseType	FileManager::readFile(DataAdapter& dataAdapter) {
 		while (i < readSize)
 			response.body.push_back(readBuffer[i++]);
 	} while (readSize);
+
+	if (request.isBinaryDownload)
+		setDownloadResponse(dataAdapter, path);
 
 	if (response.body.size() > server.getMaxPayload()) {
 		response.addHeader("Transfer-Encoding: chunked");
@@ -156,12 +178,11 @@ HttpResponse::responseType	FileManager::deleteFile(DataAdapter& dataAdapter) {
 	return HttpResponse::NO_CONTENT;
 }
 
-HttpResponse::responseType FileManager::downloadFile(DataAdapter& adapter, Route* route) {
-		HttpRequest& request = adapter.getRequest();
-		HttpResponse& response = adapter.getResponse();
-		(void)route;
+HttpResponse::responseType FileManager::downloadFile(DataAdapter& dataAdapter) {
+		HttpRequest& request = dataAdapter.getRequest();
+		HttpResponse& response = dataAdapter.getResponse();
 
-		std::string filePath = ".." + adapter.getConnection()->getServer().getRoot() + request.url;
+		std::string filePath = ".." + dataAdapter.getConnection()->getServer().getRoot() + request.url;
 		std::string fileName = request.url.substr(request.url.find_last_of('/') + 1);
 
 		if (access(filePath.c_str(), F_OK) == -1) {
@@ -243,6 +264,6 @@ HttpResponse::responseType FileManager::downloadFile(DataAdapter& adapter, Route
 
 		response.body = buffer;
 		file.close();
-    return HttpResponse::OK;
+		return HttpResponse::OK;
 
 }

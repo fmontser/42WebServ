@@ -3,17 +3,21 @@
 #include "Connection.hpp"
 #include <algorithm>
 
-HttpRequest::HttpRequest() : HttpMessage() {}
+HttpRequest::HttpRequest() : HttpMessage() {
+	this->isBinaryDownload =false;
+}
 
 HttpRequest::HttpRequest(const HttpRequest& src) : HttpMessage() {
 	this->method = src.method;
 	this->url = src.url;
+	this->isBinaryDownload = src.isBinaryDownload;
 }
 
 HttpRequest& HttpRequest::operator=(const HttpRequest& src) {
 	if (this != &src) {
 		this->method = src.method;
 		this->url = src.url;
+		this->isBinaryDownload = src.isBinaryDownload;
 	}
 	return *this;
 }

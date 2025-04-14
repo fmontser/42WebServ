@@ -3,6 +3,9 @@
 #include "Utils.hpp"
 #include <dirent.h>
 #include <unistd.h>
+#include <sys/stat.h>
+
+#include <iostream>
 
 Index::Index() {}
 Index::~Index() {}
@@ -34,7 +37,7 @@ std::vector<char> Index::generateAutoindex(DataAdapter& dataAdapter) {
 	autoIndex += "		hr { border: 0; height: 1px; background: #ddd; margin: 20px 0; }\n";
 	autoIndex += "		.file-list { width: 100%; border-collapse: collapse; }\n";
 	autoIndex += "		.file-list th { text-align: left; padding: 10px; background: #f0f0f0; }\n";
-	autoIndex += "		.file-list td { padding: 10px; border-bottom: 1px solid #eee; }\n";
+	autoIndex += "		.file-list td { padding: 10px; border-bottom: 1px solid #eee; fileName}\n";
 	autoIndex += "		.file-list tr:hover { background: #f9f9f9; }\n";
 	autoIndex += "		a { color: #007BFF; text-decoration: none; }\n";
 	autoIndex += "		a:hover { text-decoration: underline; }\n";
@@ -52,15 +55,15 @@ std::vector<char> Index::generateAutoindex(DataAdapter& dataAdapter) {
 	autoIndex += "					headers: { 'Content-Type': 'application/json' }\n";
 	autoIndex += "				}).then(response => {\n";
 	autoIndex += "					if (response.ok) {\n";
-	autoIndex += "						window.location.reload(); // Refresh the page after delete\n";
+	autoIndex += "						window.location.reload();\n";
 	autoIndex += "					} else {\n";
 	autoIndex += "						alert('Failed to delete file');\n";
 	autoIndex += "					}\n";
 	autoIndex += "				});\n";
 	autoIndex += "			}\n";
 	autoIndex += "		}\n";
-	autoIndex += "		function downloadFile(filename) {\n";//****
-	autoIndex += "			window.location.href = filename + '?download=true';\n";//*** 
+	autoIndex += "		function downloadFile(filename) {\n";
+	autoIndex += "			window.location.href = filename + '?download=true';\n";
 	autoIndex += "		}\n";
 	autoIndex += "	</script>\n";
 
@@ -77,24 +80,32 @@ std::vector<char> Index::generateAutoindex(DataAdapter& dataAdapter) {
 
 
 	while ((entry = readdir(dir)) != NULL) {
-			if (entry->d_name[0] != '.') {
-					std::string name = entry->d_name;
- 					std::string fullPath = path + "/" + name;
-					bool isDir = false;
-					struct stat statbuf;
-					if (stat(fullPath.c_str(), &statbuf) == 0) {
-							isDir = S_ISDIR(statbuf.st_mode);
-					}
-					autoIndex += "		<tr>\n";
-					autoIndex += "			<td><a href=\"" + name + (isDir ? "/" : "") + "\" target=\"_blank\" >" + name + (isDir ? "/" : "") + "</a></td>\n";
-					autoIndex += "			<td>\n";
-					if (!isDir) {
-							autoIndex += "<button class=\"btn download-btn\" onclick=\"downloadFile('" + name + "')\">Download</button>\n";
-							autoIndex += "<button class=\"btn delete-btn\" onclick=\"deleteFile('" + name + "')\">Delete</button>\n";
-					}
-					autoIndex += "			</td>\n";
-					autoIndex += "		</tr>\n";
+		if (entry->d_name[0] != '.') {
+			std::string name = entry->d_name;
+
+			//TODO arreglar raiz diferente en la url, segun quien llama????
+			std::string relativePath;
+			PathManager::stackRelativePath(relativePath, dataAdapter.getRequest().url);
+			PathManager::stackRelativePath(relativePath, name);
+
+
+			std::cout << "\t >>>" << relativePath << std::endl;
+
+			bool isDir = false;
+			struct stat statbuf;
+			if (stat(relativePath.c_str(), &statbuf) == 0) {
+					isDir = S_ISDIR(statbuf.st_mode);
 			}
+			autoIndex += "		<tr>\n";
+			autoIndex += "			<td><a href=\"" + name + (isDir ? "/" : "") + "\" target=\"_blank\" >" + name + (isDir ? "/" : "") + "</a></td>\n";
+			autoIndex += "			<td>\n";
+			if (!isDir) {
+					autoIndex += "<button class=\"btn download-btn\" onclick=\"downloadFile('" + relativePath + "')\">Download</button>\n";
+					autoIndex += "<button class=\"btn delete-btn\" onclick=\"deleteFile('" + relativePath + "')\">Delete</button>\n";
+			}
+			autoIndex += "			</td>\n";
+			autoIndex += "		</tr>\n";
+		}
 	}
 
 	autoIndex += "		</tbody>\n";

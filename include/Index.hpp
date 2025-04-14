@@ -1,7 +1,7 @@
 #pragma once
 
-#include "HttpProcessor.hpp"
 #include <string>
+#include "HttpProcessor.hpp"
 
 class DataAdapter;
 
@@ -12,5 +12,6 @@ class Index {
 		Index(const Index& src);
 		Index& operator=(const Index& src);
 
-		static std::vector<char> generateAutoindex(DataAdapter& adapter/* , Route *actualRoute */);
+		static std::vector<char>	generateAutoindex(DataAdapter& dataAdapter);
+		static bool					isIndexRoute(DataAdapter& dataAdapter, Route *actualRoute);
 	};
