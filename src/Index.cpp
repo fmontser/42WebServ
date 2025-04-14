@@ -81,28 +81,23 @@ std::vector<char> Index::generateAutoindex(DataAdapter& dataAdapter) {
 
 	while ((entry = readdir(dir)) != NULL) {
 		if (entry->d_name[0] != '.') {
-			std::string name = entry->d_name;
+			std::string fileName = entry->d_name;
 
-			//TODO arreglar raiz diferente en la url, segun quien llama????
+			//TODO arreglar raiz del/ == del (PATHMANAGER!!!!!)
+
 			std::string relativePath;
 			PathManager::stackRelativePath(relativePath, dataAdapter.getRequest().url);
-			PathManager::stackRelativePath(relativePath, name);
+			PathManager::stackRelativePath(relativePath, fileName);
 
 
 			std::cout << "\t >>>" << relativePath << std::endl;
 
-			bool isDir = false;
-			struct stat statbuf;
-			if (stat(relativePath.c_str(), &statbuf) == 0) {
-					isDir = S_ISDIR(statbuf.st_mode);
-			}
+
 			autoIndex += "		<tr>\n";
-			autoIndex += "			<td><a href=\"" + name + (isDir ? "/" : "") + "\" target=\"_blank\" >" + name + (isDir ? "/" : "") + "</a></td>\n";
+			autoIndex += "			<td><a href=\"" + relativePath + "\" target=\"_blank\" >" + fileName + "</a></td>\n";
 			autoIndex += "			<td>\n";
-			if (!isDir) {
-					autoIndex += "<button class=\"btn download-btn\" onclick=\"downloadFile('" + relativePath + "')\">Download</button>\n";
-					autoIndex += "<button class=\"btn delete-btn\" onclick=\"deleteFile('" + relativePath + "')\">Delete</button>\n";
-			}
+			autoIndex += "				<button class=\"btn download-btn\" onclick=\"downloadFile('" + relativePath + "')\">Download</button>\n";
+			autoIndex += "				<button class=\"btn delete-btn\" onclick=\"deleteFile('" + relativePath + "')\">Delete</button>\n";
 			autoIndex += "			</td>\n";
 			autoIndex += "		</tr>\n";
 		}

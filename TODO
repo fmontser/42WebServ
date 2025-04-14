@@ -9,6 +9,8 @@
 
 //TODO 405 not allowed, es si la ruta no permite un metodo que SI esta implementado.
 
+//TODO arreglar raiz del/ == del (PATHMANAGER!!!!!), probar con listing 201
+
 
 //TODO curl test con:
 /*
