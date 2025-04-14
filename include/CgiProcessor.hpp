@@ -1,6 +1,7 @@
 #pragma once
 
 #include "HttpResponse.hpp"
+#include "DataAdapter.hpp"
 
 class CgiProcessor {
 	private:
@@ -15,5 +16,6 @@ class CgiProcessor {
 		static void	setEnvironment();
 		static void	executeCgi();
 	public:
-		static void	recieveHttpResponse(HttpResponse& response);
+		static void	processCgi(DataAdapter& dataAdapter);
+		static bool	isCgiRequest(std::string url);
 };
