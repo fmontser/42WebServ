@@ -36,8 +36,10 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter) {
 
 
 	//TODO deberia estar en un route??
-	if (CgiProcessor::isCgiRequest(request.url))
-		CgiProcessor::processCgi(dataAdapter);
+	if (CgiProcessor::isCgiRequest(request.url)) {
+		CgiProcessor cgi; //TODO esto muere al final del bloque
+		cgi.processCgi(dataAdapter);
+	}
 
 
 	//TODO abstraer

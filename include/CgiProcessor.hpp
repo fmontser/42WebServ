@@ -5,13 +5,25 @@
 
 class CgiProcessor {
 	private:
-	
-	CgiProcessor();
-	~CgiProcessor();
-	CgiProcessor(const CgiProcessor& src);
-	CgiProcessor& operator=(const CgiProcessor& src);
-	
+		std::string	_cgiName;
+		std::string	_method;
+		std::string	_query;
+		std::string	_cType;
+		std::string	_cLength;
+		
+		char		*_envp[4];
+		char		*_argv[1];
+
+		std::string	executeCgi();
+		void		parseParameters(std::string url);
+		void		setEnvironment(DataAdapter& dataAdapter);
+
 	public:
-	static void	processCgi(DataAdapter& dataAdapter);
-	static bool	isCgiRequest(std::string url);
+		CgiProcessor();
+		~CgiProcessor();
+		CgiProcessor(const CgiProcessor& src);
+		CgiProcessor& operator=(const CgiProcessor& src);
+
+		void		processCgi(DataAdapter& dataAdapter);
+		static bool	isCgiRequest(std::string url);
 };

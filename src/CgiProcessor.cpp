@@ -6,32 +6,30 @@
 #include <cstdlib>
 #include <wait.h>
 
-typedef std::map<std::string, std::string> CgiParams;
-
 CgiProcessor::CgiProcessor() {}
 CgiProcessor::~CgiProcessor() {}
-CgiProcessor::CgiProcessor(const CgiProcessor& src) { (void)src; }
+CgiProcessor::CgiProcessor(const CgiProcessor& src) {
+	_cgiName = src._cgiName;
+	_method = src._method;
+	_query = src._query;
+	_cType = src._cType;
+	_cLength = src._cLength;
+}
 
 CgiProcessor& CgiProcessor::operator=(const CgiProcessor& src) {
-	(void)src;
+	if (this != &src){
+		_cgiName = src._cgiName;
+		_method = src._method;
+		_query = src._query;
+		_cType = src._cType;
+		_cLength = src._cLength;
+	}
 	return *this;
 }
 
 
-static std::string	executeCgi(CgiParams& params) {
-
-	//TODO sacar envp/ argv
-	char	*envp[4];
-	char	*argv[1];
-	int			i = 0;
+std::string	CgiProcessor::executeCgi() {
 	std::string	path, output;
-	
-	argv[0] = const_cast<char *>(params["CGI_NAME"].c_str());
-	envp[i++] = const_cast<char *>(params["REQUEST_METHOD"].c_str());
-	envp[i++] = const_cast<char *>(params["QUERY_STRING"].c_str());
-	envp[i++] = const_cast<char *>(params["CONTENT_TYPE"].c_str()); //TODO como comprobar?
-	envp[i] = const_cast<char *>(params["CONTENT_LENGTH"].c_str()); //TODO como comprobar?
-
 
 	//TODO std_in es irrelevante???
 
@@ -72,7 +70,7 @@ static std::string	executeCgi(CgiParams& params) {
 
 		// Execute the CGI script
 		//TODO check -1 as fail!!!
-		if (execve(path.c_str(), argv, envp) == -1) {
+		if (execve(path.c_str(), _argv, _envp) == -1) {
 			std::cerr << "Error: execve failed: " << std::endl;
 			exit(EXIT_FAILURE);
 		}
@@ -121,58 +119,55 @@ static std::string	executeCgi(CgiParams& params) {
 }
 
 //TODO test check errors
-static void	setEnvironment(DataAdapter& dataAdapter, CgiParams& params) {
+void	CgiProcessor::setEnvironment(DataAdapter& dataAdapter) {
 	HttpRequest	request = dataAdapter.getRequest();
 	HttpHeader	*cTypeHeader = request.findHeader("Content-Type");
-	HttpHeader	*lTypeHeader = request.findHeader("Content-Length");
+	HttpHeader	*cLengthHeader = request.findHeader("Content-Length");
 	HeaderValue	value;
+	int			i = 0;
 	
+	_argv[i] = const_cast<char *>(_cgiName.c_str());
 
-	params["REQUEST_METHOD"] = std::string("REQUEST_METHOD=").append(request.method).c_str();
-	params["QUERY_STRING"] = std::string("=").append(params["QUERY_STRING"]).c_str();
+	_method = std::string("REQUEST_METHOD=").append(request.method);
+	_envp[i++] = const_cast<char *>(_method.c_str());
 
+	_query = std::string("QUERY_STRING=").append(_query);
+	_envp[i++] = const_cast<char *>(_query.c_str());
+
+	//TODO como comprobar?
 	if (cTypeHeader){
 		cTypeHeader->getValue("Content-Type", &value);
-		params["CONTENT_TYPE"] = std::string("CONTENT_TYPE=").append(value.name.c_str()).c_str();
+		_cType = std::string("CONTENT_TYPE=").append(value.name.c_str());
+		_envp[i++] = const_cast<char *>(_cType.c_str());
 	}
-	else
-		params["CONTENT_TYPE"] = "";
 
-	if (lTypeHeader){
-		lTypeHeader->getValue("Content-Length", &value);
-		params["CONTENT_LENGTH"] = std::string("CONTENT_LENGTH=").append(value.name.c_str()).c_str();
+	//TODO como comprobar?
+	if (cLengthHeader){
+		cLengthHeader->getValue("Content-Length", &value);
+		_cLength = std::string("CONTENT_LENGTH=").append(value.name.c_str());
+		_envp[i] = const_cast<char *>(_cLength.c_str());
 	}
-	else
-		params["CONTENT_LENGTH"] = "";
 }
 
-
-
 //TODO manage errors!!!!
-static void	parseParameters(CgiParams& params, std::string url){
+void	CgiProcessor::parseParameters(std::string url){
 	std::vector<std::string> raw = Utils::splitString(url, '?');
 
-	params["CGI_NAME"] = raw[0].substr(
+	_cgiName = raw[0].substr(
 		raw[0].find_last_of('/', raw[0].size()) + 1
 		, raw[0].size()
 	);
-
-	params["QUERY_STRING"] = raw[1];
+	//TODO  check añadir comillas simples o dobles???? contiene (=) iguales! (es valido en principio)
+	_query = raw[1];
 }
 
 void	CgiProcessor::processCgi(DataAdapter& dataAdapter) {
-	CgiParams params;
-	
-	parseParameters(params, dataAdapter.getRequest().url);
-	setEnvironment(dataAdapter, params);
-	executeCgi(params);
-
-
-
+	parseParameters(dataAdapter.getRequest().url);
+	setEnvironment(dataAdapter);
+	executeCgi();
 }
 
 bool	CgiProcessor::isCgiRequest(std::string url) {
-	//TODO check
 	if (url.find(".cgi", 0) != url.npos)
 		return true;
 	return false;
