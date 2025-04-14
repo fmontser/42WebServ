@@ -45,6 +45,8 @@ static void	deserializeRequestLine(std::stringstream& data, HttpRequest& request
 	request.method = line.substr(0, line.find(' '));
 	line =  line.substr(line.find(' ') + SPLIT_CHR_SZ, line.size());
 	request.url = line.substr(0, line.find(' '));
+	if (!request.url.empty() && request.url.at(request.url.size() -1) == '/')
+		request.url.erase(request.url.size() - 1, 1);
 	line =  line.substr(line.find(' ') + SPLIT_CHR_SZ, line.size());
 	request.version = line.substr(0, line.find('\r'));
 }

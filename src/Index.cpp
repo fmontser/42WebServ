@@ -1,20 +1,23 @@
 #include "Index.hpp"
+#include "PathManager.hpp"
+#include "Utils.hpp"
+#include <dirent.h>
+#include <unistd.h>
 
 Index::Index() {}
 Index::~Index() {}
 Index::Index(const Index& src) {
 	*this = src;
 }
-Index& Index::operator=(const Index& src) {
+Index&	Index::operator=(const Index& src) {
 	(void)src;
 	return *this;
 }
-std::vector<char> Index::generateAutoindex(DataAdapter& adapter) {
+std::vector<char> Index::generateAutoindex(DataAdapter& dataAdapter) {
 	std::string autoIndex;
 	std::vector<char> body;
 	
-	
-	std::string path = std::string("..").append(adapter.getConnection()->getServer().getRoot() + adapter.getRequest().url);
+	std::string path = PathManager::resolveServerPath(dataAdapter);
 	DIR *dir = opendir(path.c_str());
 	struct dirent *entry;
 
@@ -102,4 +105,17 @@ std::vector<char> Index::generateAutoindex(DataAdapter& adapter) {
 	autoIndex += "</body>\n</html>\n";
 	closedir(dir);
 	return body = std::vector<char>(autoIndex.begin(), autoIndex.end());
+}
+
+bool	Index::isIndexRoute(DataAdapter& dataAdapter, Route *actualRoute) {
+	std::string	path = PathManager::resolveServerPath(dataAdapter);
+	HttpRequest	request = dataAdapter.getRequest();
+
+	if (request.method == "GET"
+		&& Utils::isDirectory(path)
+		&& actualRoute->getAutoIndex() == "on"
+		&& ((access(path.c_str(), R_OK) == 0))
+		&& actualRoute->getDefault().empty())
+			return true;
+	return false;
 }

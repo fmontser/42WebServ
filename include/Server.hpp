@@ -8,6 +8,7 @@
 #include "Route.hpp"
 
 class Connection;
+class DataAdapter;
 
 class Server {
 	private:
@@ -50,7 +51,7 @@ class Server {
 		void	setPollfd(struct pollfd pfd);
 		void	setMaxPayLoad(const std::string& maxPayLoad);
 
-		Route	*getRequestedRoute(std::string url);
+		Route	*getRequestedRoute(DataAdapter& dataAdapter);
 		void	listenSocket();
 		bool	hasPollIn() const;
 		bool	hasPollOut() const;

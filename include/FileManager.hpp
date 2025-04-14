@@ -14,10 +14,10 @@ class FileManager {
 		FileManager& operator=(const FileManager& src);
 
 	public:
-
-		static HttpResponse::responseType	readFile(DataAdapter& dataAdapter, Route* actualRoute);
-		static HttpResponse::responseType	writeFile(DataAdapter& dataAdapter, Route* actualRoute);
-		static HttpResponse::responseType	deleteFile(DataAdapter& dataAdapter, Route* actualRoute);
-		static HttpResponse::responseType downloadFile(DataAdapter& adapter, Route* route);//new
-		
+  
+		static HttpResponse::responseType	readFile(DataAdapter& dataAdapter);
+		static HttpResponse::responseType	writeFile(DataAdapter& dataAdapter);
+		static HttpResponse::responseType	deleteFile(DataAdapter& dataAdapter);
+  
+  	static HttpResponse::responseType downloadFile(DataAdapter& adapter, Route* route); //TODO check
 };
