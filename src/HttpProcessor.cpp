@@ -3,21 +3,27 @@
 #include "HttpProcessor.hpp"
 #include "DataAdapter.hpp"
 #include "FileManager.hpp"
+#include "PathManager.hpp"
+#include "Utils.hpp"
+#include "Index.hpp"
+#include <unistd.h>
 
+static	HttpResponse::responseType	validateRoute(DataAdapter& dataAdapter) {
+	HttpRequest	request = dataAdapter.getRequest();
+	Route	*actualRoute = dataAdapter.getConnection()
+			->getServer().getRequestedRoute(dataAdapter);
 
-//TODO @@@@@@@@@@ continuar manejar rutas!!!!!
-/* static	bool	validateRouteMethod(std::string method, Server& server, HttpRequest& request) {
-
-	Route route =  != ;
-	std::map<std::string, Route>::iterator routeIt = server.getRoutes().find(request.url);
-	if (routeIt != server.getRoutes().end())
-		return true;
-	return false;
-	(void)method;
-	(void)server;
-	(void)request;
-	return true;
-} */
+	if(actualRoute == NULL)
+		return HttpResponse::NOT_FOUND;
+	if (!actualRoute->getRedirect().empty())
+		return HttpResponse::SEE_OTHER;
+	if (!actualRoute->isMethodAllowed(request.method))
+		return HttpResponse::METHOD_NOT_ALLOWED;
+	if (Index::isIndexRoute(dataAdapter, actualRoute)) {
+		return HttpResponse::DIR_LIST;
+	}
+	return HttpResponse::EMPTY;
+}
 
 void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter) {
 	
@@ -27,15 +33,26 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter) {
 	HttpResponse&	response = dataAdapter.getResponse();
 	Connection		*connection = dataAdapter.getConnection();
 
+	size_t downloadParamPos = request.url.find("?download=true");
+	if (downloadParamPos != std::string::npos) {
+		request.url = request.url.substr(0, downloadParamPos);
+		request.isBinaryDownload =  true;
+	}
+
+	if (connection->requestMode == Connection::SINGLE) {
+		rtype = validateRoute(dataAdapter);
+		if (rtype != HttpResponse::EMPTY) {
+			response.setupResponse(rtype, dataAdapter);
+			return;
+		}
+	}
+
 	if (connection->isOverPayloadLimit) {
 		connection->requestMode = Connection::SINGLE;
 		response.setupResponse(HttpResponse::PAYLOAD_TOO_LARGE, dataAdapter);
 		return ;
 	}
-/* 	if (!validateRouteMethod(request.method, connection->getServer())) {
-		response.setupResponse(HttpResponse::METHOD_NOT_ALLOWED, dataAdapter);
-		return ;
-	} */
+	
 	if (request.method == "GET") {
 		rtype  = FileManager::readFile(dataAdapter);
 		response.setupResponse(rtype, dataAdapter);

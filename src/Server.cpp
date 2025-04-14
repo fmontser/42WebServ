@@ -6,15 +6,20 @@
 #include "Server.hpp"
 #include "ServerConstants.hpp"
 #include "Connection.hpp"
+#include "PathManager.hpp"
+#include "Utils.hpp"
 
 Server::Server() {
-	_defaults["default400"] = "/defaults/400.html";
-	_defaults["default403"] = "/defaults/403.html";
-	_defaults["default404"] = "/defaults/404.html";
-	_defaults["default405"] = "/defaults/405.html";
-	_defaults["default409"] = "/defaults/409.html";
-	_defaults["default500"] = "/defaults/500.html";
-	_defaults["default501"] = "/defaults/501.html";
+	_defaults["default201"] = "defaults/201.html";
+	_defaults["default204"] = "defaults/204.html";
+	_defaults["default400"] = "defaults/400.html";
+	_defaults["default403"] = "defaults/403.html";
+	_defaults["default404"] = "defaults/404.html";
+	_defaults["default405"] = "defaults/405.html";
+	_defaults["default409"] = "defaults/409.html";
+	_defaults["default413"] = "defaults/413.html";
+	_defaults["default500"] = "defaults/500.html";
+	_defaults["default501"] = "defaults/501.html";
 }
 
 Server::~Server() {
@@ -28,7 +33,6 @@ Server::Server(const Server& src) {
 	_host = src._host;
 	_port = src._port;
 	_root = src._root;
-	_uploadDir = src._uploadDir;
 	_defaults = src._defaults;
 	_maxPayload = src._maxPayload;
 	_routes = src._routes;
@@ -44,7 +48,6 @@ Server& Server::operator=(const Server& src) {
 		_host = src._host;
 		_port = src._port;
 		_root = src._root;
-		_uploadDir = src._uploadDir;
 		_defaults = src._defaults;
 		_maxPayload = src._maxPayload;
 		_routes = src._routes;
@@ -100,7 +103,6 @@ std::string						Server::getName() const { return this->_name; }
 std::string						Server::getHost() const { return this->_host; }
 int										Server::getPort() const { return this->_port; }
 std::string						Server::getRoot() const { return this->_root; }
-std::string						Server::getUploadDir() const { return this->_uploadDir; }
 std::vector<std::string>&		Server::getServerMethods() { return this->_serverMethods; }
 std::map<std::string, std::string>&		Server::getDefaults() {return this->_defaults; }
 size_t										Server::getMaxPayload() const { return _maxPayload; }
@@ -115,7 +117,6 @@ struct pollfd					Server::getPollfd() const { return _pollfd; }
 void	Server::setName(const std::string& name) { this->_name = name; }
 void	Server::setHost(const std::string& host) { this->_host = host; }
 void	Server::setRoot(const std::string& root) {_root = root; }
-void	Server::setUploadDir(const std::string& uploadDir) {_uploadDir = uploadDir; }
 void	Server::setServerMethods(const std::vector<std::string>& serverMethods) { _serverMethods = serverMethods; }
 void	Server::setSocketFd(int socketFd) { _socketFd = socketFd; }
 void	Server::setPollfd(struct pollfd pfd) {_pollfd = pfd; }
@@ -134,6 +135,29 @@ void	Server::setMaxPayLoad(const std::string& maxPayLoad) {
 	
 	payloadSize = strtol(maxPayLoad.c_str(), &err, 10);
 	_maxPayload = payloadSize;
+}
+
+Route	*Server::getRequestedRoute(DataAdapter& dataAdapter) {
+	std::string path, url;
+	
+	url = dataAdapter.getRequest().url;
+	path = PathManager::resolveServerPath(dataAdapter);
+
+	if (!Utils::isDirectory(path)) {
+		if (!(access(path.c_str(), F_OK) == 0))
+			return NULL;
+		url = Utils::getUrlPath(url);
+	}
+
+	std::map<std::string, Route>::iterator it = _routes.find(url);
+	if (it !=  _routes.end())
+		return &it->second;
+
+	it = _routes.find(url.append("/"));
+	if (it !=  _routes.end())
+		return &it->second;
+	
+	return NULL;
 }
 
 bool	Server::hasPollIn() const { return _pollfd.revents & POLLIN; }

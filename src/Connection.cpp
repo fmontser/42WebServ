@@ -68,6 +68,7 @@ Server&			Connection::getServer() const { return _server; }
 struct pollfd	Connection::getPollFd() const { return _pollfd; }
 
 void	Connection::recieveData() {
+
 	DataAdapter adapter = DataAdapter(this);
 	char		buffer[READ_BUFFER] = {0};
 	int			len;
@@ -84,8 +85,6 @@ void	Connection::recieveData() {
 	else if (len > 0) {
 		recvBuffer.assign(buffer, buffer + len);
 		if (requestMode == MULTIPART) {
-			if (_multiDataAdapter == NULL)
-				_multiDataAdapter = new DataAdapter(adapter);
 			contentLength -= len;
 			_multiDataAdapter->deserializeRequest();
 			_multiDataAdapter->getRequest().method = "POST";
@@ -105,8 +104,17 @@ void	Connection::recieveData() {
 		}
 		else {
 			adapter.deserializeRequest();
+
+			//TODO borrar debug para entrega
+			std::cout	<< BLUE << "Fd: " << adapter.getConnection()->getPollFd().fd
+						<< " requested: " << adapter.getRequest().url << END << std::endl;
+
 			HttpProcessor::processHttpRequest(adapter);
 			adapter.serializeResponse();
+			if (requestMode == Connection::MULTIPART) {
+				_multiDataAdapter = new DataAdapter(adapter);
+				_multiDataAdapter->getResponse().statusCode = "";
+			}
 			recvBuffer.clear();
 		}
 	}
@@ -154,12 +162,6 @@ void	Connection::sendData() {
 	sendBuffer.clear();
 }
 
-void			Connection::flushSocketIn() {
-	int socket = _pollfd.fd;
-	char buffer[READ_BUFFER];
-
-	while (recv(socket, buffer, READ_BUFFER, 0));
-}
 
 void	Connection::updatePollFd(struct pollfd pfd) { _pollfd = pfd; }
 bool	Connection::hasPollErr() const { return _pollfd.revents & POLLERR; }

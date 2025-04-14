@@ -45,6 +45,8 @@ static void	deserializeRequestLine(std::stringstream& data, HttpRequest& request
 	request.method = line.substr(0, line.find(' '));
 	line =  line.substr(line.find(' ') + SPLIT_CHR_SZ, line.size());
 	request.url = line.substr(0, line.find(' '));
+	if (!request.url.empty() && request.url.at(request.url.size() -1) == '/')
+		request.url.erase(request.url.size() - 1, 1);
 	line =  line.substr(line.find(' ') + SPLIT_CHR_SZ, line.size());
 	request.version = line.substr(0, line.find('\r'));
 }
@@ -58,15 +60,8 @@ static bool	deserializeHeaders(std::stringstream& data, HttpRequest& request, Da
 		if (line == CRLF)
 				break ;
 		if (line != connection->boundStart) {
-			HttpHeader newHeader = DataAdapter::deserializeHeader(line);
-			if (newHeader.name == "Content-Length" 
-				&& Utils::strToUint(newHeader.values[0].name) > connection->getServer().getMaxPayload()) {
-					connection->isOverPayloadLimit = true;
-					return true;
-				}
-			request.addHeader(newHeader);
+			request.addHeader(DataAdapter::deserializeHeader(line));
 		}
-
 	}
 	if (connection->requestMode == Connection::MULTIPART)
 		return true;

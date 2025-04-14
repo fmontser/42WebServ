@@ -3,6 +3,7 @@
 #include "Config.hpp"
 #include "ConnectionManager.hpp"
 #include "SignalManager.hpp"
+#include "PathManager.hpp"
 #include "Server.hpp"
 
 int main(int argc, char** argv) {
@@ -14,6 +15,8 @@ int main(int argc, char** argv) {
 	}
 
 	SignalManager::signalSetUp();
+	PathManager::setWorkingDir("../");
+	std::string test(argv[1]);
 	std::fstream configFileStream(argv[1]);
 	if (!configFileStream.is_open()) {
 		std::cerr << "Configuration error: cannot open config file" << std::endl;

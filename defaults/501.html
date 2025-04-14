@@ -5,8 +5,74 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>501 Not Implemented</title>
     <link rel="stylesheet" href="default/style.css">
+    <style>
+		body {
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			align-items: center;
+			height: 100vh;
+			background-color: #f0f0f0;
+			position: relative;
+			overflow: hidden;
+		}
+		h1 {
+			font-size: 36px;
+			color: #333;
+			margin-bottom: 20px;
+		}
+		.container {
+			position: relative;
+		}
+		.toucan {
+			width: 200px;
+			position: relative;
+			animation: lookAround 3s infinite alternate ease-in-out;
+		}
+		.question {
+			position: absolute;
+			font-size: 40px;
+			opacity: 0;
+			transition: opacity 0.5s, transform 1s ease-in-out;
+		}
+		@keyframes lookAround {
+			0% { transform: rotate(0deg); }
+			50% { transform: rotate(-15deg); }
+			100% { transform: rotate(15deg); }
+		}
+	</style>
 </head>
 <body>
     <h1>501 Not Implemented - 42Webserv</h1>
+    <div class="container">
+		<img src="../tucan.png" class="toucan" id="toucan">
+	</div>
+	<a href="http://localhost:8042">Back to Home</a>
+
+	<script>
+		document.addEventListener("DOMContentLoaded", () => {
+			const toucan = document.getElementById("toucan");
+
+			setInterval(() => {
+				let question = document.createElement("div");
+				question.className = "question";
+				question.innerText = "🛠️";
+				document.body.appendChild(question);
+
+				let x = Math.random() * window.innerWidth;
+				let y = Math.random() * window.innerHeight;
+
+				question.style.left = `${x}px`;
+				question.style.top = `${y}px`;
+				question.style.opacity = "1";
+
+				setTimeout(() => {
+					question.style.opacity = "0";
+					question.style.transform = "translateY(-50px)";
+					setTimeout(() => document.body.removeChild(question), 1000);
+				}, 1000);
+			}, 500);
+		});
+	</script>
 </body>
 </html>

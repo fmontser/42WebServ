@@ -11,7 +11,7 @@
 			"request": "launch",
 			"program": "${workspaceFolder}/bin/webserv",
 			"preLaunchTask": "make build",
-			"args": ["../config/config.cfg"],
+			"args": ["config/config.cfg"],
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}/bin",
 			"environment": [],

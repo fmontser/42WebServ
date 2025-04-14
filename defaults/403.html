@@ -1,32 +1,5 @@
-<!-- <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>403 Forbidden</title>
-    <link rel="stylesheet" href="default/style.css">
-</head>
-<body>
-    <h1>403 Forbidden - 42Webserv</h1>
-</body>
-</html> -->
 
-<!-- <!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>404 Not Found</title>
-	<link rel="stylesheet" href="default/style.css">
-
-</head>
-<body>
-	<h1>404 Not Found - 42Webserv</h1>
-</body>
-</html>
- -->
-
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
@@ -59,7 +32,6 @@
 		.question {
 			position: absolute;
 			font-size: 40px;
-			color: #ff9800;
 			opacity: 0;
 			transition: opacity 0.5s, transform 1s ease-in-out;
 		}
@@ -73,8 +45,9 @@
 </head>
 <body>
 	<h1>403 Forbidden - 42Webserv</h1>
+	<a href="http://localhost:8042">Back to Home</a>
 	<div class="container">
-		<img src="../tucan.png" class="toucan" id="toucan">
+		<img src="../crow.png" class="toucan" id="toucan">
 	</div>
 
 	<script>
@@ -84,7 +57,7 @@
 			setInterval(() => {
 				let question = document.createElement("div");
 				question.className = "question";
-				question.innerText = "?";
+				question.innerText = "🚫";
 				document.body.appendChild(question);
 
 				let x = Math.random() * window.innerWidth;
@@ -99,7 +72,7 @@
 					question.style.transform = "translateY(-50px)";
 					setTimeout(() => document.body.removeChild(question), 1000);
 				}, 1000);
-			}, 2000);
+			}, 500);
 		});
 	</script>
 </body>

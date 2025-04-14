@@ -21,9 +21,16 @@ HttpMessage& HttpMessage::operator=(const HttpMessage& src) {
 HttpMessage::~HttpMessage() {}
 
 void	HttpMessage::addHeader(HttpHeader header) {
+	for (std::vector<HttpHeader>::iterator it = headers.begin(); it != headers.end(); ++it) {
+		if (it->name == header.name) {
+			*it = header;
+			return;
+		}
+	}
 	headers.push_back(header);
 }
 
 void	HttpMessage::addHeader(std::string header) {
-	headers.push_back(DataAdapter::deserializeHeader(header));
+	HttpHeader newHeader = DataAdapter::deserializeHeader(header);
+	addHeader(newHeader);
 }

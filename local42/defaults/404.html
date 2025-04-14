@@ -1,18 +1,17 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>400 Bad Request</title>
-    <link rel="stylesheet" href="default/style.css">
-    <style>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>404 Not Found</title>
+	<style>
 		body {
 			display: flex;
 			flex-direction: column;
 			justify-content: center;
 			align-items: center;
 			height: 100vh;
-			background-color: #f0f0f0;
+			background-color: #7e3333;
 			position: relative;
 			overflow: hidden;
 		}
@@ -32,6 +31,7 @@
 		.question {
 			position: absolute;
 			font-size: 40px;
+			color: #ff9800;
 			opacity: 0;
 			transition: opacity 0.5s, transform 1s ease-in-out;
 		}
@@ -43,11 +43,10 @@
 		</style>
 </head>
 <body>
-    <h1>400 Bad Request - 42Webserv</h1>
-    <div class="container">
-		<img src="../tucan.png" class="toucan" id="toucan">
+	<h1>404 Not Found - 42Webserv</h1>
+	<div class="container">
+		<img src="defaults/crow.png" class="toucan" id="toucan">
 	</div>
-	<a href="http://localhost:8042">Back to Home</a>
 
 	<script>
 		document.addEventListener("DOMContentLoaded", () => {
@@ -56,7 +55,7 @@
 			setInterval(() => {
 				let question = document.createElement("div");
 				question.className = "question";
-				question.innerText = "😡";
+				question.innerText = "?";
 				document.body.appendChild(question);
 
 				let x = Math.random() * window.innerWidth;
@@ -71,7 +70,7 @@
 					question.style.transform = "translateY(-50px)";
 					setTimeout(() => document.body.removeChild(question), 1000);
 				}, 1000);
-			}, 500);
+			}, 2000);
 		});
 	</script>
 </body>
