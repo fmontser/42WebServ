@@ -3,17 +3,17 @@
 #include <map>
 #include <cstdlib>
 #include <wait.h>
-#include "CgiProcessor.hpp"
+#include "CgiAdapter.hpp"
 #include "Utils.hpp"
 #include "ServerConstants.hpp"
 
 #define RD_PIPE 0
 #define WR_PIPE 1
 
-CgiProcessor::CgiProcessor() {}
-CgiProcessor::~CgiProcessor() {}
+CgiAdapter::CgiAdapter() {}
+CgiAdapter::~CgiAdapter() {}
 
-CgiProcessor::CgiProcessor(const CgiProcessor& src) {
+CgiAdapter::CgiAdapter(const CgiAdapter& src) {
 	_cgiName = src._cgiName;
 	_method = src._method;
 	_query = src._query;
@@ -21,7 +21,7 @@ CgiProcessor::CgiProcessor(const CgiProcessor& src) {
 	_cLength = src._cLength;
 }
 
-CgiProcessor& CgiProcessor::operator=(const CgiProcessor& src) {
+CgiAdapter& CgiAdapter::operator=(const CgiAdapter& src) {
 	if (this != &src){
 		_cgiName = src._cgiName;
 		_method = src._method;
@@ -35,7 +35,7 @@ CgiProcessor& CgiProcessor::operator=(const CgiProcessor& src) {
 #include <cerrno>
 #include <cstring>
 
-HttpResponse::responseType	CgiProcessor::executeCgi(std::string& output) {
+HttpResponse::responseType	CgiAdapter::executeCgi(std::string& output) {
 	std::string	path;
 	pid_t		pid;
 	int			pipefd[2];
@@ -94,7 +94,7 @@ HttpResponse::responseType	CgiProcessor::executeCgi(std::string& output) {
 }
 
 //TODO test check errors
-void	CgiProcessor::setEnvironment(DataAdapter& dataAdapter) {
+void	CgiAdapter::setEnvironment(DataAdapter& dataAdapter) {
 	HttpRequest	request = dataAdapter.getRequest();
 	HttpHeader	*cTypeHeader = request.findHeader("Content-Type");
 	HttpHeader	*cLengthHeader = request.findHeader("Content-Length");
@@ -128,7 +128,7 @@ void	CgiProcessor::setEnvironment(DataAdapter& dataAdapter) {
 }
 
 //TODO manage errors!!!!
-void	CgiProcessor::parseParameters(std::string url){
+void	CgiAdapter::parseParameters(std::string url){
 	std::vector<std::string> raw = Utils::splitString(url, '?');
 
 	_cgiName = raw[0].substr(
@@ -138,7 +138,7 @@ void	CgiProcessor::parseParameters(std::string url){
 	_query = raw[1];
 }
 
-HttpResponse::responseType	CgiProcessor::processCgi(DataAdapter& dataAdapter) {
+HttpResponse::responseType	CgiAdapter::processCgi(DataAdapter& dataAdapter) {
 	std::string					output;
 	HttpResponse::responseType	responseType;
 	size_t						i = 0;
@@ -151,7 +151,7 @@ HttpResponse::responseType	CgiProcessor::processCgi(DataAdapter& dataAdapter) {
 	return responseType;
 }
 
-bool	CgiProcessor::isCgiRequest(std::string url) {
+bool	CgiAdapter::isCgiRequest(std::string url) {
 	if (url.find(".cgi", 0) != url.npos)
 		return true;
 	return false;

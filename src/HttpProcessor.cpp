@@ -6,7 +6,7 @@
 #include "PathManager.hpp"
 #include "Utils.hpp"
 #include "Index.hpp"
-#include "CgiProcessor.hpp"
+#include "CgiAdapter.hpp"
 #include <unistd.h>
 
 static	HttpResponse::responseType	validateRoute(DataAdapter& dataAdapter) {
@@ -36,11 +36,15 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter) {
 
 
 	//TODO deberia estar en un route??
-	if (CgiProcessor::isCgiRequest(request.url)) {
-		CgiProcessor cgi; //TODO esto muere al final del bloque
-		rtype = cgi.processCgi(dataAdapter);
+	if (CgiAdapter::isCgiRequest(request.url)) {
+		if ()
+
+
+		CgiAdapter cgiProcessor = //TODO esto muere al final del bloque
+		rtype = cgiProcessor.processCgi(dataAdapter);
 		if (rtype != HttpResponse::EMPTY) {
 			response.setupResponse(rtype, dataAdapter);
+			delete cgiProcessor;
 			return;
 		}
 	}

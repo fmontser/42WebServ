@@ -3,7 +3,7 @@
 #include "HttpResponse.hpp"
 #include "DataAdapter.hpp"
 
-class CgiProcessor {
+class CgiAdapter {
 	private:
 		std::string	_cgiName;
 		std::string	_method;
@@ -19,10 +19,10 @@ class CgiProcessor {
 		void						setEnvironment(DataAdapter& dataAdapter);
 
 	public:
-		CgiProcessor();
-		~CgiProcessor();
-		CgiProcessor(const CgiProcessor& src);
-		CgiProcessor& operator=(const CgiProcessor& src);
+		CgiAdapter();
+		~CgiAdapter();
+		CgiAdapter(const CgiAdapter& src);
+		CgiAdapter& operator=(const CgiAdapter& src);
 
 		HttpResponse::responseType	processCgi(DataAdapter& dataAdapter);
 		static bool	isCgiRequest(std::string url);

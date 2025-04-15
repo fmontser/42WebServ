@@ -88,14 +88,25 @@ void	Connection::recieveData() {
 			contentLength -= len;
 			_multiDataAdapter->deserializeRequest();
 			_multiDataAdapter->getRequest().method = "POST";
-			HttpProcessor::processHttpRequest(*_multiDataAdapter);
+			
+			//TODO !!!!!! clean
+			if (_multiCgiProcessor == NULL && CgiAdapter::isCgiRequest(_multiDataAdapter->getRequest().url))
+				_multiCgiProcessor = new CgiAdapter();
+
+
+				HttpProcessor::processHttpRequest(*_multiDataAdapter);
 			if (!_multiDataAdapter->getResponse().statusCode.empty())
 				_multiDataAdapter->serializeResponse();
 			recvBuffer.clear();
 			_multiDataAdapter->getRequest().body.clear();
  			if (contentLength == 0) {
-				 delete _multiDataAdapter;
+				delete _multiDataAdapter;
 				_multiDataAdapter = NULL;
+
+				//TODO !!!!!! clean
+				delete _multiCgiProcessor;
+
+				_multiCgiProcessor = NULL;
 				boundarie.clear();
 				boundStart.clear();
 				boundEnd.clear();

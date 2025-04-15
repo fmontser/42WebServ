@@ -5,6 +5,7 @@
 #include "ServerConstants.hpp"
 #include "Server.hpp"
 #include "DataAdapter.hpp"
+#include "CgiAdapter.hpp"
 
 class Connection {
 	private:
@@ -13,6 +14,7 @@ class Connection {
 		int				_socketFd;
 		struct pollfd	_pollfd;
 		DataAdapter		*_multiDataAdapter;
+		CgiAdapter		*_multiCgiProcessor;
 
 	public:
 

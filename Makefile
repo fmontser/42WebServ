@@ -13,12 +13,12 @@ NAME			:=	webserv
 CGI				:=	multiply.cgi
 
 HDRS			:=	ServerConstants.hpp	Config.hpp  Route.hpp Server.hpp HttpMessage.hpp HttpRequest.hpp\
-					HttpResponse.hpp ConnectionManager.hpp DataAdapter.hpp CgiProcessor.hpp\
+					HttpResponse.hpp ConnectionManager.hpp DataAdapter.hpp CgiAdapter.hpp\
 					FileManager.hpp  SignalManager.hpp Connection.hpp HttpProcessor.hpp HttpHeader.hpp\
 					HeaderValue.hpp HeaderProperty.hpp Utils.hpp Index.hpp PathManager.hpp
 
 SRCS			:=	main.cpp			Config.cpp  Route.cpp Server.cpp HttpMessage.cpp HttpRequest.cpp\
-					HttpResponse.cpp ConnectionManager.cpp DataAdapter.cpp CgiProcessor.cpp\
+					HttpResponse.cpp ConnectionManager.cpp DataAdapter.cpp CgiAdapter.cpp\
 					FileManager.cpp SignalManager.cpp Connection.cpp HttpProcessor.cpp HttpHeader.cpp\
 					HeaderValue.cpp HeaderProperty.cpp Utils.cpp Index.cpp PathManager.cpp
 
