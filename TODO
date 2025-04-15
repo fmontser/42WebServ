@@ -3,7 +3,6 @@
 //TODO agregar cgi-bin y cgi-src al MAKEFILE
 
 //TODO DUDAS RAZONABLES
-
 /*
 	* Make the route able to accept uploaded files and configure where they should be saved.
 
@@ -28,4 +27,11 @@
 	∗The CGI should be run in the correct directory for relative path file access.
 
 	∗Your server should work with one CGI (php-CGI, Python, and so forth).
+
+	//TODO rutas cgi??
+
+	route /cgi-bin {
+		methods GET POST
+		default  multiply.cgi
+	} 
 */
