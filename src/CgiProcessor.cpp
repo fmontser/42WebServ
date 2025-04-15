@@ -13,6 +13,13 @@
 CgiProcessor::CgiProcessor() {}
 CgiProcessor::~CgiProcessor() {}
 
+route /cgi-bin {
+	methods GET POST
+	default  multiply.cgi
+}
+
+
+
 CgiProcessor::CgiProcessor(const CgiProcessor& src) {
 	_cgiName = src._cgiName;
 	_method = src._method;

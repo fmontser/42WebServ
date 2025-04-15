@@ -1,15 +1,31 @@
-//TODO el error 500 es un generico para cualquier cosa no prevista...
-
 //TODO arreglar raiz del/ == del (PATHMANAGER!!!!!), probar con listing 201
 
 //TODO agregar cgi-bin y cgi-src al MAKEFILE
 
+//TODO DUDAS RAZONABLES
 
-//TODO curl test con:
 /*
-	curl -X GET -H "SuperHeader: value1; prop0, value2; prop0=A; prop1=B" http://localhost:8042/
-	curl -X GET http://localhost:8042/
-	curl -F "file=@webserv" http://localhost:8042/
+	* Make the route able to accept uploaded files and configure where they should be saved.
 
+	* The first server for a host:port will be the default for this host:port (that means
+	it will answer to all the requests that don’t belong to an other server).
+
+
+	//TODO CGI avanzado
+
+	* A request to your server should never hang forever. (CGI)
+
+	∗Because you won’t call the CGI directly, use the full path as PATH_INFO.
+
+	∗Just remember that, for chunked request, your server needs to unchunk
+	it, the CGI will expect EOF as end of the body.
+
+	∗Same things for the output of the CGI. If no content_length is returned
+	from the CGI, EOF will mark the end of the returned data.
+
+	∗Your program should call the CGI with the file requested as first argument.
+
+	∗The CGI should be run in the correct directory for relative path file access.
+
+	∗Your server should work with one CGI (php-CGI, Python, and so forth).
 */
-
