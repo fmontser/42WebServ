@@ -1,7 +1,5 @@
 //TODO arreglar raiz del/ == del (PATHMANAGER!!!!!), probar con listing 201
 
-//TODO agregar cgi-bin y cgi-src al MAKEFILE
-
 //TODO DUDAS RAZONABLES
 /*
 	* Make the route able to accept uploaded files and configure where they should be saved.
@@ -11,6 +9,9 @@
 
 
 	//TODO CGI avanzado
+
+	//DE EVAL....cgi no es excepcion...
+		* Writing or reading ANY file descriptor without going through the select() (or equivalent) is strictly FORBIDDEN.
 
 	* A request to your server should never hang forever. (CGI)
 
