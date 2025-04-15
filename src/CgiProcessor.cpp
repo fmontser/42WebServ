@@ -8,6 +8,7 @@
 
 CgiProcessor::CgiProcessor() {}
 CgiProcessor::~CgiProcessor() {}
+
 CgiProcessor::CgiProcessor(const CgiProcessor& src) {
 	_cgiName = src._cgiName;
 	_method = src._method;
@@ -27,27 +28,20 @@ CgiProcessor& CgiProcessor::operator=(const CgiProcessor& src) {
 	return *this;
 }
 
+#include <cerrno>
+#include <cstring>
 
 std::string	CgiProcessor::executeCgi() {
 	std::string	path, output;
 
-	//TODO std_in es irrelevante???
+	path.append("cgi-bin/");
+	path.append(_cgiName);
 
-/* 	int inputPipe[2]; */
-	int outputPipe[2];
+	
+
 	pid_t pid;
-	
-/* 	if (pipe(inputPipe) < 0 || pipe(outputPipe) < 0) {
-		std::cerr << "Error: pipe failed" << std::endl;
-		//TODO 500
-		return;
-	} */
-	
-	if ( pipe(outputPipe) < 0) {
-		std::cerr << "Error: pipe failed" << std::endl;
-		//TODO 500
-		return output;
-	}
+
+
 
 	pid = fork();
 	if (pid < 0) {
@@ -57,21 +51,11 @@ std::string	CgiProcessor::executeCgi() {
 	}
 	
 	if (pid == 0) { // ############################ CHILD!!!!!!
-		/* close(inputPipe[1]) */; // Close write end of input pipe
-		close(outputPipe[0]); // Close read end of output pipe
-		
-		// Redirect stdin and stdout
-/* 		dup2(inputPipe[0], STDIN_FILENO);  */
-		dup2(outputPipe[1], STDOUT_FILENO);
-		
-		// Close the duplicated file descriptors
-/* 		close(inputPipe[0]);
-		close(outputPipe[1]); */
 
-		// Execute the CGI script
-		//TODO check -1 as fail!!!
 		if (execve(path.c_str(), _argv, _envp) == -1) {
 			std::cerr << "Error: execve failed: " << std::endl;
+			std::cerr << "errno: " << errno << std::endl; // Imprimir el valor de errno
+			std::cerr << "strerror: " << strerror(errno) << std::endl; // Imprimir el mensaje de error asociado
 			exit(EXIT_FAILURE);
 		}
 		
@@ -80,16 +64,9 @@ std::string	CgiProcessor::executeCgi() {
 
 	
 	} else { // ############################ PARENT!!!!!!
-		/* close(inputPipe[0]); */ // Close read end of input pipe
-		 close(outputPipe[1]);  // Close write end of output pipe
+
 		
-		// Write input to CGI script if this is a POST request
-	/* 	if (!input.empty()) {
-			write(inputPipe[1], input.c_str(), input.size());
-		}
-		close(inputPipe[1]); */
-		
-		char buffer[4096];
+/* 		char buffer[4096];
 		ssize_t bytesRead;
 		
 		while ((bytesRead = read(outputPipe[0], buffer, sizeof(buffer)))) {
@@ -99,9 +76,9 @@ std::string	CgiProcessor::executeCgi() {
 			}
 			output.append(buffer, bytesRead);
 		}
-		close(outputPipe[0]);
+		close(outputPipe[0]); */
 
-		int status;
+/* 		int status;
 		waitpid(pid, &status, 0);
 		
 		if (WIFEXITED(status)) {
@@ -112,7 +89,7 @@ std::string	CgiProcessor::executeCgi() {
 		} else if (WIFSIGNALED(status)) {
 			std::cerr << "CGI script terminated by signal " << WTERMSIG(status) << std::endl;
 			//TODO 500
-		}
+		} */
 		return output;
 	}
 	return output;
@@ -127,6 +104,7 @@ void	CgiProcessor::setEnvironment(DataAdapter& dataAdapter) {
 	int			i = 0;
 	
 	_argv[i] = const_cast<char *>(_cgiName.c_str());
+	_argv[i+1] = NULL;
 
 	_method = std::string("REQUEST_METHOD=").append(request.method);
 	_envp[i++] = const_cast<char *>(_method.c_str());
@@ -137,16 +115,18 @@ void	CgiProcessor::setEnvironment(DataAdapter& dataAdapter) {
 	//TODO como comprobar?
 	if (cTypeHeader){
 		cTypeHeader->getValue("Content-Type", &value);
-		_cType = std::string("CONTENT_TYPE=").append(value.name.c_str());
-		_envp[i++] = const_cast<char *>(_cType.c_str());
 	}
+	_cType = std::string("CONTENT_TYPE=").append(value.name.c_str());
+	_envp[i++] = const_cast<char *>(_cType.c_str());
 
 	//TODO como comprobar?
 	if (cLengthHeader){
 		cLengthHeader->getValue("Content-Length", &value);
-		_cLength = std::string("CONTENT_LENGTH=").append(value.name.c_str());
-		_envp[i] = const_cast<char *>(_cLength.c_str());
 	}
+	_cLength = std::string("CONTENT_LENGTH=").append(value.name.c_str());
+	_envp[i] = const_cast<char *>(_cLength.c_str());
+
+	_envp[i+1] = NULL;
 }
 
 //TODO manage errors!!!!

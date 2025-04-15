@@ -11,8 +11,8 @@ class CgiProcessor {
 		std::string	_cType;
 		std::string	_cLength;
 		
-		char		*_envp[4];
-		char		*_argv[1];
+		char		*_envp[5];
+		char		*_argv[2];
 
 		std::string	executeCgi();
 		void		parseParameters(std::string url);
