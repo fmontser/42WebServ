@@ -43,7 +43,6 @@ int main() {
 	int resultado = a * b;
 
 	// Imprimir el resultado en stdout
-	std::cout << "Content-Type: text/html\r\n\r\n";
 	std::cout << "<html><body>\n";
 	std::cout << "<h1>Resultado: " << resultado << "</h1>\n";
 	std::cout << "</body></html>\n";

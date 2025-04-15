@@ -1,15 +1,8 @@
-
-//TODO validador de REQUESTS!!!!! hay un faenon! (solo si los test lo requieren)
-
-//TODO chunked REQUEST -> NOT_IMPLEMENTED?
-
 //TODO el error 500 es un generico para cualquier cosa no prevista...
 
-//TODO 400 bad request es cuando se recibe una peticino mal formada...hay que hacer un validador de request para poder devolver esto!
-
-//TODO 405 not allowed, es si la ruta no permite un metodo que SI esta implementado.
-
 //TODO arreglar raiz del/ == del (PATHMANAGER!!!!!), probar con listing 201
+
+//TODO agregar cgi-bin y cgi-src al MAKEFILE
 
 
 //TODO curl test con:

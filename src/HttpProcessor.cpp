@@ -38,9 +38,12 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter) {
 	//TODO deberia estar en un route??
 	if (CgiProcessor::isCgiRequest(request.url)) {
 		CgiProcessor cgi; //TODO esto muere al final del bloque
-		cgi.processCgi(dataAdapter);
+		rtype = cgi.processCgi(dataAdapter);
+		if (rtype != HttpResponse::EMPTY) {
+			response.setupResponse(rtype, dataAdapter);
+			return;
+		}
 	}
-
 
 	//TODO abstraer
 	size_t downloadParamPos = request.url.find("?download=true");

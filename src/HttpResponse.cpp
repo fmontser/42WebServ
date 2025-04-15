@@ -54,6 +54,7 @@ void	HttpResponse::setupResponse(enum responseType responseType, DataAdapter& da
 		case OK:
 			statusCode = "200";
 			statusMsg = "OK";
+			addHeader(contentLength.append(Utils::getStringSizeStr(body.size())));
 			break;
 		case CREATED:
 			statusCode = "201";

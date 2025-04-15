@@ -14,9 +14,9 @@ class CgiProcessor {
 		char		*_envp[5];
 		char		*_argv[2];
 
-		std::string	executeCgi();
-		void		parseParameters(std::string url);
-		void		setEnvironment(DataAdapter& dataAdapter);
+		HttpResponse::responseType	executeCgi(std::string& output);
+		void						parseParameters(std::string url);
+		void						setEnvironment(DataAdapter& dataAdapter);
 
 	public:
 		CgiProcessor();
@@ -24,6 +24,6 @@ class CgiProcessor {
 		CgiProcessor(const CgiProcessor& src);
 		CgiProcessor& operator=(const CgiProcessor& src);
 
-		void		processCgi(DataAdapter& dataAdapter);
+		HttpResponse::responseType	processCgi(DataAdapter& dataAdapter);
 		static bool	isCgiRequest(std::string url);
 };
