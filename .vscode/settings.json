@@ -95,6 +95,7 @@
 		"__tuple": "cpp",
 		"csignal": "cpp",
 		"todo": "cpp",
-		"__memory": "cpp"
+		"__memory": "cpp",
+		"cerrno": "cpp"
 	}
 }

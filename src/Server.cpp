@@ -3,6 +3,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
+#include <cerrno>
 #include "Server.hpp"
 #include "ServerConstants.hpp"
 #include "Connection.hpp"
@@ -82,10 +83,14 @@ void Server::listenSocket() {
 	address.sin_addr.s_addr = INADDR_ANY;
 	address.sin_port = htons(_port);
 
-	if (bind(_socketFd, (struct sockaddr *)&address, sizeof(address)) < 0) {
-		std::cerr << RED << "Error: failed to bind address" << END << std::endl;
+	if (bind(_socketFd, (struct sockaddr *)&address, sizeof(address)) < 0) {// @@add EADDRINUSE for runtimePort conflict 
+		if (errno == EADDRINUSE)//Launch multiple servers at the same time with different configurations but with common ports. 
+			std::cerr << RED << "Error: Port " << _port << " is already in use" << END << std::endl;
+		else 
+			std::cerr << RED << "Error: failed to bind address" << END << std::endl;
 		exit(1);
 	}
+	
 
 	if (listen(_socketFd, SOCKET_LISTEN_QUEUE_SIZE) < 0) {
 		std::cerr << RED << "Error: socket listen failed" << END << std::endl;

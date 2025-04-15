@@ -9,8 +9,8 @@ class Config {
 private:
 
 	static std::map<std::string, Server>	_servers;
-	static Server*							_actualServer;
-	static bool								_insideRouteBlock;
+	static Server*												_actualServer;
+	static bool														_insideRouteBlock;
 
 	static void addDefaultsRoute();
 	static void addRoute(std::vector<std::pair<std::string, std::vector<std::string> > >::iterator &it);
@@ -25,4 +25,5 @@ private:
 public:
 	static void loadConfig(std::fstream &configFileStream);
 	static std::map<std::string, Server>& getServers();
+	static bool portDuplicated(int port);
 };
