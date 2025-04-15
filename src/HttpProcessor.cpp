@@ -38,6 +38,8 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter, CgiAdapter& cgi
 	/* 
 		//TODO @@@@@@@@@@ esto deberia:
 
+		- las rutas deben aplicarse igual, quizas cambiar algo a causa de "?params" 
+
 		- pasar por GET / POST (si es post hayq que pasar el body al cgi cuando se haya completado)
 		- considerar SINGLE / MULTIPART como un mensaje normal
 		- una vez se tiene TODO el request, pasarlo al CgiAdapter
