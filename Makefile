@@ -6,8 +6,11 @@ INC_DIR			:=	include/
 SRC_DIR			:=	src/
 OBJ_DIR			:=	obj/
 BIN_DIR			:=	bin/
+CGI_DIR			:=	$(SRC_DIR)cgi-src/
+CGI_BIN_DIR		:=	cgi-bin/
 
 NAME			:=	webserv
+CGI				:=	multiply.cgi
 
 HDRS			:=	ServerConstants.hpp	Config.hpp  Route.hpp Server.hpp HttpMessage.hpp HttpRequest.hpp\
 					HttpResponse.hpp ConnectionManager.hpp DataAdapter.hpp CgiProcessor.hpp\
@@ -19,6 +22,8 @@ SRCS			:=	main.cpp			Config.cpp  Route.cpp Server.cpp HttpMessage.cpp HttpReques
 					FileManager.cpp SignalManager.cpp Connection.cpp HttpProcessor.cpp HttpHeader.cpp\
 					HeaderValue.cpp HeaderProperty.cpp Utils.cpp Index.cpp PathManager.cpp
 
+CGI_SRCS		:=	Multiply.cgi.cpp
+
 OBJS			:=	$(SRCS:.cpp=.o)
 INPUT			:=	"config/config.cfg"
 
@@ -26,7 +31,7 @@ CC				:=	g++ #c++
 CC_FLAGS		:=	-Wall -Werror -Wextra -g -c -std=c++98
 CLEAN_TARGETS	:=	$(wildcard $(addprefix $(OBJ_DIR), $(OBJS) $(TEST_OBJS)))
 FCLEAN_TARGETS	:=	$(wildcard $(addprefix $(BIN_DIR), $(NAME) $(TEST_NAME)))\
-					$(wildcard $(addprefix $(RES_DIR), $(RRSS)))
+					$(wildcard $(addprefix $(CGI_BIN_DIR), $(CGI)))
 
 COLOR_GREEN		:=	\033[0;32m
 COLOR_RED		:=	\033[0;31m
@@ -34,11 +39,16 @@ COLOR_BLUE		:=	\033[0;34m
 COLOR_END		:=	\033[0m
 
 vpath %.hpp $(INC_DIR)
-vpath %.cpp $(SRC_DIR)
+vpath %.cpp $(SRC_DIR) $(CGI_SRCS)
 vpath %.o $(OBJ_DIR)
-vpath % $(BIN_DIR)
+vpath % $(BIN_DIR) $(CGI_BIN_DIR)
 
-all: $(NAME)
+all: $(NAME) $(CGI)
+
+
+$(CGI):
+	@$(CC) $(CGI_DIR)$(CGI_SRCS) -o $(CGI_BIN_DIR)$(CGI)
+	@echo "$(COLOR_GREEN)write file: $(CGI_BIN_DIR)$(CGI)$(COLOR_END)"
 
 $(NAME): $(OBJS)
 	@mkdir -p $(BIN_DIR)

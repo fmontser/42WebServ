@@ -6,6 +6,7 @@
 #include "PathManager.hpp"
 #include "Utils.hpp"
 #include "Index.hpp"
+#include "CgiProcessor.hpp"
 #include <unistd.h>
 
 static	HttpResponse::responseType	validateRoute(DataAdapter& dataAdapter) {
@@ -33,6 +34,18 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter) {
 	HttpResponse&	response = dataAdapter.getResponse();
 	Connection		*connection = dataAdapter.getConnection();
 
+
+	//TODO deberia estar en un route??
+	if (CgiProcessor::isCgiRequest(request.url)) {
+		CgiProcessor cgi; //TODO esto muere al final del bloque
+		rtype = cgi.processCgi(dataAdapter);
+		if (rtype != HttpResponse::EMPTY) {
+			response.setupResponse(rtype, dataAdapter);
+			return;
+		}
+	}
+
+	//TODO abstraer
 	size_t downloadParamPos = request.url.find("?download=true");
 	if (downloadParamPos != std::string::npos) {
 		request.url = request.url.substr(0, downloadParamPos);

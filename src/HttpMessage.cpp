@@ -34,3 +34,12 @@ void	HttpMessage::addHeader(std::string header) {
 	HttpHeader newHeader = DataAdapter::deserializeHeader(header);
 	addHeader(newHeader);
 }
+
+
+HttpHeader	*HttpMessage::findHeader(std::string header) {
+	for (std::vector<HttpHeader>::iterator it = headers.begin(); it != headers.end(); ++it)	{
+		if (it->name == header)
+			return &(*it);
+	}
+	return NULL;
+}

@@ -20,6 +20,7 @@ class HttpMessage {
 		std::vector<HttpHeader>	headers;
 		std::vector<char>		body;
 
-		void	addHeader(HttpHeader header);
-		void	addHeader(std::string header);
+		void		addHeader(HttpHeader header);
+		void		addHeader(std::string header);
+		HttpHeader	*findHeader(std::string header);
 };
