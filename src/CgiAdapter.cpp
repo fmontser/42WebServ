@@ -73,23 +73,19 @@ HttpResponse::responseType	CgiAdapter::executeCgi(std::string& output) {
 				return HttpResponse::SERVER_ERROR;
 			output.append(buffer, bytesRead);
 		}
-		close(pipefd[RD_PIPE]);
-		
-		/*
-			//TODO plantear bucle??
-		*/
 
-		waitpid(pid, &waitStatus, 0);
+		waitpid(pid, &waitStatus, WNOHANG);
 		if (WIFEXITED(waitStatus)) {
+			if (WEXITSTATUS(waitStatus) == 0) {
+				close(pipefd[RD_PIPE]);
+				return HttpResponse::OK;
+			}
 			if (WEXITSTATUS(waitStatus) != 0) {
 				std::cerr << "Error: CGI script exited with status " << WEXITSTATUS(waitStatus) << std::endl;
 				return HttpResponse::SERVER_ERROR;
 			}
-		} else if (WIFSIGNALED(waitStatus)) {
-			std::cerr << "Error: CGI script terminated by signal " << WTERMSIG(waitStatus) << std::endl;
-			return HttpResponse::SERVER_ERROR;
-		}
-		return HttpResponse::OK;
+		} 
+		return HttpResponse::EMPTY;
 	}
 }
 
@@ -146,8 +142,10 @@ HttpResponse::responseType	CgiAdapter::processCgi(DataAdapter& dataAdapter) {
 	parseParameters(dataAdapter.getRequest().url);
 	setEnvironment(dataAdapter);
 	responseType = executeCgi(output);
-	while (i < output.size())
+	if (responseType != HttpResponse::EMPTY) {
+		while (i < output.size())
 		dataAdapter.getResponse().body.push_back(output[i++]);
+	}
 	return responseType;
 }
 

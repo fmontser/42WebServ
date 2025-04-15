@@ -13,5 +13,5 @@ class HttpProcessor {
 		HttpProcessor& operator=(const HttpProcessor& src);
 		~HttpProcessor();
 
-		static void	processHttpRequest(DataAdapter& dataAdapter);
+		static void	processHttpRequest(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter);
 };

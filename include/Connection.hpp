@@ -14,7 +14,7 @@ class Connection {
 		int				_socketFd;
 		struct pollfd	_pollfd;
 		DataAdapter		*_multiDataAdapter;
-		CgiAdapter		*_multiCgiProcessor;
+		CgiAdapter		*_multiCgiAdapter;
 
 	public:
 

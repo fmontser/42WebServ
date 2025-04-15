@@ -26,7 +26,7 @@ static	HttpResponse::responseType	validateRoute(DataAdapter& dataAdapter) {
 	return HttpResponse::EMPTY;
 }
 
-void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter) {
+void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter) {
 	
 	HttpResponse::responseType rtype;
 
@@ -35,18 +35,23 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter) {
 	Connection		*connection = dataAdapter.getConnection();
 
 
+	/* 
+		//TODO @@@@@@@@@@ esto deberia:
+
+		- pasar por GET / POST (si es post hayq que pasar el body al cgi cuando se haya completado)
+		- considerar SINGLE / MULTIPART como un mensaje normal
+		- una vez se tiene TODO el request, pasarlo al CgiAdapter
+		- procesar el cgi de forma no bloqueante Y con un timeout
+		- al terminar responder de forma normal
+	*/
+
+
 	//TODO deberia estar en un route??
 	if (CgiAdapter::isCgiRequest(request.url)) {
-		if ()
-
-
-		CgiAdapter cgiProcessor = //TODO esto muere al final del bloque
-		rtype = cgiProcessor.processCgi(dataAdapter);
-		if (rtype != HttpResponse::EMPTY) {
+		rtype = cgiAdapter.processCgi(dataAdapter);
+		if (rtype != HttpResponse::EMPTY)
 			response.setupResponse(rtype, dataAdapter);
-			delete cgiProcessor;
-			return;
-		}
+		return;
 	}
 
 	//TODO abstraer

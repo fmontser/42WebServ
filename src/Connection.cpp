@@ -69,7 +69,9 @@ struct pollfd	Connection::getPollFd() const { return _pollfd; }
 
 void	Connection::recieveData() {
 
-	DataAdapter adapter = DataAdapter(this);
+	DataAdapter	dataAdapter = DataAdapter(this);
+	CgiAdapter	cgiAdapter;
+
 	char		buffer[READ_BUFFER] = {0};
 	int			len;
 
@@ -90,11 +92,12 @@ void	Connection::recieveData() {
 			_multiDataAdapter->getRequest().method = "POST";
 			
 			//TODO !!!!!! clean
-			if (_multiCgiProcessor == NULL && CgiAdapter::isCgiRequest(_multiDataAdapter->getRequest().url))
-				_multiCgiProcessor = new CgiAdapter();
+			if (_multiCgiAdapter == NULL && CgiAdapter::isCgiRequest(_multiDataAdapter->getRequest().url))
+				_multiCgiAdapter = new CgiAdapter();
 
 
-				HttpProcessor::processHttpRequest(*_multiDataAdapter);
+			HttpProcessor::processHttpRequest(*_multiDataAdapter, *_multiCgiAdapter);
+			
 			if (!_multiDataAdapter->getResponse().statusCode.empty())
 				_multiDataAdapter->serializeResponse();
 			recvBuffer.clear();
@@ -104,9 +107,9 @@ void	Connection::recieveData() {
 				_multiDataAdapter = NULL;
 
 				//TODO !!!!!! clean
-				delete _multiCgiProcessor;
+				delete _multiCgiAdapter;
 
-				_multiCgiProcessor = NULL;
+				_multiCgiAdapter = NULL;
 				boundarie.clear();
 				boundStart.clear();
 				boundEnd.clear();
@@ -114,16 +117,16 @@ void	Connection::recieveData() {
 			}
 		}
 		else {
-			adapter.deserializeRequest();
+			dataAdapter.deserializeRequest();
 
 			//TODO borrar debug para entrega
-			std::cout	<< BLUE << "Fd: " << adapter.getConnection()->getPollFd().fd
-						<< " requested: " << adapter.getRequest().url << END << std::endl;
+			std::cout	<< BLUE << "Fd: " << dataAdapter.getConnection()->getPollFd().fd
+						<< " requested: " << dataAdapter.getRequest().url << END << std::endl;
 
-			HttpProcessor::processHttpRequest(adapter);
-			adapter.serializeResponse();
+			HttpProcessor::processHttpRequest(dataAdapter, cgiAdapter);
+			dataAdapter.serializeResponse();
 			if (requestMode == Connection::MULTIPART) {
-				_multiDataAdapter = new DataAdapter(adapter);
+				_multiDataAdapter = new DataAdapter(dataAdapter);
 				_multiDataAdapter->getResponse().statusCode = "";
 			}
 			recvBuffer.clear();
