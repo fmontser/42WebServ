@@ -1,35 +1,56 @@
+/*
+
+//TODO full subject test
+//TODO full eval test
+
 //TODO arreglar raiz del/ == del (PATHMANAGER!!!!!), probar con listing 201
 
 //TODO arreglar makefile para incluir cgis o ponerlo manual
 
 //TODO test not allowed (PUT) no devuelve una pagina de error (aunque si es reconocido)
 
-//TODO DUDAS RAZONABLES
-/*
-	* Make the route able to accept uploaded files and configure where they should be saved.
+//TODO connection timeout!!!
+	* A request to your server should never hang forever.
+	- usar TIMEOT de poll()
+	- cerrar todos los recursos: kill proceso cgi, pipes, memoria reservada...
+	- enviar una respuesta tipo 504 Gateway Timeout
+	- cerrar la conexion
 
-	* The first server for a host:port will be the default for this host:port (that means
-	it will answer to all the requests that don’t belong to an other server).
-
-
-	//TODO CGI avanzado
-
-	//DE EVAL....cgi no es excepcion...
-		* Writing or reading ANY file descriptor without going through the select() (or equivalent) is strictly FORBIDDEN.
-
-	* A request to your server should never hang forever. (CGI)
-
+//TODO implementar PATH_INFO en cgi
 	∗Because you won’t call the CGI directly, use the full path as PATH_INFO.
 
+	URL: http://localhost:8080/cgi-bin/mi_cgi_programa/datos/importantes?id=1
+
+	Tu configuración mapea /cgi-bin/mi_cgi_programa a tu ejecutable C++.
+
+	La ruta extra es /datos/importantes.
+
+	En el envp que pasas a execve cuando ejecutas mi_cgi_programa, debe haber una entrada como "PATH_INFO=/datos/importantes".
+
+	También debe haber otras entradas como "QUERY_STRING=id=1", "REQUEST_METHOD=GET", etc.
+
+
+//TODO cerar el pipe del input y el output trans la transmision del body general el EOF.
 	∗Just remember that, for chunked request, your server needs to unchunk
 	it, the CGI will expect EOF as end of the body.
 
 	∗Same things for the output of the CGI. If no content_length is returned
 	from the CGI, EOF will mark the end of the returned data.
 
+
+//TODO pasar el PATH del archivo fisico al path, argv[0] nombre del archivo, argv[1] otra vez el path
 	∗Your program should call the CGI with the file requested as first argument.
 
+//TODO el child que va a ejecutar el CGI debe cambiar el working dir al del ejecutable (chdir) facil!!!
 	∗The CGI should be run in the correct directory for relative path file access.
 
-	∗Your server should work with one CGI (php-CGI, Python, and so forth).
+
+//TODO pendiente de investigar
+	* Make the route able to accept uploaded files and configure where they should be saved.
+
+//TODO pendiente de investigar
+	* The first server for a host:port will be the default for this host:port (that means
+	it will answer to all the requests that don’t belong to an other server).
+
+
 */
