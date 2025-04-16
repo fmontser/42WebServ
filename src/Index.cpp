@@ -73,7 +73,7 @@ std::vector<char> Index::generateAutoindex(DataAdapter& dataAdapter) {
 	autoIndex += "</head>\n<body>\n";
 	autoIndex += "<div class=\"container\">\n";
 	autoIndex += "	<h1>Index of " + path + "</h1>\n";
-	autoIndex += "	<a href=\"http://localhost:8042\" class=\"home-link\">Back to parent directory</a>\n";
+	autoIndex += "	<a href=\"http://localhost:8042\" class=\"home-link\">Home</a>\n";
 	autoIndex += "	<hr>\n";
 	autoIndex += "	<table class=\"file-list\">\n";
 	autoIndex += "	<thead><tr><th>Name</th><th>Actions</th></tr></thead>\n";

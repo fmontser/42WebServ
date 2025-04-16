@@ -5,6 +5,14 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<title>Test Page</title>
 		<link rel="stylesheet" href="../style.css">
+		<style>
+			body {
+				background-color: #f0f0f0;
+				font-family: Arial, sans-serif;
+				color: #333;
+				padding-top: 150px;
+			}
+		</style>
 		<script src="script.js" defer></script>
 		<link rel="icon" href="favicon.ico" type="image/x-icon">
 		<link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -14,10 +22,13 @@
 		<meta name="keywords" content="local42, test, example">
 		<meta name="author" content="local42">
 		<script>
+			const gotoLocalHost = () => {
+				window.location.href = 'http://localhost:8042/yep';
+			}
 			document.addEventListener('DOMContentLoaded', function() {
 				document.getElementById('testButton').addEventListener('click', function() {
-					alert('Button clicked!');
-					
+					alert('Yep Button clicked!');
+					gotoLocalHost();
 				});
 			});
 		</script>
