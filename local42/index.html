@@ -78,24 +78,13 @@
 
 	<hr>
 
-	<button id="deleteButton">Borrar deleteme (DELETE)</button>
-	<script>
-		document.getElementById('deleteButton').addEventListener('click', function() {
-			fetch('/del/deleteme', {
-			method: 'DELETE'
-			});
-		});
-	</script>
-
-	<hr>
-
-	<button id="updateButton">Actualizar archivo deleteme (PUT)</button>
+	<button id="updateButton">Test not allowed method (PUT)</button>
 	<script>
 		document.getElementById('updateButton').addEventListener('click', function() {
 		var nuevoContenido = prompt("Ingrese el nuevo contenido del archivo:");
 
 		if (nuevoContenido) {
-			fetch('/del/deleteme', {
+			fetch('/del', {
 			method: 'PUT',
 			headers: {
 				'Content-Type': 'text/plain'

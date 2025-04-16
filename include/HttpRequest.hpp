@@ -15,6 +15,7 @@ class HttpRequest : public HttpMessage {
 		HttpRequest& operator=(const HttpRequest& src);
 
 		bool	isBinaryDownload;
+		bool	isCgiRequest;
 		bool	handleMultipart(Connection *connection);
 };
 

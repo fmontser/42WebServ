@@ -4,7 +4,7 @@
 #include "HttpResponse.hpp"
 #include "Connection.hpp"
 
-class DataAdapater;
+class DataAdapter;
 
 class HttpProcessor {
 	public:

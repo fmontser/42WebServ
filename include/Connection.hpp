@@ -16,16 +16,20 @@ class Connection {
 		DataAdapter		*_multiDataAdapter;
 		CgiAdapter		*_multiCgiAdapter;
 
+		void	manageSingle(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter);
+		void	manageMultiPart(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter);
+		void	resetConnection();
+
 	public:
 
 		enum RequestMode { SINGLE, MULTIPART };
-		//enum ResponseMode { SINGLE, CHUNKED };
+		enum ResponseMode { NORMAL, CHUNKED };
 
 		std::vector<char>	recvBuffer;
 		std::vector<char>	sendBuffer;
-		bool				isChunkedResponse;	//TODO cambiar a response mode (enums)
 		bool				isOverPayloadLimit;
 		RequestMode			requestMode;
+		ResponseMode		responseMode;
 		std::string			boundarie;
 		std::string			boundStart;
 		std::string			boundEnd;

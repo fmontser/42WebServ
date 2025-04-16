@@ -34,7 +34,8 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter, CgiAdapter& cgi
 	HttpResponse&	response = dataAdapter.getResponse();
 	Connection		*connection = dataAdapter.getConnection();
 
-
+	(void)cgiAdapter;
+	
 	/* 
 		//TODO @@@@@@@@@@ esto deberia:
 
@@ -49,19 +50,14 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter, CgiAdapter& cgi
 
 
 	//TODO deberia estar en un route??
-	if (CgiAdapter::isCgiRequest(request.url)) {
+/* 	if (CgiAdapter::isCgiRequest(request.url)) {
 		rtype = cgiAdapter.processCgi(dataAdapter);
 		if (rtype != HttpResponse::EMPTY)
 			response.setupResponse(rtype, dataAdapter);
 		return;
-	}
+	} */
 
-	//TODO abstraer
-	size_t downloadParamPos = request.url.find("?download=true");
-	if (downloadParamPos != std::string::npos) {
-		request.url = request.url.substr(0, downloadParamPos);
-		request.isBinaryDownload =  true;
-	}
+
 
 	if (connection->requestMode == Connection::SINGLE) {
 		rtype = validateRoute(dataAdapter);
@@ -80,7 +76,7 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter, CgiAdapter& cgi
 	if (request.method == "GET") {
 		rtype  = FileManager::readFile(dataAdapter);
 		response.setupResponse(rtype, dataAdapter);
-		connection->isChunkedResponse = response.isChunked();
+		connection->responseMode = (Connection::ResponseMode)response.isChunked();
 	}
 	else if (request.method == "POST") {
 		if (connection->requestMode == Connection::SINGLE && request.handleMultipart(connection)) {

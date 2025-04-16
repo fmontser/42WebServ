@@ -24,15 +24,15 @@ HttpResponse& HttpResponse::operator=(const HttpResponse& src) {
 
 HttpResponse::~HttpResponse() {}
 
-bool	HttpResponse::isChunked() {
+int	HttpResponse::isChunked() {
 	for (std::vector<HttpHeader>::iterator it = headers.begin(); it != headers.end(); ++it) {
 		HttpHeader header = *it;
 		HeaderValue value;
 
 		if (header.getValue("Transfer-Encoding", &value) && value.name == "chunked")
-			return true;
+			return Connection::CHUNKED;
 	}
-	return false;
+	return Connection::NORMAL;
 }
 
 void	HttpResponse::setupResponse(enum responseType responseType, DataAdapter& dataAdapter) {

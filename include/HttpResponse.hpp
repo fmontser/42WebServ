@@ -31,6 +31,6 @@ class HttpResponse : public HttpMessage {
 		HttpResponse(const HttpResponse& src);
 		HttpResponse& operator=(const HttpResponse& src);
 
-		bool	isChunked();
+		int		isChunked();
 		void	setupResponse(enum responseType responseType, DataAdapter& dataAdapter);
 };

@@ -20,8 +20,8 @@ Connection::Connection(Server& server) : _server(server), _multiDataAdapter(NULL
 	}
 
 	isOverPayloadLimit = false;
-	isChunkedResponse = false;
 	requestMode = SINGLE;
+	responseMode = NORMAL;
 	contentLength = 0;
 	recvBuffer.clear();
 	sendBuffer.clear();
@@ -39,7 +39,7 @@ Connection::Connection(const Connection& src) : _server(src._server) {
 	recvBuffer = src.recvBuffer;
 	sendBuffer = src.sendBuffer;
 	isOverPayloadLimit = src.isOverPayloadLimit;
-	isChunkedResponse = src.isChunkedResponse;
+	responseMode = src.responseMode;
 	requestMode = src.requestMode;
 	boundarie = src.boundarie;
 	contentLength = src.contentLength;
@@ -52,7 +52,7 @@ Connection& Connection::operator=(const Connection& src) {
 		recvBuffer = src.recvBuffer;
 		sendBuffer = src.sendBuffer;
 		isOverPayloadLimit = src.isOverPayloadLimit;
-		isChunkedResponse = src.isChunkedResponse;
+		responseMode = src.responseMode;
 		requestMode = src.requestMode;
 		boundarie = src.boundarie;
 		contentLength = src.contentLength;
@@ -67,11 +67,67 @@ Connection::~Connection() {
 Server&			Connection::getServer() const { return _server; }
 struct pollfd	Connection::getPollFd() const { return _pollfd; }
 
-void	Connection::recieveData() {
+static void	checkBinaryDownload(HttpRequest& request) {
+	size_t downloadParamPos = request.url.find("?download=true");
+	if (downloadParamPos != std::string::npos) {
+		request.url = request.url.substr(0, downloadParamPos);
+		request.isBinaryDownload =  true;
+	}
+}
 
+void	Connection::resetConnection() {
+	delete _multiDataAdapter;
+	_multiDataAdapter = NULL;
+	delete _multiCgiAdapter;
+	_multiCgiAdapter = NULL;
+
+	boundarie.clear();
+	boundStart.clear();
+	boundEnd.clear();
+	requestMode = Connection::SINGLE;
+}
+
+void	Connection::manageSingle(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter){
+	dataAdapter.deserializeRequest();
+
+	std::cout	<< BLUE << "Fd: " << dataAdapter.getConnection()->getPollFd().fd
+				<< " requested: " << dataAdapter.getRequest().url << END << std::endl;
+
+	dataAdapter.getRequest().isCgiRequest 
+		= CgiAdapter::isCgiRequest(dataAdapter.getRequest().url);
+	checkBinaryDownload(dataAdapter.getRequest());
+
+	HttpProcessor::processHttpRequest(dataAdapter, cgiAdapter);
+
+	dataAdapter.serializeResponse();
+	if (requestMode == Connection::MULTIPART) {
+		_multiDataAdapter = new DataAdapter(dataAdapter);
+		_multiDataAdapter->getResponse().statusCode = "";
+		_multiCgiAdapter = new CgiAdapter();
+	}
+	recvBuffer.clear();
+}
+
+void	Connection::manageMultiPart(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter){
+	dataAdapter.deserializeRequest();
+	dataAdapter.getRequest().method = "POST";
+	dataAdapter.getRequest().isCgiRequest 
+		= CgiAdapter::isCgiRequest(dataAdapter.getRequest().url);
+	checkBinaryDownload(dataAdapter.getRequest());
+
+	HttpProcessor::processHttpRequest(dataAdapter, cgiAdapter);
+	
+	if (!dataAdapter.getResponse().statusCode.empty())
+		dataAdapter.serializeResponse();
+	recvBuffer.clear();
+	dataAdapter.getRequest().body.clear();
+	 if (contentLength == 0)
+		resetConnection();
+}
+
+void	Connection::recieveData() {
 	DataAdapter	dataAdapter = DataAdapter(this);
 	CgiAdapter	cgiAdapter;
-
 	char		buffer[READ_BUFFER] = {0};
 	int			len;
 
@@ -88,49 +144,10 @@ void	Connection::recieveData() {
 		recvBuffer.assign(buffer, buffer + len);
 		if (requestMode == MULTIPART) {
 			contentLength -= len;
-			_multiDataAdapter->deserializeRequest();
-			_multiDataAdapter->getRequest().method = "POST";
-			
-			//TODO !!!!!! clean
-			if (_multiCgiAdapter == NULL && CgiAdapter::isCgiRequest(_multiDataAdapter->getRequest().url))
-				_multiCgiAdapter = new CgiAdapter();
-
-
-			HttpProcessor::processHttpRequest(*_multiDataAdapter, *_multiCgiAdapter);
-			
-			if (!_multiDataAdapter->getResponse().statusCode.empty())
-				_multiDataAdapter->serializeResponse();
-			recvBuffer.clear();
-			_multiDataAdapter->getRequest().body.clear();
- 			if (contentLength == 0) {
-				delete _multiDataAdapter;
-				_multiDataAdapter = NULL;
-
-				//TODO !!!!!! clean
-				delete _multiCgiAdapter;
-
-				_multiCgiAdapter = NULL;
-				boundarie.clear();
-				boundStart.clear();
-				boundEnd.clear();
-				requestMode = Connection::SINGLE;
-			}
+			manageMultiPart(*_multiDataAdapter, *_multiCgiAdapter);
 		}
-		else {
-			dataAdapter.deserializeRequest();
-
-			//TODO borrar debug para entrega
-			std::cout	<< BLUE << "Fd: " << dataAdapter.getConnection()->getPollFd().fd
-						<< " requested: " << dataAdapter.getRequest().url << END << std::endl;
-
-			HttpProcessor::processHttpRequest(dataAdapter, cgiAdapter);
-			dataAdapter.serializeResponse();
-			if (requestMode == Connection::MULTIPART) {
-				_multiDataAdapter = new DataAdapter(dataAdapter);
-				_multiDataAdapter->getResponse().statusCode = "";
-			}
-			recvBuffer.clear();
-		}
+		else 
+			manageSingle(dataAdapter,cgiAdapter);
 	}
 }
 
@@ -140,7 +157,7 @@ void	Connection::sendData() {
 	std::string _chunkBuffer = std::string(sendBuffer.begin(), sendBuffer.end());
 
 	chunk.clear();
-	if (isChunkedResponse) {
+	if (responseMode == CHUNKED) {
  		if (_chunkBuffer.find(HTTP_BODY_START) != std::string::npos && !chunkHeadSent)
 		{
 			size_t csize = _chunkBuffer.find(HTTP_BODY_START) + HTTP_BODY_START_OFFSET;
@@ -157,7 +174,7 @@ void	Connection::sendData() {
 			sendBuffer.erase(sendBuffer.begin(), sendBuffer.begin() + csize);
 		}	
 		if (sendBuffer.empty()) {
-			isChunkedResponse = false;
+			responseMode = NORMAL;
 			chunkHeadSent = false;
 			sendBuffer.clear();
 		}
