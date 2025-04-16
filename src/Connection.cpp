@@ -91,10 +91,13 @@ void	Connection::resetConnection() {
 }
 
 void	Connection::manageSingle(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter){
-	dataAdapter.deserializeRequest();
+	
+	if (!hasPendingCgi) {
+		dataAdapter.deserializeRequest();
 
-	std::cout	<< BLUE << "Fd: " << dataAdapter.getConnection()->getPollFd().fd
-				<< " requested: " << dataAdapter.getRequest().url << END << std::endl;
+		std::cout	<< BLUE << "Fd: " << dataAdapter.getConnection()->getPollFd().fd
+					<< " requested: " << dataAdapter.getRequest().url << END << std::endl;
+	}
 
 	dataAdapter.getRequest().isCgiRequest 
 		= CgiAdapter::isCgiRequest(dataAdapter.getRequest().url);
@@ -103,11 +106,9 @@ void	Connection::manageSingle(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter){
 	HttpProcessor::processHttpRequest(dataAdapter, cgiAdapter);
 
 	dataAdapter.serializeResponse();	
-	if (requestMode == Connection::MULTIPART) {
-		_multiDataAdapter = new DataAdapter(dataAdapter); //TODO podria estar reservandose encima del anterior si es cgi??? leak!!
-		_multiDataAdapter->getResponse().statusCode = "";
-		_multiCgiAdapter = new CgiAdapter();
-	}
+	if (requestMode == Connection::MULTIPART)
+		dataAdapter.getResponse().statusCode = "";
+
 
 	//TODO cuidado!!!! comprobar que es correcto
 	if (!hasPendingCgi)
@@ -142,15 +143,13 @@ void	Connection::fetchCgi() {
 }
 
 void	Connection::recieveData() {
-
-	//TODO @@@@1111 adapters al HEAP siempre!!! refactor.
-
-
-
-	DataAdapter	dataAdapter = DataAdapter(this);
-	CgiAdapter	cgiAdapter;
 	char		buffer[READ_BUFFER] = {0};
 	int			len;
+
+	if (_multiDataAdapter == NULL)
+		_multiDataAdapter = new DataAdapter(this);
+	if (_multiCgiAdapter == NULL)
+		_multiCgiAdapter = new CgiAdapter();
 
 	len = recv(_socketFd, buffer, READ_BUFFER, 0);
 	if (len == -1) {
@@ -168,7 +167,7 @@ void	Connection::recieveData() {
 			manageMultiPart(*_multiDataAdapter, *_multiCgiAdapter);
 		}
 		else 
-			manageSingle(dataAdapter,cgiAdapter);
+			manageSingle(*_multiDataAdapter, *_multiCgiAdapter);
 	}
 }
 
@@ -213,12 +212,6 @@ void	Connection::sendData() {
 		ConnectionManager::deleteConnection(_server, this);
 	sendBuffer.clear();
 }
-
-void			Connection::dinamizeAdapters(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter){
-	_multiDataAdapter = new DataAdapter(dataAdapter);
-	_multiCgiAdapter = new CgiAdapter(cgiAdapter);
-}
-
 
 void	Connection::updatePollFd(struct pollfd pfd) { _pollfd = pfd; }
 bool	Connection::hasPollErr() const { return _pollfd.revents & POLLERR; }

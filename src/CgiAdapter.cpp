@@ -12,7 +12,7 @@
 #define WR_PIPE 1
 
 CgiAdapter::CgiAdapter() {
-	_waitStatus = -1;
+	_pid = 0;
 }
 CgiAdapter::~CgiAdapter() {}
 
@@ -45,9 +45,8 @@ HttpResponse::responseType	CgiAdapter::executeCgi(std::string& output, DataAdapt
 	char		buffer[READ_BUFFER];
 	ssize_t		bytesRead;
 
-	path = PathManager::resolveServerPath(dataAdapter);
 
-	if (_waitStatus == -1){
+	if (_pid == 0){
 		if (pipe(_pipefd) == -1)
 			return HttpResponse::SERVER_ERROR;
 		_pid = fork();
@@ -59,6 +58,8 @@ HttpResponse::responseType	CgiAdapter::executeCgi(std::string& output, DataAdapt
  		close(_pipefd[RD_PIPE]);
 		dup2(_pipefd[WR_PIPE], STDOUT_FILENO);
 		
+		path = PathManager::resolveServerPath(dataAdapter);
+
 		if (execve(path.c_str(), _argv, _envp) == -1){
 			close(_pipefd[WR_PIPE]);
 			exit(EXIT_FAILURE);
@@ -68,10 +69,7 @@ HttpResponse::responseType	CgiAdapter::executeCgi(std::string& output, DataAdapt
 
 	} else {
 
-
-		//TODO quitar test
-		int test = waitpid(_pid, &_waitStatus, WNOHANG);
-		if (test > 0) {
+		if (waitpid(_pid, &_waitStatus, WNOHANG) > 0) {
 			if (WIFEXITED(_waitStatus)) {
 				if (WEXITSTATUS(_waitStatus) == 0) {
 					close(_pipefd[WR_PIPE]);
@@ -151,8 +149,6 @@ HttpResponse::responseType	CgiAdapter::processCgi(DataAdapter& dataAdapter) {
 	parseParameters(dataAdapter.getRequest().url);
 	setEnvironment(dataAdapter);
 	responseType = executeCgi(output, dataAdapter);
-	if (dataAdapter.getConnection()->hasPendingCgi)
-		dataAdapter.getConnection()->dinamizeAdapters(dataAdapter, *this);
 	if (responseType != HttpResponse::EMPTY) {
 		while (i < output.size())
 		dataAdapter.getResponse().body.push_back(output[i++]);

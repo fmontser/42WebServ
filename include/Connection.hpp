@@ -43,7 +43,6 @@ class Connection {
 
 		Server&			getServer() const;
 		struct pollfd	getPollFd() const;
-		void			dinamizeAdapters(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter);
 
 		void			fetchCgi();
 		void			recieveData();
