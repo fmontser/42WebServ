@@ -137,10 +137,14 @@ void	Server::setMaxPayLoad(const std::string& maxPayLoad) {
 	_maxPayload = payloadSize;
 }
 
+
 Route	*Server::getRequestedRoute(DataAdapter& dataAdapter) {
 	std::string path, url;
-	
+
 	url = dataAdapter.getRequest().url;
+	if (dataAdapter.getRequest().isCgiRequest)
+		url = CgiAdapter::stripCgiParams(url);
+
 	path = PathManager::resolveServerPath(dataAdapter);
 
 	if (!Utils::isDirectory(path)) {

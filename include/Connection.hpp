@@ -28,6 +28,7 @@ class Connection {
 		std::vector<char>	recvBuffer;
 		std::vector<char>	sendBuffer;
 		bool				isOverPayloadLimit;
+		bool				hasPendingCgi;
 		RequestMode			requestMode;
 		ResponseMode		responseMode;
 		std::string			boundarie;
@@ -42,7 +43,9 @@ class Connection {
 
 		Server&			getServer() const;
 		struct pollfd	getPollFd() const;
+		void			dinamizeAdapters(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter);
 
+		void			fetchCgi();
 		void			recieveData();
 		void			sendData();
 		void			updatePollFd(struct pollfd pfd);

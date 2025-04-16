@@ -39,7 +39,7 @@ COLOR_BLUE		:=	\033[0;34m
 COLOR_END		:=	\033[0m
 
 vpath %.hpp $(INC_DIR)
-vpath %.cpp $(SRC_DIR) $(CGI_SRCS)
+vpath %.cpp $(SRC_DIR) $(CGI_DIR)
 vpath %.o $(OBJ_DIR)
 vpath % $(BIN_DIR) $(CGI_BIN_DIR)
 
@@ -49,8 +49,10 @@ all: $(NAME) $(CGI)
 $(CGI):
 	@$(CC) $(CGI_DIR)$(CGI_SRCS) -o $(CGI_BIN_DIR)$(CGI)
 	@echo "$(COLOR_GREEN)write file: $(CGI_BIN_DIR)$(CGI)$(COLOR_END)"
+	@cp $(CGI_BIN_DIR)$(CGI) local42/cgi-bin/
+	@echo "$(COLOR_GREEN)copy file: $(CGI_BIN_DIR)$(CGI)$(COLOR_END)"
 
-$(NAME): $(OBJS)
+$(NAME): $(OBJS) $(CGI)
 	@mkdir -p $(BIN_DIR)
 	@$(CC) $(addprefix $(OBJ_DIR),$(OBJS)) -o $(BIN_DIR)$(NAME)
 	@echo "$(COLOR_GREEN)write file: $(BIN_DIR)$(NAME)$(COLOR_END)"

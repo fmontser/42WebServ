@@ -48,17 +48,6 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter, CgiAdapter& cgi
 		- al terminar responder de forma normal
 	*/
 
-
-	//TODO deberia estar en un route??
-/* 	if (CgiAdapter::isCgiRequest(request.url)) {
-		rtype = cgiAdapter.processCgi(dataAdapter);
-		if (rtype != HttpResponse::EMPTY)
-			response.setupResponse(rtype, dataAdapter);
-		return;
-	} */
-
-
-
 	if (connection->requestMode == Connection::SINGLE) {
 		rtype = validateRoute(dataAdapter);
 		if (rtype != HttpResponse::EMPTY) {
@@ -74,9 +63,19 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter, CgiAdapter& cgi
 	}
 	
 	if (request.method == "GET") {
-		rtype  = FileManager::readFile(dataAdapter);
-		response.setupResponse(rtype, dataAdapter);
-		connection->responseMode = (Connection::ResponseMode)response.isChunked();
+
+		//TODO check!
+		if (request.isCgiRequest) {
+			rtype = cgiAdapter.processCgi(dataAdapter);
+			if (rtype != HttpResponse::EMPTY)
+				response.setupResponse(rtype, dataAdapter);
+			return;
+		}
+		else {
+			rtype  = FileManager::readFile(dataAdapter);
+			response.setupResponse(rtype, dataAdapter);
+			connection->responseMode = (Connection::ResponseMode)response.isChunked();
+		}
 	}
 	else if (request.method == "POST") {
 		if (connection->requestMode == Connection::SINGLE && request.handleMultipart(connection)) {

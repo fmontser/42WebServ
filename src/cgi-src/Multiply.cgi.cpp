@@ -3,6 +3,7 @@
 #include <string>
 #include <sstream>
 #include <map>
+#include <unistd.h>
 
 // Función para parsear la cadena de consulta
 std::map<std::string, std::string> parseParameters(const std::string& str) {
@@ -31,9 +32,11 @@ int main() {
 	// Obtener los valores de a y b
 	int a = 0;
 	int b = 0;
+	int t = 0;
 	try {
 		a = std::atoi(params["a"].c_str());
 		b = std::atoi(params["b"].c_str());
+		t = std::atoi(params["t"].c_str());
 	} catch (const std::exception& e) {
 		std::cerr << "Error: Invalid input" << std::endl;
 		return 1;
@@ -41,6 +44,9 @@ int main() {
 
 	// Calcular el resultado
 	int resultado = a * b;
+
+	//TEST procesamiento largo
+	sleep(t);
 
 	// Imprimir el resultado en stdout
 	std::cout << "<html><body>\n";

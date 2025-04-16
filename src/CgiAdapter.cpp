@@ -1,4 +1,3 @@
-#include <unistd.h>
 #include <iostream>
 #include <map>
 #include <cstdlib>
@@ -7,10 +6,14 @@
 #include "Utils.hpp"
 #include "ServerConstants.hpp"
 
+#include "PathManager.hpp"
+
 #define RD_PIPE 0
 #define WR_PIPE 1
 
-CgiAdapter::CgiAdapter() {}
+CgiAdapter::CgiAdapter() {
+	_waitStatus = -1;
+}
 CgiAdapter::~CgiAdapter() {}
 
 CgiAdapter::CgiAdapter(const CgiAdapter& src) {
@@ -19,6 +22,7 @@ CgiAdapter::CgiAdapter(const CgiAdapter& src) {
 	_query = src._query;
 	_cType = src._cType;
 	_cLength = src._cLength;
+	_waitStatus = src._waitStatus;
 }
 
 CgiAdapter& CgiAdapter::operator=(const CgiAdapter& src) {
@@ -28,6 +32,7 @@ CgiAdapter& CgiAdapter::operator=(const CgiAdapter& src) {
 		_query = src._query;
 		_cType = src._cType;
 		_cLength = src._cLength;
+		_waitStatus = src._waitStatus;
 	}
 	return *this;
 }
@@ -35,56 +40,59 @@ CgiAdapter& CgiAdapter::operator=(const CgiAdapter& src) {
 #include <cerrno>
 #include <cstring>
 
-HttpResponse::responseType	CgiAdapter::executeCgi(std::string& output) {
+HttpResponse::responseType	CgiAdapter::executeCgi(std::string& output, DataAdapter& dataAdapter) {
 	std::string	path;
-	pid_t		pid;
-	int			pipefd[2];
-	int			waitStatus, pipeStatus;
 	char		buffer[READ_BUFFER];
 	ssize_t		bytesRead;
 
-	path.append("cgi-bin/");
-	path.append(_cgiName);
+	path = PathManager::resolveServerPath(dataAdapter);
 
-	pipeStatus = pipe(pipefd);
-	if (pipeStatus == -1)
-		return HttpResponse::SERVER_ERROR;
+	if (_waitStatus == -1){
+		if (pipe(_pipefd) == -1)
+			return HttpResponse::SERVER_ERROR;
+		_pid = fork();
+		if (_pid == -1)
+			return HttpResponse::SERVER_ERROR; 
+	}
 
-	pid = fork();
-	if (pid == -1)
-		return HttpResponse::SERVER_ERROR; 
-
-	if (pid == 0) {
- 		close(pipefd[RD_PIPE]);
-		dup2(pipefd[WR_PIPE], STDOUT_FILENO);
+	if (_pid == 0) {
+ 		close(_pipefd[RD_PIPE]);
+		dup2(_pipefd[WR_PIPE], STDOUT_FILENO);
 		
 		if (execve(path.c_str(), _argv, _envp) == -1){
-			close(pipefd[WR_PIPE]);
+			close(_pipefd[WR_PIPE]);
 			exit(EXIT_FAILURE);
 		}
-		close(pipefd[WR_PIPE]);
+		close(_pipefd[WR_PIPE]);
 		exit(EXIT_SUCCESS);
 
 	} else {
-		close(pipefd[WR_PIPE]);
 
-		while ((bytesRead = read(pipefd[RD_PIPE], buffer, READ_BUFFER))) {
-			if (bytesRead < 0)
-				return HttpResponse::SERVER_ERROR;
-			output.append(buffer, bytesRead);
+
+		//TODO quitar test
+		int test = waitpid(_pid, &_waitStatus, WNOHANG);
+		if (test > 0) {
+			if (WIFEXITED(_waitStatus)) {
+				if (WEXITSTATUS(_waitStatus) == 0) {
+					close(_pipefd[WR_PIPE]);
+
+					while ((bytesRead = read(_pipefd[RD_PIPE], buffer, READ_BUFFER))) {
+						if (bytesRead < 0)
+							return HttpResponse::SERVER_ERROR;
+						output.append(buffer, bytesRead);
+					}
+
+					close(_pipefd[RD_PIPE]);
+					dataAdapter.getConnection()->hasPendingCgi = false;
+					return HttpResponse::OK;
+				}
+				else if (WEXITSTATUS(_waitStatus) != 0) {
+					std::cerr << "Error: CGI script exited with status " << WEXITSTATUS(_waitStatus) << std::endl;
+					return HttpResponse::SERVER_ERROR;
+				}
+			} 
 		}
-
-		waitpid(pid, &waitStatus, WNOHANG);
-		if (WIFEXITED(waitStatus)) {
-			if (WEXITSTATUS(waitStatus) == 0) {
-				close(pipefd[RD_PIPE]);
-				return HttpResponse::OK;
-			}
-			if (WEXITSTATUS(waitStatus) != 0) {
-				std::cerr << "Error: CGI script exited with status " << WEXITSTATUS(waitStatus) << std::endl;
-				return HttpResponse::SERVER_ERROR;
-			}
-		} 
+		dataAdapter.getConnection()->hasPendingCgi = true;
 		return HttpResponse::EMPTY;
 	}
 }
@@ -134,6 +142,7 @@ void	CgiAdapter::parseParameters(std::string url){
 	_query = raw[1];
 }
 
+
 HttpResponse::responseType	CgiAdapter::processCgi(DataAdapter& dataAdapter) {
 	std::string					output;
 	HttpResponse::responseType	responseType;
@@ -141,7 +150,9 @@ HttpResponse::responseType	CgiAdapter::processCgi(DataAdapter& dataAdapter) {
 
 	parseParameters(dataAdapter.getRequest().url);
 	setEnvironment(dataAdapter);
-	responseType = executeCgi(output);
+	responseType = executeCgi(output, dataAdapter);
+	if (dataAdapter.getConnection()->hasPendingCgi)
+		dataAdapter.getConnection()->dinamizeAdapters(dataAdapter, *this);
 	if (responseType != HttpResponse::EMPTY) {
 		while (i < output.size())
 		dataAdapter.getResponse().body.push_back(output[i++]);
@@ -153,4 +164,8 @@ bool	CgiAdapter::isCgiRequest(std::string url) {
 	if (url.find(".cgi", 0) != url.npos)
 		return true;
 	return false;
+}
+
+std::string	CgiAdapter::stripCgiParams(std::string url) {
+	return url.substr(0, url.find('?',0));
 }

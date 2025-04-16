@@ -59,7 +59,12 @@
 		HttpRequest&	request = dataAdapter.getRequest();
 		Route*			route = server.getRequestedRoute(dataAdapter);
 		std::string		_default(route->getDefault());
-		std::string		path;
+		std::string		path, url;
+
+		//TODO check
+		url = request.url;
+		if (request.isCgiRequest)
+			url = CgiAdapter::stripCgiParams(url);
 
 		if (route) {
 			if ((route->getRoot().empty() || route->getRoot().at(0) != '/')
@@ -72,11 +77,11 @@
 			else
 				stackPath(path, route->getRoot());
 
-			stackPath(path, request.url);
+			stackPath(path, url);
 			if (Utils::isDirectory(path) && !_default.empty())
 				stackPath(path, _default);
 		} else
-			stackPath(path, request.url);
+			stackPath(path, url);
 		return (path);
 	}
 
@@ -84,11 +89,15 @@
 	std::string		PathManager::resolveServerPath(DataAdapter& dataAdapter) {
 		Server&			server = dataAdapter.getConnection()->getServer();
 		HttpRequest&	request = dataAdapter.getRequest();
-		std::string		path;
+		std::string		path, url;
+
+		url = request.url;
+		if (request.isCgiRequest)
+			url = CgiAdapter::stripCgiParams(url);
 
 		path.append(_workingDir);
 		stackPath(path, server.getRoot());
-		stackPath(path, request.url);
+		stackPath(path, url);
 
 		return (path);
 	}

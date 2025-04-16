@@ -1,5 +1,7 @@
 //TODO arreglar raiz del/ == del (PATHMANAGER!!!!!), probar con listing 201
 
+//TODO arreglar makefile para incluir cgis o ponerlo manual
+
 //TODO test not allowed (PUT) no devuelve una pagina de error (aunque si es reconocido)
 
 //TODO DUDAS RAZONABLES

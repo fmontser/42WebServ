@@ -10,7 +10,7 @@
 #include "HttpProcessor.hpp"
 #include "Utils.hpp"
 
-Connection::Connection(Server& server) : _server(server), _multiDataAdapter(NULL) {
+Connection::Connection(Server& server) : _server(server), _multiDataAdapter(NULL), _multiCgiAdapter(NULL) {
 	sockaddr_in	client_addr;
 	socklen_t	client_addr_len = sizeof(client_addr);
 
@@ -20,6 +20,7 @@ Connection::Connection(Server& server) : _server(server), _multiDataAdapter(NULL
 	}
 
 	isOverPayloadLimit = false;
+	hasPendingCgi = false;
 	requestMode = SINGLE;
 	responseMode = NORMAL;
 	contentLength = 0;
@@ -39,6 +40,7 @@ Connection::Connection(const Connection& src) : _server(src._server) {
 	recvBuffer = src.recvBuffer;
 	sendBuffer = src.sendBuffer;
 	isOverPayloadLimit = src.isOverPayloadLimit;
+	hasPendingCgi = src.hasPendingCgi;
 	responseMode = src.responseMode;
 	requestMode = src.requestMode;
 	boundarie = src.boundarie;
@@ -52,6 +54,7 @@ Connection& Connection::operator=(const Connection& src) {
 		recvBuffer = src.recvBuffer;
 		sendBuffer = src.sendBuffer;
 		isOverPayloadLimit = src.isOverPayloadLimit;
+		hasPendingCgi = src.hasPendingCgi;
 		responseMode = src.responseMode;
 		requestMode = src.requestMode;
 		boundarie = src.boundarie;
@@ -99,12 +102,18 @@ void	Connection::manageSingle(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter){
 
 	HttpProcessor::processHttpRequest(dataAdapter, cgiAdapter);
 
-	dataAdapter.serializeResponse();
+	dataAdapter.serializeResponse();	
 	if (requestMode == Connection::MULTIPART) {
-		_multiDataAdapter = new DataAdapter(dataAdapter);
+		_multiDataAdapter = new DataAdapter(dataAdapter); //TODO podria estar reservandose encima del anterior si es cgi??? leak!!
 		_multiDataAdapter->getResponse().statusCode = "";
 		_multiCgiAdapter = new CgiAdapter();
 	}
+
+	//TODO cuidado!!!! comprobar que es correcto
+	if (!hasPendingCgi)
+		resetConnection();
+
+
 	recvBuffer.clear();
 }
 
@@ -125,7 +134,19 @@ void	Connection::manageMultiPart(DataAdapter& dataAdapter, CgiAdapter& cgiAdapte
 		resetConnection();
 }
 
+void	Connection::fetchCgi() {
+	if (requestMode == MULTIPART)
+		manageMultiPart(*_multiDataAdapter, *_multiCgiAdapter);
+	else 
+		manageSingle(*_multiDataAdapter, *_multiCgiAdapter);
+}
+
 void	Connection::recieveData() {
+
+	//TODO @@@@1111 adapters al HEAP siempre!!! refactor.
+
+
+
 	DataAdapter	dataAdapter = DataAdapter(this);
 	CgiAdapter	cgiAdapter;
 	char		buffer[READ_BUFFER] = {0};
@@ -191,6 +212,11 @@ void	Connection::sendData() {
 	if (isOverPayloadLimit)
 		ConnectionManager::deleteConnection(_server, this);
 	sendBuffer.clear();
+}
+
+void			Connection::dinamizeAdapters(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter){
+	_multiDataAdapter = new DataAdapter(dataAdapter);
+	_multiCgiAdapter = new CgiAdapter(cgiAdapter);
 }
 
 
