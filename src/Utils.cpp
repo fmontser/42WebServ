@@ -101,7 +101,6 @@ std::string Utils::getFileType(std::string path) {
 	return "";
 }
 
-//TODO testing
 std::string Utils::getFileName(std::string path) {
 	size_t pos = path.find_last_of('/');
 	if (pos != std::string::npos) {

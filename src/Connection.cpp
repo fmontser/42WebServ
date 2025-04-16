@@ -64,6 +64,10 @@ Connection& Connection::operator=(const Connection& src) {
 }
 
 Connection::~Connection() {
+	if(_multiDataAdapter != NULL)
+		delete _multiDataAdapter;
+	if (_multiCgiAdapter != NULL)
+		delete _multiCgiAdapter;
 	close(_socketFd);
 }
 
@@ -108,13 +112,8 @@ void	Connection::manageSingle(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter){
 	dataAdapter.serializeResponse();	
 	if (requestMode == Connection::MULTIPART)
 		dataAdapter.getResponse().statusCode = "";
-
-
-	//TODO cuidado!!!! comprobar que es correcto
 	if (!hasPendingCgi)
 		resetConnection();
-
-
 	recvBuffer.clear();
 }
 

@@ -32,11 +32,4 @@
 	∗The CGI should be run in the correct directory for relative path file access.
 
 	∗Your server should work with one CGI (php-CGI, Python, and so forth).
-
-	//TODO rutas cgi??
-
-	route /cgi-bin {
-		methods GET POST
-		default  multiply.cgi
-	} 
 */
