@@ -69,8 +69,8 @@
 			const toucan = document.getElementById("toucan");
 			
 			const moveToucan = () => {
-				const maxX = window.innerWidth - 200;
-				const maxY = window.innerHeight - 200;
+				const maxX = window.innerWidth - toucan.offsetWidth;
+				const maxY = window.innerHeight - toucan.offsetHeight;
 				
 				const x = Math.random() * maxX;
 				const y = Math.random() * maxY;
