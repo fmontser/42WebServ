@@ -109,6 +109,19 @@
 			});
 		});
 	</script>
+	<hr>
+	<button id="nowhereButton">Nowhere!</button>
+	<script>
+		const gotoNowhere = () => {
+			window.location.href = 'http://localhost:8042/asadasdas';
+		}
+		document.addEventListener('DOMContentLoaded', function() {
+			document.getElementById('nowhereButton').addEventListener('click', function() {
+				alert('Nowhere Button clicked!');
+				gotoNowhere();
+			});
+		});
+	</script>
 
 </body>
 </html>
