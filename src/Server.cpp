@@ -20,6 +20,7 @@ Server::Server() {
 	_defaults["default413"] = "defaults/413.html";
 	_defaults["default500"] = "defaults/500.html";
 	_defaults["default501"] = "defaults/501.html";
+	_defaults["default504"] = "defaults/504.html";
 }
 
 Server::~Server() {
@@ -142,8 +143,10 @@ Route	*Server::getRequestedRoute(DataAdapter& dataAdapter) {
 	std::string path, url;
 
 	url = dataAdapter.getRequest().url;
-	if (dataAdapter.getRequest().isCgiRequest)
+	if (dataAdapter.getRequest().isCgiRequest) {
 		url = CgiAdapter::stripCgiParams(url);
+		url = CgiAdapter::stripCgiPathInfo(url);
+	}
 
 	path = PathManager::resolveServerPath(dataAdapter);
 

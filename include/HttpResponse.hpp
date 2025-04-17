@@ -20,7 +20,8 @@ class HttpResponse : public HttpMessage {
 			CONFLICT = 409,
 			PAYLOAD_TOO_LARGE = 413,
 			SERVER_ERROR = 500,
-			METHOD_NOT_IMPLEMENTED = 501
+			METHOD_NOT_IMPLEMENTED = 501,
+			GATEWAY_TIMEOUT = 504
 		};
 
 		std::string	statusCode;

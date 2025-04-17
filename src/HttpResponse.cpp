@@ -121,6 +121,12 @@ void	HttpResponse::setupResponse(enum responseType responseType, DataAdapter& da
 			dataAdapter.getRequest().url = PathManager::resolveErrorPage(dataAdapter, "default501");
 			FileManager::readFile(dataAdapter);
 			break;
+		case GATEWAY_TIMEOUT:
+			statusCode = "504";
+			statusMsg = "GATEWAY_TIMEOUT";
+			dataAdapter.getRequest().url = PathManager::resolveErrorPage(dataAdapter, "default504");
+			FileManager::readFile(dataAdapter);
+			break;
 		default:
 			break;
 	}

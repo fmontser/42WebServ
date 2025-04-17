@@ -34,20 +34,6 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter, CgiAdapter& cgi
 	HttpResponse&	response = dataAdapter.getResponse();
 	Connection		*connection = dataAdapter.getConnection();
 
-	(void)cgiAdapter;
-	
-	/* 
-		//TODO @@@@@@@@@@ esto deberia:
-
-		- las rutas deben aplicarse igual, quizas cambiar algo a causa de "?params" 
-
-		- pasar por GET / POST (si es post hayq que pasar el body al cgi cuando se haya completado)
-		- considerar SINGLE / MULTIPART como un mensaje normal
-		- una vez se tiene TODO el request, pasarlo al CgiAdapter
-		- procesar el cgi de forma no bloqueante Y con un timeout
-		- al terminar responder de forma normal
-	*/
-
 	if (connection->requestMode == Connection::SINGLE) {
 		rtype = validateRoute(dataAdapter);
 		if (rtype != HttpResponse::EMPTY) {
@@ -63,8 +49,6 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter, CgiAdapter& cgi
 	}
 	
 	if (request.method == "GET") {
-
-		//TODO check!
 		if (request.isCgiRequest) {
 			rtype = cgiAdapter.processCgi(dataAdapter);
 			if (rtype != HttpResponse::EMPTY)
@@ -78,13 +62,33 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter, CgiAdapter& cgi
 		}
 	}
 	else if (request.method == "POST") {
+
+
 		if (connection->requestMode == Connection::SINGLE && request.handleMultipart(connection)) {
 			response.setupResponse(HttpResponse::CONTINUE, dataAdapter);
 			return;
 		}
-		HttpResponse::responseType rtype = FileManager::writeFile(dataAdapter);
-		if (connection->contentLength == 0)
-			response.setupResponse(rtype, dataAdapter);
+
+
+		if (request.isCgiRequest) {
+			
+			for (std::vector<char>::iterator it = request.body.begin(); it != request.body.end(); ++it)
+				cgiAdapter.body.push_back(*it);
+
+			if (connection->contentLength == 0) {
+				rtype = cgiAdapter.processCgi(dataAdapter);
+				if (rtype != HttpResponse::EMPTY)
+				response.setupResponse(rtype, dataAdapter);
+			}
+			return;
+		}
+		else {
+
+			HttpResponse::responseType rtype = FileManager::writeFile(dataAdapter);
+			if (connection->contentLength == 0)
+				response.setupResponse(rtype, dataAdapter);
+			
+		}
 	}
 	else if (request.method == "DELETE") {
 		rtype = FileManager::deleteFile(dataAdapter);

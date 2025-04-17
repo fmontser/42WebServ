@@ -112,7 +112,7 @@ void	Connection::manageSingle(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter){
 	dataAdapter.serializeResponse();	
 	if (requestMode == Connection::MULTIPART)
 		dataAdapter.getResponse().statusCode = "";
-	if (!hasPendingCgi)
+	if (!hasPendingCgi && contentLength == 0)
 		resetConnection();
 	recvBuffer.clear();
 }

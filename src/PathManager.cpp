@@ -63,8 +63,10 @@
 
 		//TODO check
 		url = request.url;
-		if (request.isCgiRequest)
+		if (request.isCgiRequest) {
 			url = CgiAdapter::stripCgiParams(url);
+			url = CgiAdapter::stripCgiPathInfo(url);
+		}
 
 		if (route) {
 			if ((route->getRoot().empty() || route->getRoot().at(0) != '/')
@@ -92,8 +94,10 @@
 		std::string		path, url;
 
 		url = request.url;
-		if (request.isCgiRequest)
+		if (request.isCgiRequest) {
 			url = CgiAdapter::stripCgiParams(url);
+			url = CgiAdapter::stripCgiPathInfo(url);
+		}
 
 		path.append(_workingDir);
 		stackPath(path, server.getRoot());
