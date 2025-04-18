@@ -14,6 +14,8 @@ class CgiAdapter {
 		std::string	_cLength;
 		std::string	_path;
 		
+		bool		_initFlag;
+
 		time_t		_startTime;
 		time_t		_actualTime;
 		

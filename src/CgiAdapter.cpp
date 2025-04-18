@@ -14,11 +14,12 @@
 #define WR 1
 
 CgiAdapter::CgiAdapter() {
-	_pid = 0;
+	_initFlag = true;
 }
 CgiAdapter::~CgiAdapter() {}
 
 CgiAdapter::CgiAdapter(const CgiAdapter& src) {
+	_initFlag =  src._initFlag;
 	_scriptName = src._scriptName;
 	_method = src._method;
 	_query = src._query;
@@ -31,6 +32,7 @@ CgiAdapter::CgiAdapter(const CgiAdapter& src) {
 
 CgiAdapter& CgiAdapter::operator=(const CgiAdapter& src) {
 	if (this != &src){
+		_initFlag =  src._initFlag;
 		_scriptName = src._scriptName;
 		_method = src._method;
 		_query = src._query;
@@ -43,11 +45,12 @@ CgiAdapter& CgiAdapter::operator=(const CgiAdapter& src) {
 	return *this;
 }
 
+//TODO @@@@@@@@@ error handling...abstraction....
 HttpResponse::responseType	CgiAdapter::executeCgi(std::string& output, DataAdapter& dataAdapter) {
-	char		buffer[1000000]; //TODO hacer reserva dinamica en funcion del content size...
+	char		readBuffer[READ_BUFFER];
 	ssize_t		bytesRead;
 
-	if (_pid == 0){
+	if (_initFlag){
 		if (pipe(_ppOut) == -1 || pipe(_ppIn) == -1)
 			return HttpResponse::SERVER_ERROR;
 		_startTime = time(NULL);
@@ -58,48 +61,25 @@ HttpResponse::responseType	CgiAdapter::executeCgi(std::string& output, DataAdapt
 
 	if (_pid == 0) {
 		close(_ppIn[WR]);
+		dup2(_ppIn[RD], STDIN_FILENO);
 		close(_ppIn[RD]);
-		//dup2(_ppIn[RD], STDIN_FILENO);
+
  		close(_ppOut[RD]);
 		dup2(_ppOut[WR], STDOUT_FILENO);
-		
-		//TODO error
-		//chdir(_path.c_str());
-
-		if (execve(_path.c_str(), _argv, _envp) == -1) {
-			close(_ppOut[WR]);
+		close(_ppOut[WR]);
+	
+		chdir(Utils::getPathDir(_path).c_str());
+		if (execve(_path.c_str(), _argv, _envp) == -1)
 			exit(EXIT_FAILURE);
-		}
-
-		close(_ppOut[WR]);
-		exit(EXIT_SUCCESS);
-
 	} else {
-		close(_ppIn[WR]);
-		close(_ppIn[RD]);
-		close(_ppOut[WR]);
 
-		if (waitpid(_pid, &_waitStatus, WNOHANG) > 0) {
-			if (WIFEXITED(_waitStatus)) {
-				if (WEXITSTATUS(_waitStatus) == 0) {
-
-					while ((bytesRead = read(_ppOut[RD], buffer, READ_BUFFER))) {
-						if (bytesRead < 0)
-							return HttpResponse::SERVER_ERROR;
-						output.append(buffer, bytesRead);
-					}
-
-					close(_ppOut[RD]);
-					dataAdapter.getConnection()->hasPendingCgi = false;
-					return HttpResponse::OK;
-				}
-				else if (WEXITSTATUS(_waitStatus) != 0) {
-					//TODO cerrar pipes
-					close(_ppOut[RD]);
-					std::cerr << "Error: CGI script exited with status " << WEXITSTATUS(_waitStatus) << std::endl;
-					return HttpResponse::SERVER_ERROR;
-				}
-			} 
+		if (_initFlag) {
+			_initFlag = false;
+			close(_ppIn[RD]);
+			close(_ppOut[WR]);	
+			std::string writeBuffer = std::string(body.begin(), body.end());
+			write(_ppIn[WR], writeBuffer.c_str(), writeBuffer.size());
+			close(_ppIn[WR]);
 		}
 
 		_actualTime = time(NULL);
@@ -112,84 +92,34 @@ HttpResponse::responseType	CgiAdapter::executeCgi(std::string& output, DataAdapt
 			return HttpResponse::GATEWAY_TIMEOUT;
 		}
 
-		dataAdapter.getConnection()->hasPendingCgi = true;
-		return HttpResponse::EMPTY;
-	}
-}
+		if (waitpid(_pid, &_waitStatus, WNOHANG) > 0) {
+			if (WIFEXITED(_waitStatus)) {
+				if (WEXITSTATUS(_waitStatus) == 0) {
 
 
 
+ 					while ((bytesRead = read(_ppOut[RD], readBuffer, READ_BUFFER))) {
+						output.append(readBuffer, bytesRead);
+					}
 
 
-/* 
+					close(_ppOut[RD]);
+					dataAdapter.getConnection()->hasPendingCgi = false;
+					return HttpResponse::OK;
+				}
+				else if (WEXITSTATUS(_waitStatus) != 0) {
+					close(_ppOut[RD]);
+					std::cerr << "Error: CGI script exited with status " << WEXITSTATUS(_waitStatus) << std::endl;
+					return HttpResponse::SERVER_ERROR;
+				}
+			}
 
-		if (!dataAdapter.getConnection()->hasPendingCgi) {
-
-			std::string buffer = std::string(body.begin(), body.end());
-			write(_ppIn[WR], buffer.c_str(), buffer.size());
-			close(_ppIn[WR]);
 		}
-
-
-
-
-#include <iostream>
-#include <unistd.h>
-#include <wait.h>
-
-#define RD 0
-#define WR 1
-
-int main(void) {
-
-	char buffer[11] = {0};
-	int	pIn[2], pOut[2];
-	pid_t pid;
-
-	if (pipe(pIn) == -1 || pipe(pOut) == -1)
-		std::cerr << "Error: Pipe error\n";
-	pid = fork();
-	if (pid == -1)
-		std::cerr << "Error: Fork error\n";
-
-	if (pid == 0) {
-	// CHILD CODE
-
-		close(pOut[RD]);
-		dup2(pOut[WR], STDOUT_FILENO);
-
-		close(pIn[WR]);
-		dup2(pIn[RD], STDIN_FILENO);
-
-		read(pIn[RD], buffer, 11);
-
-		buffer[0] = 'X';
-
-		write(pOut[WR], buffer, 11);
-
-		close(pOut[WR]);
-		close(pIn[RD]);
-
-	} else {
-	// PARENT CODE
-
-		close(pOut[WR]);
-		close(pIn[RD]);
-
-		write(pIn[WR], "0123456789\0", 11);
-		close(pIn[WR]);
-
-		waitpid(pid, NULL, 0);
-
-		read(pOut[RD], buffer, 11);
-		close(pOut[RD]);
-
-		std::cout << buffer << "\n";
 	}
-	return 0;
+	dataAdapter.getConnection()->hasPendingCgi = true;
+	return HttpResponse::EMPTY;
 }
 
-*/
 
 //TODO test check errors
 void	CgiAdapter::setEnvironment(DataAdapter& dataAdapter) {
@@ -197,6 +127,7 @@ void	CgiAdapter::setEnvironment(DataAdapter& dataAdapter) {
 	int				i = 0;
 	
 	_path = PathManager::resolveServerPath(dataAdapter);
+
 	_argv[i] = const_cast<char *>(_scriptName.c_str());
 	_argv[i+1] = const_cast<char *>(_path.c_str());
 	_argv[i+2] = NULL;
@@ -251,7 +182,7 @@ HttpResponse::responseType	CgiAdapter::processCgi(DataAdapter& dataAdapter) {
 	responseType = executeCgi(output, dataAdapter);
 	if (responseType != HttpResponse::EMPTY) {
 		while (i < output.size())
-		dataAdapter.getResponse().body.push_back(output[i++]);
+			dataAdapter.getResponse().body.push_back(output[i++]);
 	}
 	return responseType;
 }

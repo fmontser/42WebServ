@@ -75,7 +75,7 @@ std::string Utils::getStringSizeStr(size_t size) {
 	return ss.str();
 }
 
-std::string	Utils::getUrlPath(std::string url) {
+std::string	Utils::getPathDir(std::string url) {
 	std::string path;
 	path = url.substr(0, url.find_last_of('/', url.size()));
 	if (path.empty())

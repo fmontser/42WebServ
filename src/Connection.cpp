@@ -88,6 +88,7 @@ void	Connection::resetConnection() {
 	delete _multiCgiAdapter;
 	_multiCgiAdapter = NULL;
 
+	hasPendingCgi = false;
 	boundarie.clear();
 	boundStart.clear();
 	boundEnd.clear();
@@ -121,7 +122,7 @@ void	Connection::manageMultiPart(DataAdapter& dataAdapter, CgiAdapter& cgiAdapte
 	dataAdapter.deserializeRequest();
 	dataAdapter.getRequest().method = "POST";
 	dataAdapter.getRequest().isCgiRequest 
-		= CgiAdapter::isCgiRequest(dataAdapter.getRequest().url);
+		= CgiAdapter::isCgiRequest(dataAdapter.getRequest().url); //TODO se marca como cgi antes de completar todo el mensaje multipart....es esto correcto??
 	checkBinaryDownload(dataAdapter.getRequest());
 
 	HttpProcessor::processHttpRequest(dataAdapter, cgiAdapter);
@@ -130,7 +131,7 @@ void	Connection::manageMultiPart(DataAdapter& dataAdapter, CgiAdapter& cgiAdapte
 		dataAdapter.serializeResponse();
 	recvBuffer.clear();
 	dataAdapter.getRequest().body.clear();
-	 if (contentLength == 0)
+	if (!hasPendingCgi && contentLength == 0)
 		resetConnection();
 }
 

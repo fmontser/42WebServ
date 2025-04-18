@@ -153,7 +153,7 @@ Route	*Server::getRequestedRoute(DataAdapter& dataAdapter) {
 	if (!Utils::isDirectory(path)) {
 		if (!(access(path.c_str(), F_OK) == 0))
 			return NULL;
-		url = Utils::getUrlPath(url);
+		url = Utils::getPathDir(url);
 	}
 
 	std::map<std::string, Route>::iterator it = _routes.find(url);

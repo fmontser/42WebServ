@@ -60,23 +60,22 @@
 
 	<!-- CGI BASIC TEST -->
 	<button>
-		<a href="http://localhost:8042/cgi-bin/multiply.cgi?a=2&b=5&t=0">CGI 2 x 5 = 10</a>
+		<a href="http://localhost:8042/cgi-bin/multiply.cgi?a=2&b=5&t=0">MULTIPLY 2 x 5 with CGI script</a>
 	</button>
 	
 	<hr>
 
-	<form action="/cgi-bin/multiply.cgi?a=2&b=5&t=0" method="post" enctype="multipart/form-data">
+	<form action="/cgi-bin/replace.cgi?a=2&b=5&t=0" method="post" enctype="multipart/form-data">
+		REPLACE all 0's with 2's with CGI script
 		<input type="file" name="archivo" id="archivo">
-		<button type="submit">Subir Archivo (CGI) (POST)</button>
+		<button type="submit">upload</button>
 	</form>
-
-	<hr>
 
 	<hr>
 
 	<form action="/del" method="post" enctype="multipart/form-data">
 		<input type="file" name="archivo" id="archivo">
-		<button type="submit">Subir Archivo (POST)</button>
+		<button type="submit">upload</button>
 	</form>
 
 	<hr>

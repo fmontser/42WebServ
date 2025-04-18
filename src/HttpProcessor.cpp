@@ -78,7 +78,7 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter, CgiAdapter& cgi
 			if (connection->contentLength == 0) {
 				rtype = cgiAdapter.processCgi(dataAdapter);
 				if (rtype != HttpResponse::EMPTY)
-				response.setupResponse(rtype, dataAdapter);
+					response.setupResponse(rtype, dataAdapter);
 			}
 			return;
 		}

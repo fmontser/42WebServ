@@ -5,6 +5,7 @@
 #include <map>
 #include <unistd.h>
 
+
 std::map<std::string, std::string> parseParameters(std::string& str) {
 	std::map<std::string, std::string>	parameters;
 	std::stringstream					ss(str);
@@ -21,22 +22,29 @@ std::map<std::string, std::string> parseParameters(std::string& str) {
 	return (parameters);
 }
 
+
 int main() {
 	const char*							queryString = std::getenv("QUERY_STRING");
+/* 	const char*							contentLengthStr = std::getenv("CONTENT_LENGTH");
+	int									contentLength = (contentLengthStr != NULL) ? atoi(contentLengthStr) : 0; */
 	std::string							query = (queryString != NULL) ? queryString : "";
 	std::map<std::string, std::string>	params = parseParameters(query);
-	int									a, b, t;
+	std::string							body;
+	char								readBuffer[4096] = {0};
+	ssize_t								bytesRead;
 
-	a = atoi(params["a"].c_str());
-	b = atoi(params["b"].c_str());
-	t = atoi(params["t"].c_str());
 
-	int resultado = (a * b);
-	sleep(t);
 
-	std::cout << "<html><body>\n";
-	std::cout << "<h1>Resultado: " << resultado << "</h1>\n";
-	std::cout << "</body></html>\n";
+	while ((bytesRead = read(STDIN_FILENO, readBuffer, sizeof(readBuffer))) > 0) {
+		body.append(readBuffer, bytesRead);
+	}
 
-	return (0);
+	for (std::string::iterator it = body.begin(); it != body.end(); ++it) {
+		if (*it == '0')
+			*it = '2';
+	}
+	std::cout << body;
+	return (EXIT_SUCCESS);
 }
+
+
