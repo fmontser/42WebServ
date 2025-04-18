@@ -19,8 +19,8 @@ class CgiAdapter {
 		
 		int			_waitStatus;
 		pid_t		_pid;
-		int			_pipefdIn[2];
-		int			_pipefdOut[2];
+		int			_ppIn[2];
+		int			_ppOut[2];
 
 		char		*_envp[7];
 		char		*_argv[3];

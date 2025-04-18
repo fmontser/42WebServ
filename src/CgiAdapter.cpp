@@ -10,8 +10,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#define RD_END 0
-#define WR_END 1
+#define RD 0
+#define WR 1
 
 CgiAdapter::CgiAdapter() {
 	_pid = 0;
@@ -44,11 +44,11 @@ CgiAdapter& CgiAdapter::operator=(const CgiAdapter& src) {
 }
 
 HttpResponse::responseType	CgiAdapter::executeCgi(std::string& output, DataAdapter& dataAdapter) {
-	char		buffer[READ_BUFFER];
+	char		buffer[1000000]; //TODO hacer reserva dinamica en funcion del content size...
 	ssize_t		bytesRead;
 
 	if (_pid == 0){
-		if (pipe(_pipefdOut) == -1 || pipe(_pipefdIn) == -1)
+		if (pipe(_ppOut) == -1 || pipe(_ppIn) == -1)
 			return HttpResponse::SERVER_ERROR;
 		_startTime = time(NULL);
 		_pid = fork();
@@ -57,70 +57,56 @@ HttpResponse::responseType	CgiAdapter::executeCgi(std::string& output, DataAdapt
 	}
 
 	if (_pid == 0) {
-		close(_pipefdIn[WR_END]);
-		dup2(_pipefdIn[RD_END], STDIN_FILENO);
- 		close(_pipefdOut[RD_END]);
-		dup2(_pipefdOut[WR_END], STDOUT_FILENO);
+		close(_ppIn[WR]);
+		close(_ppIn[RD]);
+		//dup2(_ppIn[RD], STDIN_FILENO);
+ 		close(_ppOut[RD]);
+		dup2(_ppOut[WR], STDOUT_FILENO);
 		
 		//TODO error
-		chdir(_path.c_str());
+		//chdir(_path.c_str());
 
-		int fd = open("log", O_CREAT, 0);
-		char	buffer[1000000];
-	
-
-		read(_pipefdIn[RD_END], buffer, 8092);
-		write(fd, buffer, 8092);
-		close(fd);
-
-/* 		if (execve(_path.c_str(), _argv, _envp) == -1) {
-			close(_pipefdIn[RD_END]);
-			close(_pipefdOut[WR_END]);
+		if (execve(_path.c_str(), _argv, _envp) == -1) {
+			close(_ppOut[WR]);
 			exit(EXIT_FAILURE);
-		} */
+		}
 
-		sleep(20);
-		close(_pipefdIn[RD_END]);
-		close(_pipefdOut[WR_END]);
+		close(_ppOut[WR]);
 		exit(EXIT_SUCCESS);
 
 	} else {
-		close(_pipefdIn[RD_END]);
-		close(_pipefdOut[WR_END]);
-
-		if (!dataAdapter.getConnection()->hasPendingCgi) {
-
-			std::string buffer = std::string(body.begin(), body.end());
-			write(_pipefdIn[WR_END], buffer.c_str(), buffer.size());
-			close(_pipefdIn[WR_END]);
-		}
+		close(_ppIn[WR]);
+		close(_ppIn[RD]);
+		close(_ppOut[WR]);
 
 		if (waitpid(_pid, &_waitStatus, WNOHANG) > 0) {
 			if (WIFEXITED(_waitStatus)) {
 				if (WEXITSTATUS(_waitStatus) == 0) {
 
-					while ((bytesRead = read(_pipefdOut[RD_END], buffer, READ_BUFFER))) {
+					while ((bytesRead = read(_ppOut[RD], buffer, READ_BUFFER))) {
 						if (bytesRead < 0)
 							return HttpResponse::SERVER_ERROR;
 						output.append(buffer, bytesRead);
 					}
 
-					close(_pipefdOut[RD_END]);
+					close(_ppOut[RD]);
 					dataAdapter.getConnection()->hasPendingCgi = false;
 					return HttpResponse::OK;
 				}
 				else if (WEXITSTATUS(_waitStatus) != 0) {
 					//TODO cerrar pipes
+					close(_ppOut[RD]);
 					std::cerr << "Error: CGI script exited with status " << WEXITSTATUS(_waitStatus) << std::endl;
 					return HttpResponse::SERVER_ERROR;
 				}
 			} 
 		}
+
 		_actualTime = time(NULL);
 		if (_actualTime - _startTime > TIMEOUT) {
 			//TODO error or log
-			close(_pipefdOut[WR_END]);
-			close(_pipefdOut[RD_END]);
+
+			close(_ppOut[RD]);
 			kill(_pid, SIGKILL);
 			dataAdapter.getConnection()->hasPendingCgi = false;
 			return HttpResponse::GATEWAY_TIMEOUT;
@@ -130,6 +116,80 @@ HttpResponse::responseType	CgiAdapter::executeCgi(std::string& output, DataAdapt
 		return HttpResponse::EMPTY;
 	}
 }
+
+
+
+
+
+/* 
+
+		if (!dataAdapter.getConnection()->hasPendingCgi) {
+
+			std::string buffer = std::string(body.begin(), body.end());
+			write(_ppIn[WR], buffer.c_str(), buffer.size());
+			close(_ppIn[WR]);
+		}
+
+
+
+
+#include <iostream>
+#include <unistd.h>
+#include <wait.h>
+
+#define RD 0
+#define WR 1
+
+int main(void) {
+
+	char buffer[11] = {0};
+	int	pIn[2], pOut[2];
+	pid_t pid;
+
+	if (pipe(pIn) == -1 || pipe(pOut) == -1)
+		std::cerr << "Error: Pipe error\n";
+	pid = fork();
+	if (pid == -1)
+		std::cerr << "Error: Fork error\n";
+
+	if (pid == 0) {
+	// CHILD CODE
+
+		close(pOut[RD]);
+		dup2(pOut[WR], STDOUT_FILENO);
+
+		close(pIn[WR]);
+		dup2(pIn[RD], STDIN_FILENO);
+
+		read(pIn[RD], buffer, 11);
+
+		buffer[0] = 'X';
+
+		write(pOut[WR], buffer, 11);
+
+		close(pOut[WR]);
+		close(pIn[RD]);
+
+	} else {
+	// PARENT CODE
+
+		close(pOut[WR]);
+		close(pIn[RD]);
+
+		write(pIn[WR], "0123456789\0", 11);
+		close(pIn[WR]);
+
+		waitpid(pid, NULL, 0);
+
+		read(pOut[RD], buffer, 11);
+		close(pOut[RD]);
+
+		std::cout << buffer << "\n";
+	}
+	return 0;
+}
+
+*/
 
 //TODO test check errors
 void	CgiAdapter::setEnvironment(DataAdapter& dataAdapter) {
