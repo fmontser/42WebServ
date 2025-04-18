@@ -18,10 +18,15 @@
 //TODO revisar si el cliente usa chunked para enviar a usar otro encoding type en el POST
 
 
+	// @@@@@@@ SUPERCAGADA, se requiere soportar chunked request y response, ademas todo el envio de datos sin conocer la longitud ni existe.
+
+		https://drive.google.com/file/d/1p43URv-qO29S4O9_uFr4cD6TH-ZW-csF/view?usp=sharing, https://aistudio.google.com/app/prompts?state=%7B%22ids%22:%5B%221t41SOErCFtwIUdddB-G48C1iCdU6KQRV%22%5D,%22action%22:%22open%22,%22userId%22:%22111409691010771158319%22,%22resourceKeys%22:%7B%7D%7D&usp=sharing
+
 	<form action="/del" method="post" enctype="multipart/form-data">
 		<input type="file" name="archivo" id="archivo">
 		<button type="submit">Subir Archivo (POST)</button>
 	</form>
+
 
 
 //TODO cerar el pipe del input y el output trans la transmision del body general el EOF.
