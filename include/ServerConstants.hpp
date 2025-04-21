@@ -19,3 +19,5 @@
 #define MAX_PORT_NUMBER 131072
 #define READ_BUFFER 131072
 #define HTTP_VERSION "HTTP/1.1"
+
+#define TIMEOUT 5

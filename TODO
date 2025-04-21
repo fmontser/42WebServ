@@ -1,22 +1,54 @@
+/*
 
-//TODO validador de REQUESTS!!!!! hay un faenon! (solo si los test lo requieren)
+//TODO full subject test
+//TODO full eval test
 
-//TODO chunked REQUEST -> NOT_IMPLEMENTED?
-
-//TODO el error 500 es un generico para cualquier cosa no prevista...
-
-//TODO 400 bad request es cuando se recibe una peticino mal formada...hay que hacer un validador de request para poder devolver esto!
-
-//TODO 405 not allowed, es si la ruta no permite un metodo que SI esta implementado.
+//TODO arreglar constructor copia/asignacion de HttpRequest/Response hacia HttpMessage
 
 //TODO arreglar raiz del/ == del (PATHMANAGER!!!!!), probar con listing 201
 
+//TODO subir archivos con espacio? funciona, pero luego no lo encuentra en las respuestas o peticiones...
 
-//TODO curl test con:
-/*
-	curl -X GET -H "SuperHeader: value1; prop0, value2; prop0=A; prop1=B" http://localhost:8042/
-	curl -X GET http://localhost:8042/
-	curl -F "file=@webserv" http://localhost:8042/
+//TODO arreglar makefile para incluir cgis o ponerlo manual
+
+//TODO test not allowed (PUT) no devuelve una pagina de error (aunque si es reconocido)
+//TODO substitr .h por stdc++98
+
+
+//TODO revisar si el cliente usa chunked para enviar a usar otro encoding type en el POST
+
+
+	// @@@@@@@ SUPERCAGADA, se requiere soportar chunked request y response, ademas todo el envio de datos sin conocer la longitud ni existe.
+
+		https://drive.google.com/file/d/1p43URv-qO29S4O9_uFr4cD6TH-ZW-csF/view?usp=sharing, https://aistudio.google.com/app/prompts?state=%7B%22ids%22:%5B%221t41SOErCFtwIUdddB-G48C1iCdU6KQRV%22%5D,%22action%22:%22open%22,%22userId%22:%22111409691010771158319%22,%22resourceKeys%22:%7B%7D%7D&usp=sharing
+
+	<form action="/del" method="post" enctype="multipart/form-data">
+		<input type="file" name="archivo" id="archivo">
+		<button type="submit">Subir Archivo (POST)</button>
+	</form>
+
+
+
+//TODO cerar el pipe del input y el output trans la transmision del body general el EOF.
+	∗Just remember that, for chunked request, your server needs to unchunk
+	it, the CGI will expect EOF as end of the body.
+
+	∗Same things for the output of the CGI. If no content_length is returned
+	from the CGI, EOF will mark the end of the returned data.
+
+//TODO pendiente de investigar
+	* Make the route able to accept uploaded files and configure where they should be saved.
+
+//TODO pendiente de investigar
+	* The first server for a host:port will be the default for this host:port (that means
+	it will answer to all the requests that don’t belong to an other server).
+
+//TODO pendiente
+	* Setup the server_names or not.
+
+//TODO pendiente entender
+
+	You can use every macro and define like FD_SET, FD_CLR, FD_ISSET, FD_ZERO 
+	(understanding what and how they do it is very useful).
 
 */
-

@@ -14,11 +14,6 @@
 #include "PathManager.hpp"
 
 
-//TODO necesario?
-#include "HttpHeader.hpp"
-
-
-
 FileManager::FileManager() {}
 FileManager::~FileManager() {}
 
@@ -50,14 +45,10 @@ static void chunkEncode(std::vector<char>& body, size_t maxPayload) {
 		body.push_back(byte);
 }
 
-//TODO testing
 static void setDownloadResponse(DataAdapter& dataAdapter, std::string path) {
-	
 	std::string contentType, fileName;
 
-	
 	fileName = Utils::getFileName(path);
-
 
 	HttpHeader contentDispHeader;
 	contentDispHeader.name = "Content-Disposition";
@@ -65,7 +56,6 @@ static void setDownloadResponse(DataAdapter& dataAdapter, std::string path) {
 	cdValue.name = "attachment; filename=\"" + fileName + "\"";
 	contentDispHeader.addValue(cdValue);
 	dataAdapter.getResponse().addHeader(contentDispHeader);
-
 }
 
 

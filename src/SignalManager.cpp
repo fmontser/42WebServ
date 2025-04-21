@@ -19,7 +19,7 @@ SignalManager& SignalManager::operator=(const SignalManager& src) {
 }
 
 void SignalManager::signalHandler(int signal) {
-	//TODO probablemente haya que forzar la liempeza de los socketFD
+	//TODO (hacer esto lo ultimo!!!) liberar socketFD y los servers y cualquier otra cosa 
 	std::cout << std::endl << BLUE << "Signal " << signal << " received. Server shutting down." << END << std::endl;
 	std::exit(EXIT_SUCCESS);
 }

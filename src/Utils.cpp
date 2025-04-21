@@ -75,7 +75,7 @@ std::string Utils::getStringSizeStr(size_t size) {
 	return ss.str();
 }
 
-std::string	Utils::getUrlPath(std::string url) {
+std::string	Utils::getPathDir(std::string url) {
 	std::string path;
 	path = url.substr(0, url.find_last_of('/', url.size()));
 	if (path.empty())
@@ -101,7 +101,6 @@ std::string Utils::getFileType(std::string path) {
 	return "";
 }
 
-//TODO testing
 std::string Utils::getFileName(std::string path) {
 	size_t pos = path.find_last_of('/');
 	if (pos != std::string::npos) {

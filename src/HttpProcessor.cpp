@@ -6,6 +6,7 @@
 #include "PathManager.hpp"
 #include "Utils.hpp"
 #include "Index.hpp"
+#include "CgiAdapter.hpp"
 #include <unistd.h>
 
 static	HttpResponse::responseType	validateRoute(DataAdapter& dataAdapter) {
@@ -25,19 +26,13 @@ static	HttpResponse::responseType	validateRoute(DataAdapter& dataAdapter) {
 	return HttpResponse::EMPTY;
 }
 
-void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter) {
+void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter) {
 	
 	HttpResponse::responseType rtype;
 
 	HttpRequest&	request = dataAdapter.getRequest();
 	HttpResponse&	response = dataAdapter.getResponse();
 	Connection		*connection = dataAdapter.getConnection();
-
-	size_t downloadParamPos = request.url.find("?download=true");
-	if (downloadParamPos != std::string::npos) {
-		request.url = request.url.substr(0, downloadParamPos);
-		request.isBinaryDownload =  true;
-	}
 
 	if (connection->requestMode == Connection::SINGLE) {
 		rtype = validateRoute(dataAdapter);
@@ -54,18 +49,46 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter) {
 	}
 	
 	if (request.method == "GET") {
-		rtype  = FileManager::readFile(dataAdapter);
-		response.setupResponse(rtype, dataAdapter);
-		connection->isChunkedResponse = response.isChunked();
+		if (request.isCgiRequest) {
+			rtype = cgiAdapter.processCgi(dataAdapter);
+			if (rtype != HttpResponse::EMPTY)
+				response.setupResponse(rtype, dataAdapter);
+			return;
+		}
+		else {
+			rtype  = FileManager::readFile(dataAdapter);
+			response.setupResponse(rtype, dataAdapter);
+			connection->responseMode = (Connection::ResponseMode)response.isChunked();
+		}
 	}
 	else if (request.method == "POST") {
+
+
 		if (connection->requestMode == Connection::SINGLE && request.handleMultipart(connection)) {
 			response.setupResponse(HttpResponse::CONTINUE, dataAdapter);
 			return;
 		}
-		HttpResponse::responseType rtype = FileManager::writeFile(dataAdapter);
-		if (connection->contentLength == 0)
-			response.setupResponse(rtype, dataAdapter);
+
+
+		if (request.isCgiRequest) {
+			
+			for (std::vector<char>::iterator it = request.body.begin(); it != request.body.end(); ++it)
+				cgiAdapter.body.push_back(*it);
+
+			if (connection->contentLength == 0) {
+				rtype = cgiAdapter.processCgi(dataAdapter);
+				if (rtype != HttpResponse::EMPTY)
+					response.setupResponse(rtype, dataAdapter);
+			}
+			return;
+		}
+		else {
+
+			HttpResponse::responseType rtype = FileManager::writeFile(dataAdapter);
+			if (connection->contentLength == 0)
+				response.setupResponse(rtype, dataAdapter);
+			
+		}
 	}
 	else if (request.method == "DELETE") {
 		rtype = FileManager::deleteFile(dataAdapter);
