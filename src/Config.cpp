@@ -207,8 +207,12 @@ bool Config::isValidConfig(Server &server) {
 	if (server.getHost().empty())
 		return printFalse("Server host is missing.");
 	int port = server.getPort();
+
 	if (port <= 0 || port > 65535)
 		return printFalse("Server port is invalid.");
+	if (portDuplicated(port))
+		return printFalse("Server port " + toString(port) + " is duplicated.");
+
 	if (server.getRoot().empty())
 		return printFalse("Server root is missing.");
 
@@ -239,3 +243,11 @@ bool Config::isValidConfig(Server &server) {
 }
 
 std::map<std::string, Server>& Config::getServers() { return _servers; }
+
+bool Config::portDuplicated(int port) {
+	for (std::map<std::string, Server>::iterator it = _servers.begin(); it != _servers.end(); ++it) {
+		if (it->second.getPort() == port)
+			return true;
+	}
+	return false;
+}

@@ -17,4 +17,5 @@ class Utils {
 		static std::string				getFileType(std::string path);
 		static std::string				toString(size_t value);
 		static std::string				getFileName(std::string path);
+		static std::string				toLower(std::string str);
 };

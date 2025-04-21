@@ -109,3 +109,8 @@ std::string Utils::getFileName(std::string path) {
 	}
 	return "";
 }
+
+std::string Utils::toLower(std::string str) {
+	std::transform(str.begin(), str.end(), str.begin(), ::tolower);
+	return str;
+}

@@ -53,3 +53,14 @@ bool	HttpRequest::handleMultipart(Connection *connection) {
 	}
 	return false;
 }
+std::string HttpRequest::getCleanHost() const {
+		for (std::vector<HttpHeader>::const_iterator it = headers.begin(); it != headers.end(); ++it) {
+			if (Utils::toLower(it->name) == "host" && !it->values.empty()) {
+				std::string host = it->values[0].name;
+				size_t port_pos = host.find(':');
+				return (port_pos != std::string::npos) ? host.substr(0, port_pos) : host;
+				
+			}
+		}
+		return "";
+}
