@@ -13,8 +13,8 @@ class Connection {
 		Server&			_server;
 		int				_socketFd;
 		struct pollfd	_pollfd;
-		DataAdapter		*_multiDataAdapter;
-		CgiAdapter		*_multiCgiAdapter;
+		DataAdapter		*_dataAdapter;
+		CgiAdapter		*_cgiAdapter;
 
 		void	manageSingle(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter);
 		void	manageMultiPart(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter);
@@ -22,13 +22,14 @@ class Connection {
 
 	public:
 
-		enum RequestMode { SINGLE, MULTIPART };
+		enum RequestMode { SINGLE, PARTS, CHUNKS };
 		enum ResponseMode { NORMAL, CHUNKED };
 
 		std::vector<char>	recvBuffer;
 		std::vector<char>	sendBuffer;
 		bool				isOverPayloadLimit;
 		bool				hasPendingCgi;
+		bool				hasChunksEnded;
 		RequestMode			requestMode;
 		ResponseMode		responseMode;
 		std::string			boundarie;

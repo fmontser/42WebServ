@@ -19,8 +19,11 @@
 	curl -X POST \
 		-H "Transfer-Encoding: chunked" \
 		-H "Content-Type: text/plain" \
-		--data "Estos son datos de prueba" \
+		-H "Content-Disposition: attachment; filename=\"en.subject.pdf\"" \
+		--data-binary @en.subject.pdf \
 		http://localhost:8042/del
+
+
 
 
 //TODO @@@@@@@ SUPERCAGADA, se requiere soportar chunked request y response, ademas todo el envio de datos sin conocer la longitud ni existe.
@@ -55,5 +58,23 @@
 //TODO gestoinar POST y DELETE con default en la ruta
 
 //TODO a;adir comprobacion de directorios al listing (para no incluirlos) (preguntar ai)
+
+*/
+
+
+
+//TESTS
+
+/* 
+
+
+curl -X POST \
+-H "Transfer-Encoding: chunked" \
+-H "Content-Type: text/plain" \
+-H "Content-Disposition: attachment; filename=\"en.subject.pdf\"" \
+--data-binary @en.subject.pdf \
+http://localhost:8042/del
+
+
 
 */

@@ -10,7 +10,7 @@
 #include "HttpProcessor.hpp"
 #include "Utils.hpp"
 
-Connection::Connection(Server& server) : _server(server), _multiDataAdapter(NULL), _multiCgiAdapter(NULL) {
+Connection::Connection(Server& server) : _server(server), _dataAdapter(NULL), _cgiAdapter(NULL) {
 	sockaddr_in	client_addr;
 	socklen_t	client_addr_len = sizeof(client_addr);
 
@@ -21,6 +21,7 @@ Connection::Connection(Server& server) : _server(server), _multiDataAdapter(NULL
 
 	isOverPayloadLimit = false;
 	hasPendingCgi = false;
+	hasChunksEnded = false;
 	requestMode = SINGLE;
 	responseMode = NORMAL;
 	contentLength = 0;
@@ -41,6 +42,7 @@ Connection::Connection(const Connection& src) : _server(src._server) {
 	sendBuffer = src.sendBuffer;
 	isOverPayloadLimit = src.isOverPayloadLimit;
 	hasPendingCgi = src.hasPendingCgi;
+	hasChunksEnded = src.hasChunksEnded;
 	responseMode = src.responseMode;
 	requestMode = src.requestMode;
 	boundarie = src.boundarie;
@@ -55,6 +57,7 @@ Connection& Connection::operator=(const Connection& src) {
 		sendBuffer = src.sendBuffer;
 		isOverPayloadLimit = src.isOverPayloadLimit;
 		hasPendingCgi = src.hasPendingCgi;
+		hasChunksEnded = src.hasChunksEnded;
 		responseMode = src.responseMode;
 		requestMode = src.requestMode;
 		boundarie = src.boundarie;
@@ -64,10 +67,10 @@ Connection& Connection::operator=(const Connection& src) {
 }
 
 Connection::~Connection() {
-	if(_multiDataAdapter != NULL)
-		delete _multiDataAdapter;
-	if (_multiCgiAdapter != NULL)
-		delete _multiCgiAdapter;
+	if(_dataAdapter != NULL)
+		delete _dataAdapter;
+	if (_cgiAdapter != NULL)
+		delete _cgiAdapter;
 	close(_socketFd);
 }
 
@@ -83,10 +86,10 @@ static void	checkBinaryDownload(HttpRequest& request) {
 }
 
 void	Connection::resetConnection() {
-	delete _multiDataAdapter;
-	_multiDataAdapter = NULL;
-	delete _multiCgiAdapter;
-	_multiCgiAdapter = NULL;
+	delete _dataAdapter;
+	_dataAdapter = NULL;
+	delete _cgiAdapter;
+	_cgiAdapter = NULL;
 
 	hasPendingCgi = false;
 	boundarie.clear();
@@ -110,11 +113,21 @@ void	Connection::manageSingle(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter){
 
 	HttpProcessor::processHttpRequest(dataAdapter, cgiAdapter);
 
-	dataAdapter.serializeResponse();	
-	if (requestMode == Connection::MULTIPART)
+	dataAdapter.serializeResponse();
+
+	
+	if (requestMode == Connection::PARTS) {
 		dataAdapter.getResponse().statusCode = "";
-	if (!hasPendingCgi && contentLength == 0)
-		resetConnection();
+		if (!hasPendingCgi && contentLength == 0)
+			resetConnection();
+	}
+	else if (requestMode == Connection::CHUNKS) {
+		dataAdapter.getResponse().statusCode = "";
+		if (!hasPendingCgi && hasChunksEnded )
+			resetConnection();
+	}
+	else if (!hasPendingCgi && contentLength == 0)
+		resetConnection();	//TODO check!! test!!!
 	recvBuffer.clear();
 }
 
@@ -131,25 +144,37 @@ void	Connection::manageMultiPart(DataAdapter& dataAdapter, CgiAdapter& cgiAdapte
 		dataAdapter.serializeResponse();
 	recvBuffer.clear();
 	dataAdapter.getRequest().body.clear();
-	if (!hasPendingCgi && contentLength == 0)
-		resetConnection();
+
+	if (requestMode == Connection::PARTS) {
+		dataAdapter.getResponse().statusCode = "";
+		if (!hasPendingCgi && contentLength == 0)
+			resetConnection();
+	}
+	else if (requestMode == Connection::CHUNKS) {
+		dataAdapter.getResponse().statusCode = "";
+		if (!hasPendingCgi && hasChunksEnded )
+			resetConnection();
+	}
+	else if (!hasPendingCgi && contentLength == 0)
+		resetConnection();	//TODO check!! test!!!
+
 }
 
 void	Connection::fetchCgi() {
-	if (requestMode == MULTIPART)
-		manageMultiPart(*_multiDataAdapter, *_multiCgiAdapter);
+	if (requestMode == PARTS)
+		manageMultiPart(*_dataAdapter, *_cgiAdapter);
 	else 
-		manageSingle(*_multiDataAdapter, *_multiCgiAdapter);
+		manageSingle(*_dataAdapter, *_cgiAdapter);
 }
 
 void	Connection::recieveData() {
 	char		buffer[READ_BUFFER] = {0};
 	int			len;
 
-	if (_multiDataAdapter == NULL)
-		_multiDataAdapter = new DataAdapter(this);
-	if (_multiCgiAdapter == NULL)
-		_multiCgiAdapter = new CgiAdapter();
+	if (_dataAdapter == NULL)
+		_dataAdapter = new DataAdapter(this);
+	if (_cgiAdapter == NULL)
+		_cgiAdapter = new CgiAdapter();
 
 	len = recv(_socketFd, buffer, READ_BUFFER, 0);
 	if (len == -1) {
@@ -162,12 +187,13 @@ void	Connection::recieveData() {
 	}
 	else if (len > 0) {
 		recvBuffer.assign(buffer, buffer + len);
-		if (requestMode == MULTIPART) {
-			contentLength -= len;
-			manageMultiPart(*_multiDataAdapter, *_multiCgiAdapter);
+		if (requestMode != SINGLE) {
+			if (requestMode == PARTS)
+				contentLength -= len;
+			manageMultiPart(*_dataAdapter, *_cgiAdapter);
 		}
 		else 
-			manageSingle(*_multiDataAdapter, *_multiCgiAdapter);
+			manageSingle(*_dataAdapter, *_cgiAdapter);
 	}
 }
 

@@ -64,9 +64,15 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter, CgiAdapter& cgi
 	else if (request.method == "POST") {
 
 
-		if (connection->requestMode == Connection::SINGLE && request.handleMultipart(connection)) {
-			response.setupResponse(HttpResponse::CONTINUE, dataAdapter);
-			return;
+		if (connection->requestMode == Connection::SINGLE) {
+			if (request.handlePostMode(connection)) {
+				response.setupResponse(HttpResponse::CONTINUE, dataAdapter);
+				return;
+			} else {
+				response.setupResponse(HttpResponse::UNSUPPORTED_MEDIA_TYPE, dataAdapter);
+				return;
+			}
+
 		}
 
 

@@ -58,8 +58,10 @@
 		Server&			server = dataAdapter.getConnection()->getServer();
 		HttpRequest&	request = dataAdapter.getRequest();
 		Route*			route = server.getRequestedRoute(dataAdapter);
-		std::string		_default(route->getDefault());
-		std::string		path, url;
+		std::string		path, url, _default;
+
+		if (route)
+			_default = route->getDefault();
 
 		url = request.url;
 		if (request.isCgiRequest) {
@@ -112,7 +114,8 @@
 		Route*			route = server.getRequestedRoute(dataAdapter);
 		std::string		upload, path;
 
-		upload = route->getUpload();
+		if (route)
+			upload = route->getUpload();
 
 		if(upload.empty())
 			return resolveRoutePath(dataAdapter);
@@ -137,6 +140,8 @@
 		std::string	location = "Location: ";
 		Route*		route = dataAdapter.getConnection()->getServer().getRequestedRoute(dataAdapter);
 
-		stackPath(location, route->getRedirect());
+		if (route)
+			stackPath(location, route->getRedirect());
+		
 		return (location);
 	}

@@ -26,6 +26,29 @@ FileManager& FileManager::operator=(const FileManager& src) {
 	return *this;
 }
 
+static void chunkDecode(std::vector<char>& body) {
+	std::string	_body(body.begin(),body.end());
+	std::stringstream data(_body);
+	std::string	line;
+
+	//TODO @@@@@@@@@@@ volver a implementar pero sovre vector<char>, (se pierde el contexto binario!!!)
+
+/* 
+	while(data.get(*c)) {
+		request.body.push_back(*c);
+*/
+
+	body.clear();
+
+	while (std::getline(data, line)) {
+		line.append("\n");
+		if (line.find(CRLF,0) == line.npos) {
+			for (std::string::iterator it = line.begin(); it != line.end(); ++it)
+				body.push_back(*it);
+		}
+	}
+}
+
 static void chunkEncode(std::vector<char>& body, size_t maxPayload) {
 	std::stringstream	buffer;
 	std::vector<char>	_body(body);
@@ -141,6 +164,8 @@ HttpResponse::responseType	FileManager::writeFile(DataAdapter& dataAdapter) {
 
 		fd = open(fileName.c_str(), O_WRONLY | O_CREAT | O_APPEND, 0775);
 		if (fd > 0) {
+			if (dataAdapter.getConnection()->requestMode == Connection::CHUNKS)
+				chunkDecode(request.body);
 			write(fd, &request.body[0], request.body.size());
 			close(fd);
 		}
@@ -150,7 +175,7 @@ HttpResponse::responseType	FileManager::writeFile(DataAdapter& dataAdapter) {
 	else 
 		return HttpResponse::CONFLICT;
 
-	if (dataAdapter.getConnection()->requestMode == Connection::MULTIPART)
+	if (dataAdapter.getConnection()->requestMode != Connection::SINGLE)
 		dataAdapter.allowFileAppend = true;
 	return HttpResponse::CREATED;
 }
