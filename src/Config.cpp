@@ -130,6 +130,9 @@ void Config::addRoute(std::vector<std::pair<std::string, std::vector<std::string
 		else if (key == "default") {
 			route.setDefault(values[0]);
 		}
+		else if (key == "upload") {
+			route.setUpload(values[0]);
+		}
 		else {
 			printError("unknown token " + key);
 		}

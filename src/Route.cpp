@@ -9,6 +9,7 @@ Route::Route(const Route& src) {
 	_root = src._root;
 	_redirect = src._redirect;
 	_autoIndex = src._autoIndex;
+	_upload = src._upload;
 
 }
 Route& Route::operator=(const Route& src) {
@@ -19,6 +20,7 @@ Route& Route::operator=(const Route& src) {
 		_root = src._root;
 		_redirect = src._redirect;
 		_autoIndex = src._autoIndex;
+		_upload = src._upload;
 	}
 	return *this;
 }
@@ -28,6 +30,7 @@ std::string							Route::getAutoIndex() const { return _autoIndex; }
 std::string							Route::getRoot() const { return _root; }
 std::string							Route::getRedirect() const { return _redirect; }
 std::string							Route::getDefault() const { return _default; }
+std::string							Route::getUpload() const { return _upload; }
 std::multimap<std::string, std::string>	Route::getMethods() const { return this->_methods; }
 
 void	Route::setUrl(const std::string& url) { this->_url = url;}
@@ -36,6 +39,7 @@ void	Route::setAutoIndex(const std::string autoIndex) { _autoIndex = autoIndex; 
 void	Route::setRoot(const std::string root) { _root = root; }
 void	Route::setRedirect(const std::string redirect) { _redirect = redirect; }
 void	Route::setDefault(const std::string default_) { _default = default_; }
+void	Route::setUpload(const std::string upload) { _upload = upload; }
 
 bool	Route::isMethodAllowed(std::string method) {
 	for (std::multimap<std::string, std::string>::iterator it = _methods.begin(); it != _methods.end(); ++it) {

@@ -22,6 +22,7 @@ class PathManager
 		static void			stackRelativePath(std::string& path, std::string appendix);
 		static std::string	resolveRoutePath(DataAdapter& dataAdapter);
 		static std::string	resolveServerPath(DataAdapter& dataAdapter);
+		static std::string	resolveUploadDir(DataAdapter& dataAdapter);
 		static std::string	resolveErrorPage(DataAdapter& dataAdapter, std::string defaultPage);
 		static std::string	resolveHttpRedirection(DataAdapter& dataAdapter);
 };
