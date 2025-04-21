@@ -68,9 +68,7 @@
 	<button>
 		<a href="http://localhost:8042/del">Directory listing</a>
 	</button>
-
 	<hr>
-
 	<button id="deleteButton">Borrar deleteme (DELETE)</button>
 	<script>
 		document.getElementById('deleteButton').addEventListener('click', function() {
@@ -96,6 +94,32 @@
 			body: nuevoContenido
 			});
 		}
+		});
+	</script>
+	<hr>
+	<button id="testButton">Test Me!</button>
+	<script>
+		const gotoTest = () => {
+			window.location.href = 'http://localhost:8042/test';
+		}
+		document.addEventListener('DOMContentLoaded', function() {
+			document.getElementById('testButton').addEventListener('click', function() {
+				alert('Test Button clicked!');
+				gotoTest();
+			});
+		});
+	</script>
+	<hr>
+	<button id="nowhereButton">Nowhere!</button>
+	<script>
+		const gotoNowhere = () => {
+			window.location.href = 'http://localhost:8042/asadasdas';
+		}
+		document.addEventListener('DOMContentLoaded', function() {
+			document.getElementById('nowhereButton').addEventListener('click', function() {
+				alert('Nowhere Button clicked!');
+				gotoNowhere();
+			});
 		});
 	</script>
 

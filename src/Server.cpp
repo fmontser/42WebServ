@@ -143,10 +143,11 @@ void	Server::setMaxPayLoad(const std::string& maxPayLoad) {
 }
 
 Route	*Server::getRequestedRoute(DataAdapter& dataAdapter) {
-	std::string path, url;
+	std::string path, url, cleanHost;
 	
 	url = dataAdapter.getRequest().url;
 	path = PathManager::resolveServerPath(dataAdapter);
+	cleanHost = dataAdapter.getRequest().getCleanHost();
 
 	if (!Utils::isDirectory(path)) {
 		if (!(access(path.c_str(), F_OK) == 0))
@@ -155,13 +156,20 @@ Route	*Server::getRequestedRoute(DataAdapter& dataAdapter) {
 	}
 
 	std::map<std::string, Route>::iterator it = _routes.find(url);
-	if (it !=  _routes.end())
+	if (it !=  _routes.end()) {
+		if (!cleanHost.empty() && cleanHost != this->_host) {
+			return NULL;
+		}
 		return &it->second;
+	}
 
 	it = _routes.find(url.append("/"));
-	if (it !=  _routes.end())
+	if (it !=  _routes.end()) {
+		if (!cleanHost.empty() && cleanHost != this->_host) {
+			return NULL;
+		}
 		return &it->second;
-	
+	}	
 	return NULL;
 }
 

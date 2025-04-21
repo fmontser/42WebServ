@@ -16,5 +16,6 @@ class HttpRequest : public HttpMessage {
 
 		bool	isBinaryDownload;
 		bool	handleMultipart(Connection *connection);
+		std::string getCleanHost() const;
 };
 
