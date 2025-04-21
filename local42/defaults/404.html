@@ -1,9 +1,11 @@
  <!DOCTYPE html>
 <html lang="en">
 <head>
+	<base href="/defaults/">
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>404 Not Found</title>
+	<link rel="icon" href="favicon.png" type="image/x-icon">
 	<style>
 		body {
 			display: flex;
@@ -11,22 +13,34 @@
 			justify-content: center;
 			align-items: center;
 			height: 100vh;
-			background-color: #7e3333;
+			background-color: #bc3838;
 			position: relative;
 			overflow: hidden;
 		}
 		h1 {
-			font-size: 36px;
+			font-size: 2.5rem;
 			color: #333;
 			margin-bottom: 20px;
+			text-align: center;
 		}
-		.container {
+		a {
+			text-decoration: none;
+			color: #007BFF;
+			font-size: 1.2rem;
+			margin-top: 20px;
+			text-align: center;
+		}
+/* 		.container {
 			position: relative;
-		}
+			width: 100vw;
+			height: 100vh;
+		} */
 		.toucan {
 			width: 200px;
-			position: relative;
-			animation: lookAround 3s infinite alternate ease-in-out;
+			/* position: relative;
+			animation: lookAround 3s infinite alternate ease-in-out; */
+			position: absolute;
+			transition: transform 0.5s ease-in-out, left 0.5s, top 0.5s;
 		}
 		.question {
 			position: absolute;
@@ -35,22 +49,42 @@
 			opacity: 0;
 			transition: opacity 0.5s, transform 1s ease-in-out;
 		}
-		@keyframes lookAround {
+/* 		@keyframes lookAround {
 			0% { transform: rotate(0deg); }
 			50% { transform: rotate(-15deg); }
 			100% { transform: rotate(15deg); }
-		}
+		} */
 		</style>
 </head>
 <body>
 	<h1>404 Not Found - 42Webserv</h1>
-	<div class="container">
-		<img src="defaults/crow.png" class="toucan" id="toucan">
+	<img src="crow.png" class="toucan" id="toucan">
+	<!-- <div class="container">
+		<img src="crow.png" class="toucan" id="toucan">
 	</div>
+ -->	
+	<a href="http://localhost:8042">Back to Home</a>
 
 	<script>
 		document.addEventListener("DOMContentLoaded", () => {
 			const toucan = document.getElementById("toucan");
+			
+			const moveToucan = () => {
+				const maxX = window.innerWidth - toucan.offsetWidth;
+				const maxY = window.innerHeight - toucan.offsetHeight;
+				
+				const x = Math.random() * maxX;
+				const y = Math.random() * maxY;
+				
+				const facingLeft = Math.random() < 0.5;
+				/* let x = Math.random() * (window.innerWidth - 200);
+				let y = Math.random() * (window.innerHeight - 200); */
+				toucan.style.left = `${x}px`;
+				toucan.style.top = `${y}px`;
+				toucan.style.transform = facingLeft ? "scaleX(-1)" : "scaleX(1)";
+			};
+			moveToucan();
+			setInterval(moveToucan, 2000);
 
 			setInterval(() => {
 				let question = document.createElement("div");
@@ -70,7 +104,7 @@
 					question.style.transform = "translateY(-50px)";
 					setTimeout(() => document.body.removeChild(question), 1000);
 				}, 1000);
-			}, 2000);
+			}, 500);
 		});
 	</script>
 </body>

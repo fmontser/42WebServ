@@ -39,8 +39,6 @@
 	∗Same things for the output of the CGI. If no content_length is returned
 	from the CGI, EOF will mark the end of the returned data.
 
-//TODO pendiente de investigar
-	* Make the route able to accept uploaded files and configure where they should be saved.
 
 //TODO pendiente de investigar
 	* The first server for a host:port will be the default for this host:port (that means
