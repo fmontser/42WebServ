@@ -60,14 +60,29 @@
 
 	<!-- CGI BASIC TEST -->
 	<button>
-		<a href="http://localhost:8042/cgi-bin/multiply.cgi?a=2&b=5">CGI 2 x 5 = 10</a>
+		<a href="http://localhost:8042/cgi-bin/multiply.cgi?a=2&b=5&t=0">MULTIPLY 2 x 5 with CGI script</a>
 	</button>
 	
 	<hr>
 
+	<form action="/cgi-bin/replace.cgi?a=2&b=5&t=0" method="post" enctype="multipart/form-data">
+		REPLACE all 0's with 2's with CGI script
+		<input type="file" name="archivo" id="archivo">
+		<button type="submit">upload</button>
+	</form>
+
+	<hr>
+
 	<form action="/del" method="post" enctype="multipart/form-data">
 		<input type="file" name="archivo" id="archivo">
-		<button type="submit">Subir Archivo (POST)</button>
+		<button type="submit">upload</button>
+	</form>
+
+	<hr>
+
+	<form action="/del" method="post">
+		<input type="file" name="archivo" id="archivo">
+		<button type="submit">upload non encode</button>
 	</form>
 
 	<hr>
@@ -78,24 +93,13 @@
 
 	<hr>
 
-	<button id="deleteButton">Borrar deleteme (DELETE)</button>
-	<script>
-		document.getElementById('deleteButton').addEventListener('click', function() {
-			fetch('/del/deleteme', {
-			method: 'DELETE'
-			});
-		});
-	</script>
-
-	<hr>
-
-	<button id="updateButton">Actualizar archivo deleteme (PUT)</button>
+	<button id="updateButton">Test not allowed method (PUT)</button>
 	<script>
 		document.getElementById('updateButton').addEventListener('click', function() {
 		var nuevoContenido = prompt("Ingrese el nuevo contenido del archivo:");
 
 		if (nuevoContenido) {
-			fetch('/del/deleteme', {
+			fetch('/del', {
 			method: 'PUT',
 			headers: {
 				'Content-Type': 'text/plain'

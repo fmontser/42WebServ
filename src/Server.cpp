@@ -20,6 +20,7 @@ Server::Server() {
 	_defaults["default413"] = "defaults/413.html";
 	_defaults["default500"] = "defaults/500.html";
 	_defaults["default501"] = "defaults/501.html";
+	_defaults["default504"] = "defaults/504.html";
 }
 
 Server::~Server() {
@@ -137,16 +138,22 @@ void	Server::setMaxPayLoad(const std::string& maxPayLoad) {
 	_maxPayload = payloadSize;
 }
 
+
 Route	*Server::getRequestedRoute(DataAdapter& dataAdapter) {
 	std::string path, url;
-	
+
 	url = dataAdapter.getRequest().url;
+	if (dataAdapter.getRequest().isCgiRequest) {
+		url = CgiAdapter::stripCgiParams(url);
+		url = CgiAdapter::stripCgiPathInfo(url);
+	}
+
 	path = PathManager::resolveServerPath(dataAdapter);
 
 	if (!Utils::isDirectory(path)) {
 		if (!(access(path.c_str(), F_OK) == 0))
 			return NULL;
-		url = Utils::getUrlPath(url);
+		url = Utils::getPathDir(url);
 	}
 
 	std::map<std::string, Route>::iterator it = _routes.find(url);

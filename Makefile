@@ -10,19 +10,21 @@ CGI_DIR			:=	$(SRC_DIR)cgi-src/
 CGI_BIN_DIR		:=	cgi-bin/
 
 NAME			:=	webserv
-CGI				:=	multiply.cgi
+CGI_BIN_GET		:=	multiply.cgi
+CGI_BIN_POST	:=	replace.cgi
 
 HDRS			:=	ServerConstants.hpp	Config.hpp  Route.hpp Server.hpp HttpMessage.hpp HttpRequest.hpp\
-					HttpResponse.hpp ConnectionManager.hpp DataAdapter.hpp CgiProcessor.hpp\
+					HttpResponse.hpp ConnectionManager.hpp DataAdapter.hpp CgiAdapter.hpp\
 					FileManager.hpp  SignalManager.hpp Connection.hpp HttpProcessor.hpp HttpHeader.hpp\
 					HeaderValue.hpp HeaderProperty.hpp Utils.hpp Index.hpp PathManager.hpp
 
 SRCS			:=	main.cpp			Config.cpp  Route.cpp Server.cpp HttpMessage.cpp HttpRequest.cpp\
-					HttpResponse.cpp ConnectionManager.cpp DataAdapter.cpp CgiProcessor.cpp\
+					HttpResponse.cpp ConnectionManager.cpp DataAdapter.cpp CgiAdapter.cpp\
 					FileManager.cpp SignalManager.cpp Connection.cpp HttpProcessor.cpp HttpHeader.cpp\
 					HeaderValue.cpp HeaderProperty.cpp Utils.cpp Index.cpp PathManager.cpp
 
-CGI_SRCS		:=	Multiply.cgi.cpp
+CGI_GET			:=	Multiply.cgi.cpp
+CGI_POST		:=	Replace.cgi.cpp
 
 OBJS			:=	$(SRCS:.cpp=.o)
 INPUT			:=	"config/config.cfg"
@@ -31,7 +33,7 @@ CC				:=	g++ #c++
 CC_FLAGS		:=	-Wall -Werror -Wextra -g -c -std=c++98
 CLEAN_TARGETS	:=	$(wildcard $(addprefix $(OBJ_DIR), $(OBJS) $(TEST_OBJS)))
 FCLEAN_TARGETS	:=	$(wildcard $(addprefix $(BIN_DIR), $(NAME) $(TEST_NAME)))\
-					$(wildcard $(addprefix $(CGI_BIN_DIR), $(CGI)))
+					$(wildcard $(addprefix $(CGI_BIN_DIR), $(CGI_BIN_GET) $(CGI_BIN_POST)))
 
 COLOR_GREEN		:=	\033[0;32m
 COLOR_RED		:=	\033[0;31m
@@ -39,16 +41,24 @@ COLOR_BLUE		:=	\033[0;34m
 COLOR_END		:=	\033[0m
 
 vpath %.hpp $(INC_DIR)
-vpath %.cpp $(SRC_DIR) $(CGI_SRCS)
+vpath %.cpp $(SRC_DIR) $(CGI_DIR)
 vpath %.o $(OBJ_DIR)
 vpath % $(BIN_DIR) $(CGI_BIN_DIR)
 
-all: $(NAME) $(CGI)
+all: $(NAME) $(CGI_BIN_GET) $(CGI_BIN_POST)
 
 
-$(CGI):
-	@$(CC) $(CGI_DIR)$(CGI_SRCS) -o $(CGI_BIN_DIR)$(CGI)
-	@echo "$(COLOR_GREEN)write file: $(CGI_BIN_DIR)$(CGI)$(COLOR_END)"
+$(CGI_BIN_GET):
+	@$(CC) $(CGI_DIR)$(CGI_GET) -o $(CGI_BIN_DIR)$(CGI_BIN_GET)
+	@echo "$(COLOR_GREEN)write file: $(CGI_BIN_DIR)$(CGI_BIN_GET)$(COLOR_END)"
+	@cp $(CGI_BIN_DIR)$(CGI_BIN_GET) local42/cgi-bin/
+	@echo "$(COLOR_GREEN)copy file: $(CGI_BIN_DIR)$(CGI_BIN_GET)$(COLOR_END)"
+
+$(CGI_BIN_POST):
+	@$(CC) $(CGI_DIR)$(CGI_POST) -o $(CGI_BIN_DIR)$(CGI_BIN_POST)
+	@echo "$(COLOR_GREEN)write file: $(CGI_BIN_DIR)$(CGI_BIN_POST)$(COLOR_END)"
+	@cp $(CGI_BIN_DIR)$(CGI_BIN_POST) local42/cgi-bin/
+	@echo "$(COLOR_GREEN)copy file: $(CGI_BIN_DIR)$(CGI_BIN_POST)$(COLOR_END)"
 
 $(NAME): $(OBJS)
 	@mkdir -p $(BIN_DIR)

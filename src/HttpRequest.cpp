@@ -5,12 +5,14 @@
 
 HttpRequest::HttpRequest() : HttpMessage() {
 	this->isBinaryDownload =false;
+	this->isCgiRequest = false;
 }
 
 HttpRequest::HttpRequest(const HttpRequest& src) : HttpMessage() {
 	this->method = src.method;
 	this->url = src.url;
 	this->isBinaryDownload = src.isBinaryDownload;
+	this->isCgiRequest = src.isCgiRequest;
 }
 
 HttpRequest& HttpRequest::operator=(const HttpRequest& src) {
@@ -18,6 +20,7 @@ HttpRequest& HttpRequest::operator=(const HttpRequest& src) {
 		this->method = src.method;
 		this->url = src.url;
 		this->isBinaryDownload = src.isBinaryDownload;
+		this->isCgiRequest = src.isCgiRequest;
 	}
 	return *this;
 }
