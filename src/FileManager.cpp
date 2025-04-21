@@ -112,7 +112,7 @@ HttpResponse::responseType	FileManager::writeFile(DataAdapter& dataAdapter) {
 	std::string		fileName, path;
 	int				fd;
 
-	path = PathManager::resolveRoutePath(dataAdapter);
+	path = PathManager::resolveUploadDir(dataAdapter);
 
 	for (std::vector<HttpHeader>::iterator it = dataAdapter.getRequest().headers.begin();
 			it != dataAdapter.getRequest().headers.end(); ++it) {

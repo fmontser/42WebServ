@@ -61,7 +61,6 @@
 		std::string		_default(route->getDefault());
 		std::string		path, url;
 
-		//TODO check
 		url = request.url;
 		if (request.isCgiRequest) {
 			url = CgiAdapter::stripCgiParams(url);
@@ -91,6 +90,7 @@
 	std::string		PathManager::resolveServerPath(DataAdapter& dataAdapter) {
 		Server&			server = dataAdapter.getConnection()->getServer();
 		HttpRequest&	request = dataAdapter.getRequest();
+
 		std::string		path, url;
 
 		url = request.url;
@@ -101,11 +101,30 @@
 
 		path.append(_workingDir);
 		stackPath(path, server.getRoot());
+
 		stackPath(path, url);
 
 		return (path);
 	}
 
+	std::string		PathManager::resolveUploadDir(DataAdapter& dataAdapter){
+		Server&			server = dataAdapter.getConnection()->getServer();
+		Route*			route = server.getRequestedRoute(dataAdapter);
+		std::string		upload, path;
+
+		upload = route->getUpload();
+
+		if(upload.empty())
+			return resolveRoutePath(dataAdapter);
+		else if (upload.at(0) == '/')
+			return upload;
+		else {
+			path = resolveServerPath(dataAdapter);
+			stackPath(path, upload);
+			return path;
+		}
+
+	}
 
 	std::string		PathManager::resolveErrorPage(DataAdapter& dataAdapter, std::string defaultPage){
 		std::string	path(_workingDir);

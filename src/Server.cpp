@@ -143,7 +143,7 @@ void	Server::setMaxPayLoad(const std::string& maxPayLoad) {
 	_maxPayload = payloadSize;
 }
 
-
+//TODO check cleanhost
 Route	*Server::getRequestedRoute(DataAdapter& dataAdapter) {
 	std::string path, url, cleanHost;
   

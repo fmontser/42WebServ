@@ -16,9 +16,14 @@
 
 
 //TODO revisar si el cliente usa chunked para enviar a usar otro encoding type en el POST
+	curl -X POST \
+		-H "Transfer-Encoding: chunked" \
+		-H "Content-Type: text/plain" \
+		--data "Estos son datos de prueba" \
+		http://localhost:8042/del
 
 
-	// @@@@@@@ SUPERCAGADA, se requiere soportar chunked request y response, ademas todo el envio de datos sin conocer la longitud ni existe.
+//TODO @@@@@@@ SUPERCAGADA, se requiere soportar chunked request y response, ademas todo el envio de datos sin conocer la longitud ni existe.
 
 		https://drive.google.com/file/d/1p43URv-qO29S4O9_uFr4cD6TH-ZW-csF/view?usp=sharing, https://aistudio.google.com/app/prompts?state=%7B%22ids%22:%5B%221t41SOErCFtwIUdddB-G48C1iCdU6KQRV%22%5D,%22action%22:%22open%22,%22userId%22:%22111409691010771158319%22,%22resourceKeys%22:%7B%7D%7D&usp=sharing
 
@@ -27,9 +32,7 @@
 		<button type="submit">Subir Archivo (POST)</button>
 	</form>
 
-
-
-//TODO cerar el pipe del input y el output trans la transmision del body general el EOF.
+	cerrar el pipe del input y el output trans la transmision del body general el EOF.
 	∗Just remember that, for chunked request, your server needs to unchunk
 	it, the CGI will expect EOF as end of the body.
 
@@ -50,5 +53,9 @@
 
 	You can use every macro and define like FD_SET, FD_CLR, FD_ISSET, FD_ZERO 
 	(understanding what and how they do it is very useful).
+
+//TODO gestoinar POST y DELETE con default en la ruta
+
+//TODO a;adir comprobacion de directorios al listing (para no incluirlos) (preguntar ai)
 
 */
