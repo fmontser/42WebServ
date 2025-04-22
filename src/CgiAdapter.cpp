@@ -181,6 +181,8 @@ HttpResponse::responseType	CgiAdapter::processCgi(DataAdapter& dataAdapter) {
 bool	CgiAdapter::isCgiRequest(std::string url) {
 	if (url.find(".cgi", 0) != url.npos)
 		return true;
+	if (url.find(".bla", 0) != url.npos)
+		return true;
 	return false;
 }
 

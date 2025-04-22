@@ -12,6 +12,7 @@ CGI_BIN_DIR		:=	cgi-bin/
 NAME			:=	webserv
 CGI_BIN_GET		:=	multiply.cgi
 CGI_BIN_POST	:=	replace.cgi
+CGI_TEST 			:=	cgi_test.cgi
 
 HDRS			:=	ServerConstants.hpp	Config.hpp  Route.hpp Server.hpp HttpMessage.hpp HttpRequest.hpp\
 					HttpResponse.hpp ConnectionManager.hpp DataAdapter.hpp CgiAdapter.hpp\
@@ -25,6 +26,7 @@ SRCS			:=	main.cpp			Config.cpp  Route.cpp Server.cpp HttpMessage.cpp HttpReques
 
 CGI_GET			:=	Multiply.cgi.cpp
 CGI_POST		:=	Replace.cgi.cpp
+CGI_TEST		:=	Cgi_test.cgi.cpp
 
 OBJS			:=	$(SRCS:.cpp=.o)
 INPUT			:=	"config/config.cfg"
@@ -45,7 +47,7 @@ vpath %.cpp $(SRC_DIR) $(CGI_DIR)
 vpath %.o $(OBJ_DIR)
 vpath % $(BIN_DIR) $(CGI_BIN_DIR)
 
-all: $(NAME) $(CGI_BIN_GET) $(CGI_BIN_POST)
+all: $(NAME) $(CGI_BIN_GET) $(CGI_BIN_POST) $(CGI_TEST)
 
 
 $(CGI_BIN_GET):
@@ -59,6 +61,12 @@ $(CGI_BIN_POST):
 	@echo "$(COLOR_GREEN)write file: $(CGI_BIN_DIR)$(CGI_BIN_POST)$(COLOR_END)"
 	@cp $(CGI_BIN_DIR)$(CGI_BIN_POST) local42/cgi-bin/
 	@echo "$(COLOR_GREEN)copy file: $(CGI_BIN_DIR)$(CGI_BIN_POST)$(COLOR_END)"
+
+$(CGI_TEST):
+	@$(CC) $(CGI_DIR)$(CGI_TEST) -o $(CGI_BIN_DIR)$(CGI_TEST)
+	@echo "$(COLOR_GREEN)write file: $(CGI_BIN_DIR)$(CGI_TEST)$(COLOR_END)"
+	@cp $(CGI_BIN_DIR)$(CGI_TEST) local42/cgi-bin/
+	@echo "$(COLOR_GREEN)copy file: $(CGI_BIN_DIR)$(CGI_TEST)$(COLOR_END)"
 
 $(NAME): $(OBJS)
 	@mkdir -p $(BIN_DIR)
