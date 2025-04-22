@@ -63,17 +63,21 @@ bool	HttpRequest::handleChunked(Connection *connection) {
 }
 
 bool	HttpRequest::handlePostMode(Connection *connection) {
-	for (std::vector<HttpHeader>::iterator it = headers.begin(); it != headers.end(); ++it) {
-		HttpHeader	header = *it;
-		HeaderValue		value;
-		HeaderProperty	property;
+	HttpHeader		*header;
+	HeaderValue		value;
 
-		//TODO cambiar a 3 for!!!!
-		if (header.getValue("Transfer-Encoding", &value) && value.name == "chunked")
+	for (std::vector<HttpHeader>::iterator it = headers.begin(); it != headers.end(); ++it) {
+		header = &(*it);
+		if (header->getValue("Transfer-Encoding", &value) && value.name == "chunked")
 			return handleChunked(connection);
-		else if (header.getValue("Content-Type", &value) && value.name == "multipart/form-data")
+	}
+
+	for (std::vector<HttpHeader>::iterator it = headers.begin(); it != headers.end(); ++it) {
+		header = &(*it);
+
+		if (header->getValue("Content-Type", &value) && value.name == "multipart/form-data")
 			return handleMultipart(connection);
-		else if (header.getValue("Content-Type", &value) && value.name != "multipart/form-data")
+		else if (header->getValue("Content-Type", &value) && value.name != "multipart/form-data")
 			return false;
 	}
 	return false;

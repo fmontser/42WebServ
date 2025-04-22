@@ -91,7 +91,8 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter, CgiAdapter& cgi
 		else {
 
 			HttpResponse::responseType rtype = FileManager::writeFile(dataAdapter);
-			if (connection->contentLength == 0)
+			if ((connection->requestMode == Connection::PARTS && connection->contentLength == 0)
+				|| (connection->requestMode == Connection::CHUNKS && connection->hasChunksEnded))
 				response.setupResponse(rtype, dataAdapter);
 			
 		}

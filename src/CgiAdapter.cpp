@@ -45,7 +45,6 @@ CgiAdapter& CgiAdapter::operator=(const CgiAdapter& src) {
 	return *this;
 }
 
-//TODO @@@@@@@@@ error handling...abstraction....
 HttpResponse::responseType	CgiAdapter::executeCgi(std::string& output, DataAdapter& dataAdapter) {
 	char		readBuffer[READ_BUFFER];
 	ssize_t		bytesRead;
@@ -78,14 +77,13 @@ HttpResponse::responseType	CgiAdapter::executeCgi(std::string& output, DataAdapt
 			close(_ppIn[RD]);
 			close(_ppOut[WR]);	
 			std::string writeBuffer = std::string(body.begin(), body.end());
-			write(_ppIn[WR], writeBuffer.c_str(), writeBuffer.size());
+			if (write(_ppIn[WR], writeBuffer.c_str(), writeBuffer.size())== -1)
+				return HttpResponse::SERVER_ERROR;
 			close(_ppIn[WR]);
 		}
 
 		_actualTime = time(NULL);
 		if (_actualTime - _startTime > TIMEOUT) {
-			//TODO error or log
-
 			close(_ppOut[RD]);
 			kill(_pid, SIGKILL);
 			dataAdapter.getConnection()->hasPendingCgi = false;
@@ -96,12 +94,10 @@ HttpResponse::responseType	CgiAdapter::executeCgi(std::string& output, DataAdapt
 			if (WIFEXITED(_waitStatus)) {
 				if (WEXITSTATUS(_waitStatus) == 0) {
 
-
-
- 					while ((bytesRead = read(_ppOut[RD], readBuffer, READ_BUFFER))) {
+ 					while ((bytesRead = read(_ppOut[RD], readBuffer, READ_BUFFER)))
 						output.append(readBuffer, bytesRead);
-					}
-
+					if (bytesRead == -1)
+						return HttpResponse::SERVER_ERROR;
 
 					close(_ppOut[RD]);
 					dataAdapter.getConnection()->hasPendingCgi = false;
@@ -113,15 +109,12 @@ HttpResponse::responseType	CgiAdapter::executeCgi(std::string& output, DataAdapt
 					return HttpResponse::SERVER_ERROR;
 				}
 			}
-
 		}
 	}
 	dataAdapter.getConnection()->hasPendingCgi = true;
 	return HttpResponse::EMPTY;
 }
 
-
-//TODO test check errors
 void	CgiAdapter::setEnvironment(DataAdapter& dataAdapter) {
 	HttpRequest&	request = dataAdapter.getRequest();
 	int				i = 0;
@@ -153,7 +146,6 @@ void	CgiAdapter::setEnvironment(DataAdapter& dataAdapter) {
 	_envp[i+1] = NULL;
 }
 
-//TODO manage errors!!!!
 void	CgiAdapter::parseParameters(DataAdapter& dataAdapter){
 	HttpRequest&	request = dataAdapter.getRequest();
 	std::vector<std::string> raw = Utils::splitString(request.url, '?');
@@ -170,7 +162,6 @@ void	CgiAdapter::parseParameters(DataAdapter& dataAdapter){
 	if (header)
 		_cLength = header->values[0].name;
 }
-
 
 HttpResponse::responseType	CgiAdapter::processCgi(DataAdapter& dataAdapter) {
 	std::string					output;

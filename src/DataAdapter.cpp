@@ -56,6 +56,9 @@ static bool	 deserializeHeaders(std::stringstream& data, HttpRequest& request, D
 	std::string	line;
 	Connection	*connection = dataAdapter.getConnection();
 
+	if (connection->requestMode == Connection::CHUNKS)
+		return true;
+
 	while (std::getline(data, line)) {
 		line.append("\n");
 		if (line == CRLF)
@@ -64,7 +67,8 @@ static bool	 deserializeHeaders(std::stringstream& data, HttpRequest& request, D
 			request.addHeader(DataAdapter::deserializeHeader(line));
 		}
 	}
-	if (connection->requestMode == Connection::SINGLE)
+
+	if (connection->requestMode == Connection::PARTS)
 		return true;
 	return false;
 }
@@ -90,9 +94,6 @@ static void	deserializeBody(std::stringstream& data, HttpRequest& request, DataA
 		if (bodySize > connection->getServer().getMaxPayload())
 			connection->isOverPayloadLimit = true;
 	}
-
-	std:: string test (request.body.begin(), request.body.end());
-	(void)test;
 
 	if (connection->requestMode == Connection::PARTS) {
 		removeBoundarie(request.body, connection->boundStart);
@@ -147,7 +148,7 @@ void	DataAdapter::deserializeRequest() {
 	if (!_connection->isOverPayloadLimit)
 		deserializeBody(data, _request, *this);
 
-	if (!getConnection()->hasChunksEnded)
+	if (_connection->requestMode == Connection::CHUNKS && !getConnection()->hasChunksEnded)
 		checkChunksEnd();
 }
 
