@@ -1,9 +1,5 @@
 /*
 
-//TODO full subject test
-//TODO full eval test
-
-
 //TODO pendiente de investigar
 	* The first server for a host:port will be the default for this host:port (that means
 	it will answer to all the requests that don’t belong to an other server).
@@ -11,16 +7,12 @@
 //TODO pendiente
 	* Setup the server_names or not.
 
-
-
-
-
-
-//TODO substitr .h por stdc++98
-	
-//TODO arreglar makefile para incluir cgis o ponerlo manual
+//TODO full subject test
+//TODO full eval test
 
 //TODO limpiar todos los TODOS
+
+//TODO pasar los test adjuntos
 
 
 //TESTS
@@ -43,7 +35,7 @@ http://localhost:8042/del
 
 
 //POST ENTREGA
- //TODO post entrega: refactor streaming...al no conocer el tamaño.
+ //TODO post entrega: refactor streaming...
 
 
 cerrar el pipe del input y el output trans la transmision del body general el EOF.
@@ -53,12 +45,6 @@ it, the CGI will expect EOF as end of the body.
 ∗Same things for the output of the CGI. If no content_length is returned
 from the CGI, EOF will mark the end of the returned data.
  
-
-
-//TODO pendiente entender
-
-	You can use every macro and define like FD_SET, FD_CLR, FD_ISSET, FD_ZERO 
-	(understanding what and how they do it is very useful).
 
 
 //TODO arreglar constructor copia/asignacion de HttpRequest/Response hacia HttpMessage
