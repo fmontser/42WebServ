@@ -3,6 +3,8 @@
 #include <map>
 #include <string>
 
+class Server;
+
 class Route {
 	private:
 		std::string								_url;
@@ -35,4 +37,5 @@ class Route {
 		void	setDefault(const std::string default_);
 		void	setUpload(const std::string upload);
 		bool	isMethodAllowed(std::string method);
+		bool	isMethodImplemented(Server& server, std::string method);
 };

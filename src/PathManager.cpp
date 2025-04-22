@@ -57,9 +57,10 @@
 	std::string		PathManager::resolveRoutePath(DataAdapter& dataAdapter) {
 		Server&			server = dataAdapter.getConnection()->getServer();
 		HttpRequest&	request = dataAdapter.getRequest();
-		Route*			route = server.getRequestedRoute(dataAdapter);
+		Route*			route = NULL; 
 		std::string		path, url, _default;
 
+		server.getRequestedRoute(&route, dataAdapter);
 		if (route)
 			_default = route->getDefault();
 
@@ -81,7 +82,7 @@
 				stackPath(path, route->getRoot());
 
 			stackPath(path, url);
-			if (Utils::isDirectory(path) && !_default.empty())
+			if (Utils::isDirectory(path) && !_default.empty() && request.method == "GET")
 				stackPath(path, _default);
 		} else
 			stackPath(path, url);
@@ -111,9 +112,10 @@
 
 	std::string		PathManager::resolveUploadDir(DataAdapter& dataAdapter){
 		Server&			server = dataAdapter.getConnection()->getServer();
-		Route*			route = server.getRequestedRoute(dataAdapter);
+		Route*			route = NULL;
 		std::string		upload, path;
 
+		server.getRequestedRoute(&route, dataAdapter);
 		if (route)
 			upload = route->getUpload();
 
@@ -138,8 +140,9 @@
 
 	std::string		PathManager::resolveHttpRedirection(DataAdapter& dataAdapter){
 		std::string	location = "Location: ";
-		Route*		route = dataAdapter.getConnection()->getServer().getRequestedRoute(dataAdapter);
-
+		Route*		route = NULL;
+		
+		dataAdapter.getConnection()->getServer().getRequestedRoute(&route,dataAdapter);
 		if (route)
 			stackPath(location, route->getRedirect());
 		

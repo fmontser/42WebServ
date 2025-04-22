@@ -1,4 +1,5 @@
 #include "Route.hpp"
+#include "Server.hpp"
 
 Route::Route() {}
 Route::~Route() {}
@@ -44,6 +45,16 @@ void	Route::setUpload(const std::string upload) { _upload = upload; }
 bool	Route::isMethodAllowed(std::string method) {
 	for (std::multimap<std::string, std::string>::iterator it = _methods.begin(); it != _methods.end(); ++it) {
 		if (it->second == method)
+			return true;
+	}
+	return false;
+}
+
+bool	Route::isMethodImplemented(Server& server, std::string method) {
+	std::vector<std::string> serverMethods = server.getServerMethods();
+
+	for (std::vector<std::string>::iterator it = serverMethods.begin(); it != serverMethods.end(); ++it) {
+		if (*it == method)
 			return true;
 	}
 	return false;

@@ -3,47 +3,6 @@
 //TODO full subject test
 //TODO full eval test
 
-//TODO arreglar constructor copia/asignacion de HttpRequest/Response hacia HttpMessage
-
-//TODO arreglar raiz del/ == del (PATHMANAGER!!!!!), probar con listing 201
-
-//TODO subir archivos con espacio? funciona, pero luego no lo encuentra en las respuestas o peticiones...
-
-//TODO arreglar makefile para incluir cgis o ponerlo manual
-
-//TODO test not allowed (PUT) no devuelve una pagina de error (aunque si es reconocido)
-
-
-//TODO substitr .h por stdc++98
-
-
-//TODO revisar si el cliente usa chunked para enviar a usar otro encoding type en el POST
-	curl -X POST \
-		-H "Transfer-Encoding: chunked" \
-		-H "Content-Type: text/plain" \
-		-H "Content-Disposition: attachment; filename=\"en.subject.pdf\"" \
-		--data-binary @en.subject.pdf \
-		http://localhost:8042/del
-
-
-
-
-//TODO @@@@@@@ SUPERCAGADA, se requiere soportar chunked request y response, ademas todo el envio de datos sin conocer la longitud ni existe.
-
-		https://drive.google.com/file/d/1p43URv-qO29S4O9_uFr4cD6TH-ZW-csF/view?usp=sharing, https://aistudio.google.com/app/prompts?state=%7B%22ids%22:%5B%221t41SOErCFtwIUdddB-G48C1iCdU6KQRV%22%5D,%22action%22:%22open%22,%22userId%22:%22111409691010771158319%22,%22resourceKeys%22:%7B%7D%7D&usp=sharing
-
-	<form action="/del" method="post" enctype="multipart/form-data">
-		<input type="file" name="archivo" id="archivo">
-		<button type="submit">Subir Archivo (POST)</button>
-	</form>
-
-	cerrar el pipe del input y el output trans la transmision del body general el EOF.
-	∗Just remember that, for chunked request, your server needs to unchunk
-	it, the CGI will expect EOF as end of the body.
-
-	∗Same things for the output of the CGI. If no content_length is returned
-	from the CGI, EOF will mark the end of the returned data.
-
 
 //TODO pendiente de investigar
 	* The first server for a host:port will be the default for this host:port (that means
@@ -52,22 +11,19 @@
 //TODO pendiente
 	* Setup the server_names or not.
 
-//TODO pendiente entender
 
-	You can use every macro and define like FD_SET, FD_CLR, FD_ISSET, FD_ZERO 
-	(understanding what and how they do it is very useful).
 
-//TODO gestoinar POST y DELETE con default en la ruta
 
-//TODO a;adir comprobacion de directorios al listing (para no incluirlos) (preguntar ai)
 
-*/
 
+//TODO substitr .h por stdc++98
+	
+//TODO arreglar makefile para incluir cgis o ponerlo manual
+
+//TODO limpiar todos los TODOS
 
 
 //TESTS
-
-/* 
 
 
 curl -X POST \
@@ -78,5 +34,33 @@ curl -X POST \
 http://localhost:8042/del
 
 
+curl -X PUT \
+-H "Content-Type: text/plain" \
+http://localhost:8042/del
+
+
+
+
+
+//POST ENTREGA
+ //TODO post entrega: refactor streaming...al no conocer el tamaño.
+
+
+cerrar el pipe del input y el output trans la transmision del body general el EOF.
+∗Just remember that, for chunked request, your server needs to unchunk
+it, the CGI will expect EOF as end of the body.
+
+∗Same things for the output of the CGI. If no content_length is returned
+from the CGI, EOF will mark the end of the returned data.
+ 
+
+
+//TODO pendiente entender
+
+	You can use every macro and define like FD_SET, FD_CLR, FD_ISSET, FD_ZERO 
+	(understanding what and how they do it is very useful).
+
+
+//TODO arreglar constructor copia/asignacion de HttpRequest/Response hacia HttpMessage
 
 */
