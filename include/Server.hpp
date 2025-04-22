@@ -12,17 +12,17 @@ class DataAdapter;
 
 class Server {
 	private:
-		std::string							_name;
-		std::string							_host;
-		int									_port;
-		size_t								_maxPayload;
-		std::string							_root;
-		std::vector<std::string>			_serverMethods;
+		std::string													_name;
+		std::string													_host;
+		int																	_port;
+		size_t															_maxPayload;
+		std::string													_root;
+		std::vector<std::string>						_serverMethods;
 		std::map<std::string, std::string>	_defaults;
-		std::map<std::string, Route>		_routes;
-		std::list<Connection *>				_connectionList;
-		int									_socketFd;
-		struct pollfd						_pollfd;
+		std::map<std::string, Route>				_routes;
+		std::list<Connection *>							_connectionList;
+		int																	_socketFd;
+		struct pollfd												_pollfd;
 
 	public:
 		Server();
@@ -32,7 +32,7 @@ class Server {
 
 		std::string							getName() const;
 		std::string							getHost() const;
-		int									getPort() const;
+		int											getPort() const;
 		std::string							getRoot() const;
 		std::vector<std::string>&			getServerMethods();
 		std::map<std::string, std::string>&	getDefaults();

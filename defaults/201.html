@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+	<base href="/../defaults/">
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>File uploaded</title>
@@ -10,12 +11,8 @@
 		ul { list-style: none; padding: 0; }
 		li { margin: 10px 0; }
 		.hidden { display: none; }
-		</style>
-		<script>
-			setTimeout(() => {
-				window.location.href = "http://localhost:8042/del";
-			}, 1000); 
-		</script>
+	</style>
+
 </head>
 <body>
 	<h1>File uploaded</h1>
@@ -23,7 +20,5 @@
 	<br>
 	<a href="http://localhost:8042">Back to Home</a>
 	<br>
-	<hr>
-	<a href="http://localhost:8042/del">Directory listing</a>
 </body>
 </html>

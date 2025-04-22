@@ -4,9 +4,8 @@
 	<base href="/../defaults/">
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>400 Bad Request</title>
+	<title>504 Gateway timeout</title>
 		<link rel="icon" href="favicon.png" type="image/x-icon">
-	<link rel="stylesheet" href="style.css">
 	<style>
 		body {
 			display: flex;
@@ -42,10 +41,10 @@
 			50% { transform: rotate(-15deg); }
 			100% { transform: rotate(15deg); }
 		}
-		</style>
+	</style>
 </head>
 <body>
-	<h1>400 Bad Request - 42Webserv</h1>
+	<h1>504 Gateway timeout</h1>
 	<div class="container">
 		<img src="crow.png" class="toucan" id="toucan">
 	</div>
@@ -58,7 +57,7 @@
 			setInterval(() => {
 				let question = document.createElement("div");
 				question.className = "question";
-				question.innerText = "😡";
+				question.innerText = "🕐";
 				document.body.appendChild(question);
 
 				let x = Math.random() * window.innerWidth;

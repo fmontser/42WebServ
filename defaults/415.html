@@ -4,9 +4,8 @@
 	<base href="/../defaults/">
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>400 Bad Request</title>
-		<link rel="icon" href="favicon.png" type="image/x-icon">
-	<link rel="stylesheet" href="style.css">
+	<title>415 Unsupported Media Type</title>
+	<link rel="icon" href="favicon.png" type="image/x-icon">
 	<style>
 		body {
 			display: flex;
@@ -34,6 +33,7 @@
 		.question {
 			position: absolute;
 			font-size: 40px;
+			color: #ff0008;
 			opacity: 0;
 			transition: opacity 0.5s, transform 1s ease-in-out;
 		}
@@ -43,13 +43,14 @@
 			100% { transform: rotate(15deg); }
 		}
 		</style>
+		<!-- <link rel="stylesheet" href="default/style.css"> -->
 </head>
 <body>
-	<h1>400 Bad Request - 42Webserv</h1>
+	<h1>415 Unsupported Media Type - 42Webserv</h1>
+	<a href="http://localhost:8042">Back to Home</a>
 	<div class="container">
 		<img src="crow.png" class="toucan" id="toucan">
 	</div>
-	<a href="http://localhost:8042">Back to Home</a>
 
 	<script>
 		document.addEventListener("DOMContentLoaded", () => {
@@ -58,7 +59,7 @@
 			setInterval(() => {
 				let question = document.createElement("div");
 				question.className = "question";
-				question.innerText = "😡";
+				question.innerText = "X";
 				document.body.appendChild(question);
 
 				let x = Math.random() * window.innerWidth;

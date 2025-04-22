@@ -5,6 +5,11 @@
 class Connection;
 
 class HttpRequest : public HttpMessage {
+	private:
+
+		bool	handleMultipart(Connection *connection);
+		bool	handleChunked(Connection *connection);
+
 	public:
 		std::string	method;
 		std::string	url;
@@ -15,6 +20,8 @@ class HttpRequest : public HttpMessage {
 		HttpRequest& operator=(const HttpRequest& src);
 
 		bool	isBinaryDownload;
-		bool	handleMultipart(Connection *connection);
+		bool	isCgiRequest;
+		bool	handlePostMode(Connection *connection);
+		std::string getCleanHost() const;
 };
 

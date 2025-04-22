@@ -1,6 +1,7 @@
 #include <sstream>
 #include <algorithm>
 #include <cstdio>
+#include <algorithm>
 #include "DataAdapter.hpp"
 #include "ConnectionManager.hpp"
 #include "FileManager.hpp"
@@ -51,9 +52,12 @@ static void	deserializeRequestLine(std::stringstream& data, HttpRequest& request
 	request.version = line.substr(0, line.find('\r'));
 }
 
-static bool	deserializeHeaders(std::stringstream& data, HttpRequest& request, DataAdapter& dataAdapter) {
+static bool	 deserializeHeaders(std::stringstream& data, HttpRequest& request, DataAdapter& dataAdapter) {
 	std::string	line;
 	Connection	*connection = dataAdapter.getConnection();
+
+	if (connection->requestMode == Connection::CHUNKS)
+		return true;
 
 	while (std::getline(data, line)) {
 		line.append("\n");
@@ -63,7 +67,8 @@ static bool	deserializeHeaders(std::stringstream& data, HttpRequest& request, Da
 			request.addHeader(DataAdapter::deserializeHeader(line));
 		}
 	}
-	if (connection->requestMode == Connection::MULTIPART)
+
+	if (connection->requestMode == Connection::PARTS)
 		return true;
 	return false;
 }
@@ -89,8 +94,11 @@ static void	deserializeBody(std::stringstream& data, HttpRequest& request, DataA
 		if (bodySize > connection->getServer().getMaxPayload())
 			connection->isOverPayloadLimit = true;
 	}
- 	removeBoundarie(request.body, connection->boundStart);
-	removeBoundarie(request.body, connection->boundEnd);
+
+	if (connection->requestMode == Connection::PARTS) {
+		removeBoundarie(request.body, connection->boundStart);
+		removeBoundarie(request.body, connection->boundEnd);
+	}
 }
 
 HttpHeader	DataAdapter::deserializeHeader(std::string data) {
@@ -126,8 +134,10 @@ HttpHeader	DataAdapter::deserializeHeader(std::string data) {
 	return newHeader;
 }
 
+
+
 void	DataAdapter::deserializeRequest() {
-	std::stringstream data;
+	std::stringstream			data;
 
 	data << std::string(_connection->recvBuffer.begin(), _connection->recvBuffer.end());
 
@@ -137,7 +147,11 @@ void	DataAdapter::deserializeRequest() {
 		isHeadersComplete = deserializeHeaders(data, _request, *this);
 	if (!_connection->isOverPayloadLimit)
 		deserializeBody(data, _request, *this);
+
+	if (_connection->requestMode == Connection::CHUNKS && !getConnection()->hasChunksEnded)
+		checkChunksEnd();
 }
+
 
 static void	serializeHeaders(std::stringstream& buffer, HttpResponse& response) {
 	for (std::vector<HttpHeader>::iterator headerIt = response.headers.begin(); headerIt != response.headers.end(); ++headerIt) {
@@ -173,6 +187,18 @@ void	DataAdapter::serializeResponse() {
 		buffer << *it;
 	while ((byte = buffer.get()) != EOF)
 		_connection->sendBuffer.push_back(byte);
+}
+
+
+void DataAdapter::checkChunksEnd() {
+	std::string						chuncksEnd = "0\r\n";
+	std::vector<char>::iterator	it;
+
+	if (!getConnection()->hasChunksEnded) {
+		it = std::search(_request.body.begin(), _request.body.end(), chuncksEnd.begin(), chuncksEnd.end());
+		if ( it != _request.body.end())
+			getConnection()->hasChunksEnded = true;
+	}
 }
 
 Connection		*DataAdapter::getConnection() const { return _connection; }

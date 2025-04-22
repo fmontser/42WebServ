@@ -30,6 +30,7 @@ std::vector<char> Index::generateAutoindex(DataAdapter& dataAdapter) {
 	autoIndex += "<!DOCTYPE html>\n";
 	autoIndex += "<html>\n<head>\n";
 	autoIndex += "<title>Index of " + path + "</title>";
+	autoIndex += "<link rel=\"icon\" href=\"/favicon.png\" type=\"image/x-icon\">\n";
 	autoIndex += "	<style>\n";
 	autoIndex += "		body { font-family: Arial, sans-serif; margin: 40px; background-color: #f5f5f5; }\n";
 	autoIndex += "		.container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }\n";
@@ -72,7 +73,7 @@ std::vector<char> Index::generateAutoindex(DataAdapter& dataAdapter) {
 	autoIndex += "</head>\n<body>\n";
 	autoIndex += "<div class=\"container\">\n";
 	autoIndex += "	<h1>Index of " + path + "</h1>\n";
-	autoIndex += "	<a href=\"http://localhost:8042\" class=\"home-link\">Back to parent directory</a>\n";
+	autoIndex += "	<a href=\"http://localhost:8042\" class=\"home-link\">Home</a>\n";
 	autoIndex += "	<hr>\n";
 	autoIndex += "	<table class=\"file-list\">\n";
 	autoIndex += "	<thead><tr><th>Name</th><th>Actions</th></tr></thead>\n";

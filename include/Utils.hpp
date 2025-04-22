@@ -12,9 +12,10 @@ class Utils {
 		static void						nestedQuoteExtract(char delimiter, std::string& str);
 		static size_t					getStringStreamLength(std::stringstream& ss);
 		static std::string				getStringSizeStr(size_t size);
-		static std::string				getUrlPath(std::string url);
+		static std::string				getPathDir(std::string url);
 		static bool						isDirectory(std::string path);
 		static std::string				getFileType(std::string path);
 		static std::string				toString(size_t value);
 		static std::string				getFileName(std::string path);
+		static std::string				toLower(std::string str);
 };

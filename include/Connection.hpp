@@ -5,6 +5,7 @@
 #include "ServerConstants.hpp"
 #include "Server.hpp"
 #include "DataAdapter.hpp"
+#include "CgiAdapter.hpp"
 
 class Connection {
 	private:
@@ -12,18 +13,25 @@ class Connection {
 		Server&			_server;
 		int				_socketFd;
 		struct pollfd	_pollfd;
-		DataAdapter		*_multiDataAdapter;
+		DataAdapter		*_dataAdapter;
+		CgiAdapter		*_cgiAdapter;
+
+		void	manageSingle(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter);
+		void	manageMultiPart(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter);
+		void	resetConnection();
 
 	public:
 
-		enum RequestMode { SINGLE, MULTIPART };
-		//enum ResponseMode { SINGLE, CHUNKED };
+		enum RequestMode { SINGLE, PARTS, CHUNKS };
+		enum ResponseMode { NORMAL, CHUNKED };
 
 		std::vector<char>	recvBuffer;
 		std::vector<char>	sendBuffer;
-		bool				isChunkedResponse;	//TODO cambiar a response mode (enums)
 		bool				isOverPayloadLimit;
+		bool				hasPendingCgi;
+		bool				hasChunksEnded;
 		RequestMode			requestMode;
+		ResponseMode		responseMode;
 		std::string			boundarie;
 		std::string			boundStart;
 		std::string			boundEnd;
@@ -37,6 +45,7 @@ class Connection {
 		Server&			getServer() const;
 		struct pollfd	getPollFd() const;
 
+		void			fetchCgi();
 		void			recieveData();
 		void			sendData();
 		void			updatePollFd(struct pollfd pfd);

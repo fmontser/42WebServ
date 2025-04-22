@@ -3,6 +3,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
+#include <cerrno>
 #include "Server.hpp"
 #include "ServerConstants.hpp"
 #include "Connection.hpp"
@@ -18,8 +19,10 @@ Server::Server() {
 	_defaults["default405"] = "defaults/405.html";
 	_defaults["default409"] = "defaults/409.html";
 	_defaults["default413"] = "defaults/413.html";
+	_defaults["default415"] = "defaults/415.html";
 	_defaults["default500"] = "defaults/500.html";
 	_defaults["default501"] = "defaults/501.html";
+	_defaults["default504"] = "defaults/504.html";
 }
 
 Server::~Server() {
@@ -82,10 +85,14 @@ void Server::listenSocket() {
 	address.sin_addr.s_addr = INADDR_ANY;
 	address.sin_port = htons(_port);
 
-	if (bind(_socketFd, (struct sockaddr *)&address, sizeof(address)) < 0) {
-		std::cerr << RED << "Error: failed to bind address" << END << std::endl;
+	if (bind(_socketFd, (struct sockaddr *)&address, sizeof(address)) < 0) {// @@add EADDRINUSE for runtimePort conflict 
+		if (errno == EADDRINUSE)//Launch multiple servers at the same time with different configurations but with common ports. 
+			std::cerr << RED << "Error: Port " << _port << " is already in use" << END << std::endl;
+		else 
+			std::cerr << RED << "Error: failed to bind address" << END << std::endl;
 		exit(1);
 	}
+	
 
 	if (listen(_socketFd, SOCKET_LISTEN_QUEUE_SIZE) < 0) {
 		std::cerr << RED << "Error: socket listen failed" << END << std::endl;
@@ -137,26 +144,40 @@ void	Server::setMaxPayLoad(const std::string& maxPayLoad) {
 	_maxPayload = payloadSize;
 }
 
+//TODO check cleanhost
 Route	*Server::getRequestedRoute(DataAdapter& dataAdapter) {
-	std::string path, url;
-	
-	url = dataAdapter.getRequest().url;
+	std::string path, url, cleanHost;
+  
+		url = dataAdapter.getRequest().url;
+	if (dataAdapter.getRequest().isCgiRequest) {
+		url = CgiAdapter::stripCgiParams(url);
+		url = CgiAdapter::stripCgiPathInfo(url);
+	}
+
 	path = PathManager::resolveServerPath(dataAdapter);
+	cleanHost = dataAdapter.getRequest().getCleanHost();
 
 	if (!Utils::isDirectory(path)) {
 		if (!(access(path.c_str(), F_OK) == 0))
 			return NULL;
-		url = Utils::getUrlPath(url);
+		url = Utils::getPathDir(url);
 	}
 
 	std::map<std::string, Route>::iterator it = _routes.find(url);
-	if (it !=  _routes.end())
+	if (it !=  _routes.end()) {
+		if (!cleanHost.empty() && cleanHost != this->_host) {
+			return NULL;
+		}
 		return &it->second;
+	}
 
 	it = _routes.find(url.append("/"));
-	if (it !=  _routes.end())
+	if (it !=  _routes.end()) {
+		if (!cleanHost.empty() && cleanHost != this->_host) {
+			return NULL;
+		}
 		return &it->second;
-	
+	}	
 	return NULL;
 }
 

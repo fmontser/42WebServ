@@ -14,11 +14,6 @@
 #include "PathManager.hpp"
 
 
-//TODO necesario?
-#include "HttpHeader.hpp"
-
-
-
 FileManager::FileManager() {}
 FileManager::~FileManager() {}
 
@@ -29,6 +24,49 @@ FileManager& FileManager::operator=(const FileManager& src) {
 		(void)src;
 	}
 	return *this;
+}
+
+
+static std::vector<char>::const_iterator findCRLF(std::vector<char>::const_iterator begin, std::vector<char>::const_iterator end) {
+	const char crlf[] = {'\r', '\n'};
+
+	return std::search(begin, end, crlf, crlf + 2);
+}
+
+static size_t	getChunkSize(std::vector<char>::const_iterator pos, std::vector<char>::const_iterator sizeEnd) {
+	std::string							chunkSizeStr;
+	
+	chunkSizeStr = std::string(pos, sizeEnd);
+	if (chunkSizeStr.empty())
+		return 0;
+	return (strtol(chunkSizeStr.c_str(), NULL, 16));
+}
+
+void decodeChunkedBody(std::vector<char>& body) {
+	std::vector<char>					decodedBody;
+	std::vector<char>::const_iterator	pos, end, sizeEnd, dataEnd;
+	size_t								chunkSize;
+
+	pos = body.begin();
+	end = body.end();
+	while (pos < end) {
+		
+		sizeEnd = findCRLF(pos, end);
+		if (sizeEnd == end)
+			break;
+
+		chunkSize =  getChunkSize(pos, sizeEnd);
+		pos = sizeEnd + 2;
+		if (pos > end || chunkSize <= 0)
+			break;
+
+		dataEnd = pos + chunkSize;
+		decodedBody.insert(decodedBody.end(), pos, dataEnd);
+		pos = dataEnd + 2; 
+	}
+
+	body.clear();
+	body = decodedBody;
 }
 
 static void chunkEncode(std::vector<char>& body, size_t maxPayload) {
@@ -50,14 +88,10 @@ static void chunkEncode(std::vector<char>& body, size_t maxPayload) {
 		body.push_back(byte);
 }
 
-//TODO testing
 static void setDownloadResponse(DataAdapter& dataAdapter, std::string path) {
-	
 	std::string contentType, fileName;
 
-	
 	fileName = Utils::getFileName(path);
-
 
 	HttpHeader contentDispHeader;
 	contentDispHeader.name = "Content-Disposition";
@@ -65,17 +99,16 @@ static void setDownloadResponse(DataAdapter& dataAdapter, std::string path) {
 	cdValue.name = "attachment; filename=\"" + fileName + "\"";
 	contentDispHeader.addValue(cdValue);
 	dataAdapter.getResponse().addHeader(contentDispHeader);
-
 }
 
 
 HttpResponse::responseType	FileManager::readFile(DataAdapter& dataAdapter) {
 	std::string			path;
-	int					fd, readSize, i;
-	Server&				server = dataAdapter.getConnection()->getServer();
+	int							fd, readSize, i;
+	Server&					server = dataAdapter.getConnection()->getServer();
 	HttpRequest&		request = dataAdapter.getRequest();
 	HttpResponse&		response = dataAdapter.getResponse();
-	char				readBuffer[READ_BUFFER] = {0};
+	char						readBuffer[READ_BUFFER] = {0};
 
 	if (!response.statusCode.empty())
 		path.append(request.url);
@@ -110,6 +143,7 @@ HttpResponse::responseType	FileManager::readFile(DataAdapter& dataAdapter) {
 		contentLengthHeader << "Content-Length: " << response.body.size();
 		response.addHeader(contentLengthHeader.str());
 	}
+
 	close(fd);
 	return HttpResponse::OK;
 }
@@ -121,7 +155,7 @@ HttpResponse::responseType	FileManager::writeFile(DataAdapter& dataAdapter) {
 	std::string		fileName, path;
 	int				fd;
 
-	path = PathManager::resolveRoutePath(dataAdapter);
+	path = PathManager::resolveUploadDir(dataAdapter);
 
 	for (std::vector<HttpHeader>::iterator it = dataAdapter.getRequest().headers.begin();
 			it != dataAdapter.getRequest().headers.end(); ++it) {
@@ -150,6 +184,8 @@ HttpResponse::responseType	FileManager::writeFile(DataAdapter& dataAdapter) {
 
 		fd = open(fileName.c_str(), O_WRONLY | O_CREAT | O_APPEND, 0775);
 		if (fd > 0) {
+			if (dataAdapter.getConnection()->requestMode == Connection::CHUNKS)
+				decodeChunkedBody(request.body);
 			write(fd, &request.body[0], request.body.size());
 			close(fd);
 		}
@@ -159,7 +195,7 @@ HttpResponse::responseType	FileManager::writeFile(DataAdapter& dataAdapter) {
 	else 
 		return HttpResponse::CONFLICT;
 
-	if (dataAdapter.getConnection()->requestMode == Connection::MULTIPART)
+	if (dataAdapter.getConnection()->requestMode != Connection::SINGLE)
 		dataAdapter.allowFileAppend = true;
 	return HttpResponse::CREATED;
 }

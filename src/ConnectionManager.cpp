@@ -62,6 +62,8 @@ static void	manageServerConnections(Server& server) {
 			connection.sendData();
 		else if (connection.hasPollIn() && !connection.isOverPayloadLimit)
 			connection.recieveData();
+		else if (connection.hasPendingCgi)
+			connection.fetchCgi();
 	}
 	cachedList.clear();
 }

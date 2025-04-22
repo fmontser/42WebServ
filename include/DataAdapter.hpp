@@ -13,6 +13,8 @@ class DataAdapter {
 		HttpResponse	_response;
 		Connection		*_connection;
 
+		void checkChunksEnd();
+
 	public:
 		DataAdapter(Connection *connection);
 		~DataAdapter();

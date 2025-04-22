@@ -11,6 +11,7 @@ class Route {
 		std::string								_autoIndex;
 		std::string								_root;
 		std::string								_redirect;
+		std::string								_upload;
 
 	public:
 		Route();
@@ -24,6 +25,7 @@ class Route {
 		std::string								getRedirect() const;
 		std::multimap<std::string, std::string>	getMethods() const;
 		std::string								getDefault() const;
+		std::string								getUpload() const;
 
 		void	setUrl(const std::string& url);
 		void	addMethod(const std::pair<std::string, std::string> method);
@@ -31,5 +33,6 @@ class Route {
 		void	setRoot(const std::string root);
 		void	setRedirect(const std::string redirect);
 		void	setDefault(const std::string default_);
+		void	setUpload(const std::string upload);
 		bool	isMethodAllowed(std::string method);
 };

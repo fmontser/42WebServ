@@ -24,15 +24,15 @@ HttpResponse& HttpResponse::operator=(const HttpResponse& src) {
 
 HttpResponse::~HttpResponse() {}
 
-bool	HttpResponse::isChunked() {
+int	HttpResponse::isChunked() {
 	for (std::vector<HttpHeader>::iterator it = headers.begin(); it != headers.end(); ++it) {
 		HttpHeader header = *it;
 		HeaderValue value;
 
 		if (header.getValue("Transfer-Encoding", &value) && value.name == "chunked")
-			return true;
+			return Connection::CHUNKED;
 	}
-	return false;
+	return Connection::NORMAL;
 }
 
 void	HttpResponse::setupResponse(enum responseType responseType, DataAdapter& dataAdapter) {
@@ -54,6 +54,7 @@ void	HttpResponse::setupResponse(enum responseType responseType, DataAdapter& da
 		case OK:
 			statusCode = "200";
 			statusMsg = "OK";
+			addHeader(contentLength.append(Utils::getStringSizeStr(body.size())));
 			break;
 		case CREATED:
 			statusCode = "201";
@@ -108,6 +109,12 @@ void	HttpResponse::setupResponse(enum responseType responseType, DataAdapter& da
 			dataAdapter.getRequest().url = PathManager::resolveErrorPage(dataAdapter, "default413");
 			FileManager::readFile(dataAdapter);
 			break;
+		case UNSUPPORTED_MEDIA_TYPE:
+			statusCode = "415";
+			statusMsg = "UNSUPPORTED_MEDIA_TYPE";
+			dataAdapter.getRequest().url = PathManager::resolveErrorPage(dataAdapter, "default415");
+			FileManager::readFile(dataAdapter);
+			break;
 		case SERVER_ERROR:
 			statusCode = "500";
 			statusMsg = "SERVER_ERROR";
@@ -118,6 +125,12 @@ void	HttpResponse::setupResponse(enum responseType responseType, DataAdapter& da
 			statusCode = "501";
 			statusMsg = "METHOD_NOT_IMPLEMENTED";
 			dataAdapter.getRequest().url = PathManager::resolveErrorPage(dataAdapter, "default501");
+			FileManager::readFile(dataAdapter);
+			break;
+		case GATEWAY_TIMEOUT:
+			statusCode = "504";
+			statusMsg = "GATEWAY_TIMEOUT";
+			dataAdapter.getRequest().url = PathManager::resolveErrorPage(dataAdapter, "default504");
 			FileManager::readFile(dataAdapter);
 			break;
 		default:

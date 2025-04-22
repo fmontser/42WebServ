@@ -19,8 +19,10 @@ class HttpResponse : public HttpMessage {
 			METHOD_NOT_ALLOWED = 405,
 			CONFLICT = 409,
 			PAYLOAD_TOO_LARGE = 413,
+			UNSUPPORTED_MEDIA_TYPE = 415,
 			SERVER_ERROR = 500,
-			METHOD_NOT_IMPLEMENTED = 501
+			METHOD_NOT_IMPLEMENTED = 501,
+			GATEWAY_TIMEOUT = 504
 		};
 
 		std::string	statusCode;
@@ -31,6 +33,6 @@ class HttpResponse : public HttpMessage {
 		HttpResponse(const HttpResponse& src);
 		HttpResponse& operator=(const HttpResponse& src);
 
-		bool	isChunked();
+		int		isChunked();
 		void	setupResponse(enum responseType responseType, DataAdapter& dataAdapter);
 };
