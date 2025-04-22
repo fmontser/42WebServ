@@ -109,6 +109,12 @@ void	HttpResponse::setupResponse(enum responseType responseType, DataAdapter& da
 			dataAdapter.getRequest().url = PathManager::resolveErrorPage(dataAdapter, "default413");
 			FileManager::readFile(dataAdapter);
 			break;
+		case UNSUPPORTED_MEDIA_TYPE:
+			statusCode = "415";
+			statusMsg = "UNSUPPORTED_MEDIA_TYPE";
+			dataAdapter.getRequest().url = PathManager::resolveErrorPage(dataAdapter, "default415");
+			FileManager::readFile(dataAdapter);
+			break;
 		case SERVER_ERROR:
 			statusCode = "500";
 			statusMsg = "SERVER_ERROR";

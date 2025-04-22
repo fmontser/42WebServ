@@ -26,6 +26,49 @@ FileManager& FileManager::operator=(const FileManager& src) {
 	return *this;
 }
 
+
+static std::vector<char>::const_iterator findCRLF(std::vector<char>::const_iterator begin, std::vector<char>::const_iterator end) {
+	const char crlf[] = {'\r', '\n'};
+
+	return std::search(begin, end, crlf, crlf + 2);
+}
+
+static size_t	getChunkSize(std::vector<char>::const_iterator pos, std::vector<char>::const_iterator sizeEnd) {
+	std::string							chunkSizeStr;
+	
+	chunkSizeStr = std::string(pos, sizeEnd);
+	if (chunkSizeStr.empty())
+		return 0;
+	return (strtol(chunkSizeStr.c_str(), NULL, 16));
+}
+
+void decodeChunkedBody(std::vector<char>& body) {
+	std::vector<char>					decodedBody;
+	std::vector<char>::const_iterator	pos, end, sizeEnd, dataEnd;
+	size_t								chunkSize;
+
+	pos = body.begin();
+	end = body.end();
+	while (pos < end) {
+		
+		sizeEnd = findCRLF(pos, end);
+		if (sizeEnd == end)
+			break;
+
+		chunkSize =  getChunkSize(pos, sizeEnd);
+		pos = sizeEnd + 2;
+		if (pos > end || chunkSize <= 0)
+			break;
+
+		dataEnd = pos + chunkSize;
+		decodedBody.insert(decodedBody.end(), pos, dataEnd);
+		pos = dataEnd + 2; 
+	}
+
+	body.clear();
+	body = decodedBody;
+}
+
 static void chunkEncode(std::vector<char>& body, size_t maxPayload) {
 	std::stringstream	buffer;
 	std::vector<char>	_body(body);
@@ -141,6 +184,8 @@ HttpResponse::responseType	FileManager::writeFile(DataAdapter& dataAdapter) {
 
 		fd = open(fileName.c_str(), O_WRONLY | O_CREAT | O_APPEND, 0775);
 		if (fd > 0) {
+			if (dataAdapter.getConnection()->requestMode == Connection::CHUNKS)
+				decodeChunkedBody(request.body);
 			write(fd, &request.body[0], request.body.size());
 			close(fd);
 		}
@@ -150,7 +195,7 @@ HttpResponse::responseType	FileManager::writeFile(DataAdapter& dataAdapter) {
 	else 
 		return HttpResponse::CONFLICT;
 
-	if (dataAdapter.getConnection()->requestMode == Connection::MULTIPART)
+	if (dataAdapter.getConnection()->requestMode != Connection::SINGLE)
 		dataAdapter.allowFileAppend = true;
 	return HttpResponse::CREATED;
 }
