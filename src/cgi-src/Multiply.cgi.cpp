@@ -35,8 +35,11 @@ int main() {
 	sleep(t);
 
 	std::cout << "<html><body>\n";
+	std::cout << "<p>Multiplicando " << a << " * " << b << "</p>\n";
 	std::cout << "<h1>Resultado: " << resultado << "</h1>\n";
+	std::cout << "<a href=\"/\">Volver</a>" << std::endl;
 	std::cout << "</body></html>\n";
+
 
 	return (0);
 }

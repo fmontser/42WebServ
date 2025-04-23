@@ -43,6 +43,8 @@ int main() {
 		if (*it == '0')
 			*it = '2';
 	}
+	std::cout << "<a href=\"/\">Volver</a>" << std::endl;
+	std::cout << std::endl;
 	std::cout << body;
 	return (EXIT_SUCCESS);
 }
