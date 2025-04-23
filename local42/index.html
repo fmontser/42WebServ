@@ -129,8 +129,32 @@
 	<hr>
 	<h4>Test CGI</h4>
 	<!-- CGI BASIC TEST -->
-	<button>
-		<a href="http://localhost:8042/cgi-bin/multiply.cgi?a=2&b=5&t=0">MULTIPLY 2 x 5 with CGI script</a>
+	<button id="multiplyButton">Calculate with CGI script</button>
+	<script>
+		document.getElementById('multiplyButton').addEventListener('click', function() {
+			let a = prompt("Enter the first number (a):");
+			let b = prompt("Enter the second number (b):");
+			let t = prompt("Enter timeout value (t):");
+			let operator = prompt("Enter the operator (+, -, *, /):");
+			if (operator === null || operator === "") {
+				operator = "*";
+			}
+	
+			if (
+				a !== null && b !== null && t !== null &&
+				!isNaN(a) && !isNaN(b) && !isNaN(t)
+			) {
+				const url = `http://localhost:8042/cgi-bin/multiply.cgi?a=${encodeURIComponent(a)}&b=${encodeURIComponent(b)}&t=${encodeURIComponent(t)}&operator=${encodeURIComponent(operator)}`;
+
+				window.location.href = url;
+			} else {
+				alert("Please enter valid numbers for a, b, and t.");
+			}
+		});
+	</script>
+	<!-- <button>
+
+		<a href="http://localhost:8042/cgi-bin/multiply.cgi?a=2&b=5&t=0">MULTIPLY 2 x 5 with CGI script</a> -->
 	</button>
 	
 	<hr>
@@ -141,7 +165,7 @@
 		<button type="submit">upload</button>
 	</form>
 	<hr>
-	<form action="/cgi-bin/cgi_test.cgi" method="post" enctype="application/x-www-form-urlencoded">
+	<form action="/cgi-bin/cgi_test.cgi" method="post" enctype="multipart/form-data">
 		<textarea id="data" name="data" rows="2" cols="50" placeholder="Send data to CGI script&#10;Enter some text: "></textarea><br>
 		<input type="submit" value="Send to CGI">
 	</form>

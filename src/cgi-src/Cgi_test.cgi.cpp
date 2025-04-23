@@ -37,12 +37,11 @@ int main() {
 		std::cin.read(&body[0], contentLength);
 		std::map<std::string, std::string> bodyParams = parseParameters(body);
 
-		std::cout << "Content-Type: text/html\r\n\r\n";
+	//	std::cout << "Content-Type: text/html\r\n\r\n";
 		std::cout << "<html><body>";
 		std::cout << "<p><a href=\"/\">Volver</a></p>";
 		std::cout << "<h3>POST Body (modified '0' → '2'):</h3>";
 
-		// Modify and print body
 		for (std::string::iterator it = body.begin(); it != body.end(); ++it) {
 			if (*it == '0')
 				*it = '2';

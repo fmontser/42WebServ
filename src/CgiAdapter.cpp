@@ -162,7 +162,7 @@ void	CgiAdapter::parseParameters(DataAdapter& dataAdapter){
 	std::cerr << "pinfo   : " << _pathInfo << std::endl;
 	std::cerr << "q       : " << _query << std::endl;
 	randomcount++;
-	*/ // akozin special xdddd TODO DELETE
+	*/ // special xdddd TODO DELETE
 
 	
 	header = request.findHeader("Content-Type");
