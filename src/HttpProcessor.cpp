@@ -11,13 +11,17 @@
 
 static	HttpResponse::responseType	validateRoute(DataAdapter& dataAdapter) {
 	HttpRequest	request = dataAdapter.getRequest();
-	Route	*actualRoute = dataAdapter.getConnection()
-			->getServer().getRequestedRoute(dataAdapter);
+	Server&		server = dataAdapter.getConnection()->getServer();
+	Route		*actualRoute;
+	HttpResponse::responseType result = dataAdapter.getConnection()
+			->getServer().getRequestedRoute(&actualRoute, dataAdapter);
 
-	if(actualRoute == NULL)
-		return HttpResponse::NOT_FOUND;
+	if(result != HttpResponse::EMPTY)
+		return result;
 	if (!actualRoute->getRedirect().empty())
 		return HttpResponse::SEE_OTHER;
+	if (!actualRoute->isMethodImplemented(server, request.method))
+		return HttpResponse::METHOD_NOT_IMPLEMENTED;
 	if (!actualRoute->isMethodAllowed(request.method))
 		return HttpResponse::METHOD_NOT_ALLOWED;
 	if (Index::isIndexRoute(dataAdapter, actualRoute)) {
@@ -66,7 +70,6 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter, CgiAdapter& cgi
 
 		if (connection->requestMode == Connection::SINGLE) {
 			if (request.handlePostMode(connection)) {
-				response.setupResponse(HttpResponse::CONTINUE, dataAdapter);
 				return;
 			} else {
 				response.setupResponse(HttpResponse::UNSUPPORTED_MEDIA_TYPE, dataAdapter);
@@ -101,10 +104,6 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter, CgiAdapter& cgi
 		rtype = FileManager::deleteFile(dataAdapter);
 		response.setupResponse(rtype, dataAdapter);
 	}
-	else {
-		response.setupResponse(HttpResponse::METHOD_NOT_IMPLEMENTED, dataAdapter);
-	}
-	
 }
 
 

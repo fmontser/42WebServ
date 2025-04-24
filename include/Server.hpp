@@ -6,6 +6,7 @@
 #include <list>
 #include <poll.h>
 #include "Route.hpp"
+#include "HttpResponse.hpp"
 
 class Connection;
 class DataAdapter;
@@ -51,7 +52,7 @@ class Server {
 		void	setPollfd(struct pollfd pfd);
 		void	setMaxPayLoad(const std::string& maxPayLoad);
 
-		Route	*getRequestedRoute(DataAdapter& dataAdapter);
+		HttpResponse::responseType	getRequestedRoute(Route **route, DataAdapter& dataAdapter);
 		void	listenSocket();
 		bool	hasPollIn() const;
 		bool	hasPollOut() const;
