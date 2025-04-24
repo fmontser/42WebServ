@@ -32,7 +32,7 @@
 
 .tutu span {
 	display: inline-block;
-	animation: popInOut 2s ease-in-out infinite;
+	animation: popInOut 3s ease-in-out infinite;
 }
 	</style>
 
@@ -44,7 +44,7 @@
 
 	<img src="/tucan.png" alt="tucan image">
 
-	<!-- <p>TU TU TU TUUUU!!</p> -->
+
 	<p class="tutu">
 		<span style="animation-delay: 0s">T</span>
 		<span style="animation-delay: 0.2s">U</span>
@@ -148,13 +148,11 @@
 
 				window.location.href = url;
 			} else {
-				alert("Please enter valid numbers for a, b, and t.");
+				alert("Please enter valid numbers for number 1, number 2, time and operator.");
 			}
 		});
-	</script>
-	<!-- <button>
+		</script>
 
-		<a href="http://localhost:8042/cgi-bin/multiply.cgi?a=2&b=5&t=0">MULTIPLY 2 x 5 with CGI script</a> -->
 	</button>
 	
 	<hr>
@@ -165,7 +163,7 @@
 		<button type="submit">upload</button>
 	</form>
 	<hr>
-	<form action="/cgi-bin/cgi_test.cgi" method="post" enctype="multipart/form-data">
+	<form action="/cgi-bin/cgi_test.cgi" method="post" enctype="text/plain">
 		<textarea id="data" name="data" rows="2" cols="50" placeholder="Send data to CGI script&#10;Enter some text: "></textarea><br>
 		<input type="submit" value="Send to CGI">
 	</form>
