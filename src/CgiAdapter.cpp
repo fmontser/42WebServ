@@ -14,6 +14,7 @@
 #define WR 1
 
 CgiAdapter::CgiAdapter() {
+	randomcount = 0;//TODO DELETE
 	_initFlag = true;
 }
 CgiAdapter::~CgiAdapter() {}
@@ -154,6 +155,15 @@ void	CgiAdapter::parseParameters(DataAdapter& dataAdapter){
 	_scriptName = raw[0].substr(0, raw[0].find(".cgi",0) + 4);
 	_pathInfo = raw[0].substr(raw[0].find(".cgi",0) + 4, raw[0].size());
 	_query = raw[1];
+	/*
+	std::cerr << "this is the " << randomcount << "st/nd/rd/th time"<< std::endl;
+	std::cerr << "results of all these finds: " << std::endl;
+	std::cerr << "scr name: " << _scriptName << std::endl;
+	std::cerr << "pinfo   : " << _pathInfo << std::endl;
+	std::cerr << "q       : " << _query << std::endl;
+	randomcount++;
+	*/ // special xdddd TODO DELETE
+
 	
 	header = request.findHeader("Content-Type");
 	if (header)
@@ -180,6 +190,8 @@ HttpResponse::responseType	CgiAdapter::processCgi(DataAdapter& dataAdapter) {
 
 bool	CgiAdapter::isCgiRequest(std::string url) {
 	if (url.find(".cgi", 0) != url.npos)
+		return true;
+	if (url.find(".bla", 0) != url.npos)
 		return true;
 	return false;
 }
