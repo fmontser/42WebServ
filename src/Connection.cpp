@@ -11,20 +11,7 @@
 #include "HttpProcessor.hpp"
 #include "Utils.hpp"
 
-Connection::Connection(int socket) : _dataAdapter(NULL), _cgiAdapter(NULL) {
-	sockaddr_in	client_addr;
-	socklen_t	client_addr_len = sizeof(client_addr);
-
-	_pollfd = pollfd();
-	_pollfd.fd = _socketFd;
-	_pollfd.events = POLLIN | POLLOUT | POLLHUP | POLLERR;
-	_pollfd.revents = 0;
-
-	_socketFd = accept(_pollfd.fd, (sockaddr *)&client_addr, &client_addr_len);
-	if (_socketFd == -1) {
-		std::cerr << RED << "Error: client connection error " << END << std::endl;
-	}
-
+Connection::Connection(Socket& socket) : _socket(socket), _dataAdapter(NULL), _cgiAdapter(NULL) {
 	isOverPayloadLimit = false;
 	isDerived = false;
 	hasPendingCgi = false;
@@ -36,15 +23,10 @@ Connection::Connection(int socket) : _dataAdapter(NULL), _cgiAdapter(NULL) {
 	sendBuffer.clear();
 	boundarie.clear();
 
-	_pollfd = pollfd();
-	_pollfd.fd = _socketFd;
-	_pollfd.events = POLLIN | POLLOUT | POLLHUP | POLLERR;
-	_pollfd.revents = 0;
 }
 
-Connection::Connection(const Connection& src) : _server(src._server) {
-	_socketFd = src._socketFd;
-	_pollfd = src._pollfd;
+Connection::Connection(const Connection& src) : _socket(src._socket) {
+	_server = src._server;
 	recvBuffer = src.recvBuffer;
 	sendBuffer = src.sendBuffer;
 	isOverPayloadLimit = src.isOverPayloadLimit;
@@ -59,8 +41,8 @@ Connection::Connection(const Connection& src) : _server(src._server) {
 
 Connection& Connection::operator=(const Connection& src) {
 	if (this != &src) {
-		_socketFd = src._socketFd;
-		_pollfd = src._pollfd;
+		_server = src._server;
+		_socket = src._socket;
 		recvBuffer = src.recvBuffer;
 		sendBuffer = src.sendBuffer;
 		isOverPayloadLimit = src.isOverPayloadLimit;
@@ -80,11 +62,12 @@ Connection::~Connection() {
 		delete _dataAdapter;
 	if (_cgiAdapter != NULL)
 		delete _cgiAdapter;
-	close(_socketFd);
 }
 
-Server&			Connection::getServer() const { return _server; }
-struct pollfd	Connection::getPollFd() const { return _pollfd; }
+Socket&	Connection::getSocket() const { return _socket; }
+Server	Connection::getServer() const { return _server; }
+
+void	Connection::setServer(Server& server) { _server = server; }
 
 static void	checkBinaryDownload(HttpRequest& request) {
 	size_t downloadParamPos = request.url.find("?download=true");
@@ -112,7 +95,7 @@ void	Connection::manageSingle(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter){
 	if (!hasPendingCgi && !isDerived) {
 		dataAdapter.deserializeRequest();
 
-		std::cout	<< BLUE << "Fd: " << dataAdapter.getConnection()->getPollFd().fd
+		std::cout	<< BLUE << "Info: Socket fd " << getSocket().getPollFd().fd
 					<< " requested: " << dataAdapter.getRequest().url << END << std::endl;
 	}
 
@@ -183,6 +166,7 @@ void	Connection::fetch() {
 
 void	Connection::recieveData() {
 	char		buffer[READ_BUFFER] = {0};
+	int			socketFd = _socket.getPollFd().fd;
 	int			len;
 
 	if (_dataAdapter == NULL)
@@ -190,14 +174,14 @@ void	Connection::recieveData() {
 	if (_cgiAdapter == NULL)
 		_cgiAdapter = new CgiAdapter();
 
-	len = recv(_socketFd, buffer, READ_BUFFER, 0);
+	len = recv(socketFd, buffer, READ_BUFFER, 0);
 	if (len == -1) {
-		std::cerr << RED << "Error: client error " << _socketFd << END << std::endl;
-		ConnectionManager::deleteConnection(_server, this);
+		std::cerr << RED << "Error: client error " << socketFd << END << std::endl;
+		ConnectionManager::deleteConnection(this);
 	}
 	else if (len == 0) {
-		std::cout << BLUE << "Info: client closed connection " << _socketFd << END << std::endl;
-		ConnectionManager::deleteConnection(_server, this);
+		std::cout << BLUE << "Info: client closed connection " << socketFd << END << std::endl;
+		ConnectionManager::deleteConnection(this);
 	}
 	else if (len > 0) {
 		recvBuffer.assign(buffer, buffer + len);
@@ -212,25 +196,26 @@ void	Connection::recieveData() {
 }
 
 void	Connection::sendData() {
-	std::string chunk;
-	static bool chunkHeadSent = false;
-	std::string _chunkBuffer = std::string(sendBuffer.begin(), sendBuffer.end());
+	std::string	chunk;
+	static bool	chunkHeadSent = false;
+	std::string	chunkBuffer = std::string(sendBuffer.begin(), sendBuffer.end());
+	int			socketFd = _socket.getPollFd().fd;
 
 	chunk.clear();
 	if (responseMode == CHUNKED) {
- 		if (_chunkBuffer.find(HTTP_BODY_START) != std::string::npos && !chunkHeadSent)
+ 		if (chunkBuffer.find(HTTP_BODY_START) != std::string::npos && !chunkHeadSent)
 		{
-			size_t csize = _chunkBuffer.find(HTTP_BODY_START) + HTTP_BODY_START_OFFSET;
-			chunk += _chunkBuffer.substr(0, csize);
-			_chunkBuffer = _chunkBuffer.substr(chunk.size(), _chunkBuffer.size());
+			size_t csize = chunkBuffer.find(HTTP_BODY_START) + HTTP_BODY_START_OFFSET;
+			chunk += chunkBuffer.substr(0, csize);
+			chunkBuffer = chunkBuffer.substr(chunk.size(), chunkBuffer.size());
 			sendBuffer.erase(sendBuffer.begin(), sendBuffer.begin() + csize);
 			chunkHeadSent = true;
 		}
-		if (_chunkBuffer.find(CRLF) != std::string::npos) {
-			size_t csize = _chunkBuffer.find(CRLF) + CRLF_OFFSET;
-			csize += Utils::strHexToUint(_chunkBuffer.substr(0, csize).c_str()) + CRLF_OFFSET;
-			chunk += _chunkBuffer.substr(0, csize);
-			_chunkBuffer = _chunkBuffer.substr(csize, _chunkBuffer.size());
+		if (chunkBuffer.find(CRLF) != std::string::npos) {
+			size_t csize = chunkBuffer.find(CRLF) + CRLF_OFFSET;
+			csize += Utils::strHexToUint(chunkBuffer.substr(0, csize).c_str()) + CRLF_OFFSET;
+			chunk += chunkBuffer.substr(0, csize);
+			chunkBuffer = chunkBuffer.substr(csize, chunkBuffer.size());
 			sendBuffer.erase(sendBuffer.begin(), sendBuffer.begin() + csize);
 		}	
 		if (sendBuffer.empty()) {
@@ -238,24 +223,22 @@ void	Connection::sendData() {
 			chunkHeadSent = false;
 			sendBuffer.clear();
 		}
-		if (send(_socketFd, chunk.c_str(), chunk.size(), 0) < 1) {
+		if (send(socketFd, chunk.c_str(), chunk.size(), 0) < 1) {
 			std::cerr << RED << "Send error: Server connection error" << END << std::endl;
-			ConnectionManager::deleteConnection(_server, this);
+			ConnectionManager::deleteConnection(this);
 		}
 		return ;
 	}
-	else if (send(_socketFd, &sendBuffer[0], sendBuffer.size(), 0) < 1) {
+	else if (send(socketFd, &sendBuffer[0], sendBuffer.size(), 0) < 1) {
 		std::cerr << RED << "Send error: Server connection error" << END << std::endl;
-		ConnectionManager::deleteConnection(_server, this);
+		ConnectionManager::deleteConnection(this);
 	}
 	if (isOverPayloadLimit)
-		ConnectionManager::deleteConnection(_server, this);
+		ConnectionManager::deleteConnection(this);
 	sendBuffer.clear();
 }
 
-void	Connection::setServer(Server& server) { _server = server; }
 
-void	Connection::updatePollFd(struct pollfd pfd) { _pollfd = pfd; }
-bool	Connection::hasPollErr() const { return _pollfd.revents & POLLERR; }
-bool	Connection::hasPollIn() const { return _pollfd.revents & POLLIN; }
-bool	Connection::hasPollOut() const { return _pollfd.revents & POLLOUT; }
+
+
+

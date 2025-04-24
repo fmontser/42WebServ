@@ -3,6 +3,9 @@
 #include <unistd.h>
 #include <limits.h>
 
+
+	//TODO @@@@@@@@@@@@@@@@@@ aclarar la relacion conexion - server - adapters - httpmessage
+
 	std::string PathManager::_workingDir;
 
 	PathManager::PathManager() {}

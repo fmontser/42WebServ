@@ -7,12 +7,13 @@
 #include "DataAdapter.hpp"
 #include "CgiAdapter.hpp"
 
+class Socket;
+
 class Connection {
 	private:
 
-		Server&			_server;
-		int				_socketFd;
-		struct pollfd	_pollfd;
+		Server			_server;
+		Socket&			_socket;
 		DataAdapter		*_dataAdapter;
 		CgiAdapter		*_cgiAdapter;
 
@@ -38,20 +39,19 @@ class Connection {
 		std::string			boundEnd;
 		size_t				contentLength;
 
-		Connection(int socket);
+		Connection(Socket& socket);
 		Connection(const Connection& src);
 		Connection& operator=(const Connection& src);
 		~Connection();
 
-		Server&			getServer() const;
-		struct pollfd	getPollFd() const;
+		Server			getServer() const;
+		Socket&			getSocket() const;
 
 		void			setServer(Server& server);
 
 		void			fetch();
 		void			recieveData();
 		void			sendData();
-		void			updatePollFd(struct pollfd pfd);
 		bool			hasPollErr() const;
 		bool			hasPollIn() const;
 		bool			hasPollOut() const;
