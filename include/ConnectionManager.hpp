@@ -5,19 +5,26 @@
 #include "Server.hpp"
 
 class ConnectionManager {
-private:
-	ConnectionManager();
-	~ConnectionManager();
-	ConnectionManager(const ConnectionManager& src);
-	ConnectionManager& operator=(const ConnectionManager& src);
+	private:
 
-	static void	recieveData(Connection *connection);
-	static void	sendData(Connection *connection);
+		std::list<Connection *>	_connectionList;
 
-public:
+		
+		void	recieveData(Connection *connection);
+		void	sendData(Connection *connection);
+		
+	public:
+		
+		ConnectionManager();
+		~ConnectionManager();
+		ConnectionManager(const ConnectionManager& src);
+		ConnectionManager& operator=(const ConnectionManager& src);
 
-	static void	monitorConnections();
-	static void	recieveResponse(Connection *connection, const std::string& response, bool hasChunks);
-	static void	addConnection(Server& server, Connection *connection);
-	static void	deleteConnection(Server& server, Connection *connection);
+		std::list<Connection *>&	getConnectionList();
+		
+		void	listenSocket(Server& server);
+		void	monitorConnections();
+		void	recieveResponse(Connection *connection, const std::string& response, bool hasChunks);
+		void	addConnection(Connection *connection);
+		void	deleteConnection(Connection *connection);
 };

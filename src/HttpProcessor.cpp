@@ -119,14 +119,6 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter, CgiAdapter& cgi
 		}
 	}
 
-	if (connection->requestMode == Connection::SINGLE) {
-		rtype = validateRoute(dataAdapter);
-		if (rtype != HttpResponse::EMPTY) {
-			response.setupResponse(rtype, dataAdapter);
-			return;
-		}
-	}
-
 	if (connection->isOverPayloadLimit) {
 		connection->requestMode = Connection::SINGLE;
 		response.setupResponse(HttpResponse::PAYLOAD_TOO_LARGE, dataAdapter);

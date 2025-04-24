@@ -4,17 +4,23 @@
 #include <unistd.h>
 #include <cstdlib>
 #include <cstring>
+#include <cerrno>
 #include "Connection.hpp"
 #include "ConnectionManager.hpp"
 #include "DataAdapter.hpp"
 #include "HttpProcessor.hpp"
 #include "Utils.hpp"
 
-Connection::Connection(Server& server) : _server(server), _dataAdapter(NULL), _cgiAdapter(NULL) {
+Connection::Connection(int socket) : _dataAdapter(NULL), _cgiAdapter(NULL) {
 	sockaddr_in	client_addr;
 	socklen_t	client_addr_len = sizeof(client_addr);
 
-	_socketFd = accept(_server.getSocketFd(), (sockaddr *)&client_addr, &client_addr_len);
+	_pollfd = pollfd();
+	_pollfd.fd = _socketFd;
+	_pollfd.events = POLLIN | POLLOUT | POLLHUP | POLLERR;
+	_pollfd.revents = 0;
+
+	_socketFd = accept(_pollfd.fd, (sockaddr *)&client_addr, &client_addr_len);
 	if (_socketFd == -1) {
 		std::cerr << RED << "Error: client connection error " << END << std::endl;
 	}
@@ -103,7 +109,7 @@ void	Connection::resetConnection() {
 
 void	Connection::manageSingle(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter){
 	
-	if (!hasPendingCgi) {
+	if (!hasPendingCgi && !isDerived) {
 		dataAdapter.deserializeRequest();
 
 		std::cout	<< BLUE << "Fd: " << dataAdapter.getConnection()->getPollFd().fd
@@ -135,7 +141,11 @@ void	Connection::manageSingle(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter){
 }
 
 void	Connection::manageMultiPart(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter){
-	dataAdapter.deserializeRequest();
+
+
+	if (!isDerived)
+		dataAdapter.deserializeRequest();
+		
 	dataAdapter.getRequest().method = "POST";
 	dataAdapter.getRequest().isCgiRequest = CgiAdapter::isCgiRequest(dataAdapter.getRequest().url);
 	checkBinaryDownload(dataAdapter.getRequest());
@@ -243,11 +253,9 @@ void	Connection::sendData() {
 	sendBuffer.clear();
 }
 
-
 void	Connection::setServer(Server& server) { _server = server; }
 
 void	Connection::updatePollFd(struct pollfd pfd) { _pollfd = pfd; }
 bool	Connection::hasPollErr() const { return _pollfd.revents & POLLERR; }
 bool	Connection::hasPollIn() const { return _pollfd.revents & POLLIN; }
 bool	Connection::hasPollOut() const { return _pollfd.revents & POLLOUT; }
-

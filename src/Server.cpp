@@ -3,10 +3,8 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
-#include <cerrno>
 #include "Server.hpp"
 #include "ServerConstants.hpp"
-#include "Connection.hpp"
 #include "PathManager.hpp"
 #include "Utils.hpp"
 
@@ -25,12 +23,8 @@ Server::Server() {
 	_defaults["default504"] = "defaults/504.html";
 }
 
-Server::~Server() {
-	close(_socketFd);
-	for (std::list<Connection *>::iterator it = _connectionList.begin(); it != _connectionList.end(); ++it)
-		delete (*it);
-	_connectionList.clear();
-}
+Server::~Server() {}
+
 Server::Server(const Server& src) {	
 	_name = src._name;
 	_hosts = src._hosts;
@@ -39,9 +33,6 @@ Server::Server(const Server& src) {
 	_defaults = src._defaults;
 	_maxPayload = src._maxPayload;
 	_routes = src._routes;
-	_connectionList = src._connectionList;
-	_socketFd = src._socketFd;
-	_pollfd = src._pollfd;
 	_serverMethods = src._serverMethods;
 }
 
@@ -54,80 +45,25 @@ Server& Server::operator=(const Server& src) {
 		_defaults = src._defaults;
 		_maxPayload = src._maxPayload;
 		_routes = src._routes;
-		_connectionList = src._connectionList;
-		_socketFd = src._socketFd;
-		_pollfd = src._pollfd;
 		_serverMethods = src._serverMethods;
 	}
 	return *this;
 }
 
-void Server::listenSocket() {
-	int optionEnable = 1;
-	int optionBufferSize = SOCKET_BUFFER_SIZE;
-	struct sockaddr_in address;
-
-	_socketFd = socket(AF_INET, SOCK_STREAM, 0);
-	if (_socketFd < 0) {
-		std::cerr << RED << "Error: opening socket" << END << std::endl;
-		exit(1);
-	}
-
-	if (setsockopt(_socketFd, SOL_SOCKET, SO_REUSEADDR, &optionEnable, sizeof(int)) < 0
-	&&  setsockopt(_socketFd, SOL_SOCKET, SO_REUSEPORT, &optionEnable, sizeof(int)) < 0
-	&&  setsockopt(_socketFd, SOL_SOCKET, SO_RCVBUF, &optionBufferSize, sizeof(int)) < 0
-	&&  setsockopt(_socketFd, SOL_SOCKET, SO_SNDBUF, &optionBufferSize, sizeof(int)) < 0) {
-		std::cerr << RED << "Error: setting socket options" << END << std::endl;
-		exit(1);
-	}
-
-	address.sin_family = AF_INET;
-	address.sin_addr.s_addr = INADDR_ANY;
-	address.sin_port = htons(_port);
-
-	if (bind(_socketFd, (struct sockaddr *)&address, sizeof(address)) < 0) {// @@add EADDRINUSE for runtimePort conflict 
-		if (errno == EADDRINUSE)//Launch multiple servers at the same time with different configurations but with common ports. 
-			std::cerr << BLUE << "Warning: Port " << _port << " is already in use" << END << std::endl;
-		else {
-			std::cerr << RED << "Error: failed to bind address" << END << std::endl;
-			exit(1);
-		}
-	}
-	
-
-	if (listen(_socketFd, SOCKET_LISTEN_QUEUE_SIZE) < 0) {
-		std::cerr << RED << "Error: socket listen failed" << END << std::endl;
-		exit(1);
-	}
-	std::cout << GREEN << "Server " << _name << " listening on port: " << _port <<  END << " 🚀" << std::endl;
-
-	_pollfd = pollfd();
-	_pollfd.fd = _socketFd;
-	_pollfd.events = POLLIN | POLLOUT | POLLHUP | POLLERR;
-	_pollfd.revents = 0;
-}
-
-std::string						Server::getName() const { return this->_name; }
-std::vector<std::string>&		Server::getHosts() { return this->_hosts; }
-int										Server::getPort() const { return this->_port; }
-std::string						Server::getRoot() const { return this->_root; }
-std::vector<std::string>&		Server::getServerMethods() { return this->_serverMethods; }
-std::map<std::string, std::string>&		Server::getDefaults() {return this->_defaults; }
-size_t										Server::getMaxPayload() const { return _maxPayload; }
-
-
-std::map<std::string, Route>&	Server::getRoutes() { return _routes; }
-std::list<Connection *>&		Server::getConnectionList() { return _connectionList; }
-int								Server::getSocketFd() const { return _socketFd; }
-struct pollfd					Server::getPollfd() const { return _pollfd; }
-
+std::string							Server::getName() const { return this->_name; }
+std::vector<std::string>&			Server::getHosts() { return this->_hosts; }
+int									Server::getPort() const { return this->_port; }
+std::string							Server::getRoot() const { return this->_root; }
+std::vector<std::string>&			Server::getServerMethods() { return this->_serverMethods; }
+std::map<std::string, std::string>&	Server::getDefaults() {return this->_defaults; }
+size_t								Server::getMaxPayload() const { return _maxPayload; }
+std::map<std::string, Route>&		Server::getRoutes() { return _routes; }
 
 void	Server::setName(const std::string& name) { this->_name = name; }
 void	Server::setHosts(const std::vector<std::string>& hosts) { this->_hosts = hosts; }
 void	Server::setRoot(const std::string& root) {_root = root; }
 void	Server::setServerMethods(const std::vector<std::string>& serverMethods) { _serverMethods = serverMethods; }
-void	Server::setSocketFd(int socketFd) { _socketFd = socketFd; }
-void	Server::setPollfd(struct pollfd pfd) {_pollfd = pfd; }
+
 
 void	Server::setPort(const std::string& port) {
 	char	*err;
@@ -145,7 +81,7 @@ void	Server::setMaxPayLoad(const std::string& maxPayLoad) {
 	_maxPayload = payloadSize;
 }
 
-//TODO check cleanhost
+
 HttpResponse::responseType	Server::getRequestedRoute(Route **route, DataAdapter& dataAdapter) {
 	std::string path, url;
 
@@ -178,6 +114,3 @@ HttpResponse::responseType	Server::getRequestedRoute(Route **route, DataAdapter&
 	}
 	return HttpResponse::FORBIDDEN;
 }
-
-bool	Server::hasPollIn() const { return _pollfd.revents & POLLIN; }
-bool	Server::hasPollOut() const { return _pollfd.revents && POLLOUT; }

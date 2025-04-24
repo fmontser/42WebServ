@@ -38,7 +38,7 @@ class Connection {
 		std::string			boundEnd;
 		size_t				contentLength;
 
-		Connection(Server& server);
+		Connection(int socket);
 		Connection(const Connection& src);
 		Connection& operator=(const Connection& src);
 		~Connection();
