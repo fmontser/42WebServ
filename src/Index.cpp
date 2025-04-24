@@ -17,20 +17,24 @@ Index&	Index::operator=(const Index& src) {
 	return *this;
 }
 std::vector<char> Index::generateAutoindex(DataAdapter& dataAdapter) {
-	std::string autoIndex;
-	std::vector<char> body;
+	std::string			autoIndex, path, basePath;
+	std::vector<char>	body;
+	DIR					*dir;
+	struct dirent		*entry;
 	
-	std::string path = PathManager::resolveServerPath(dataAdapter);
-	DIR *dir = opendir(path.c_str());
-	struct dirent *entry;
 
+	PathManager::stackRelativePath(basePath, dataAdapter.getRequest().url);
+
+	path = PathManager::resolveServerPath(dataAdapter);
+	dir = opendir(path.c_str());
 	if (dir == NULL)
 		return body;
 
 	autoIndex += "<!DOCTYPE html>\n";
 	autoIndex += "<html>\n<head>\n";
-	autoIndex += "<title>Index of " + path + "</title>";
+	autoIndex += "<title>Index of " + dataAdapter.getRequest().url + "</title>";
 	autoIndex += "<link rel=\"icon\" href=\"/favicon.png\" type=\"image/x-icon\">\n";
+	autoIndex += "<base href='/'>";
 	autoIndex += "	<style>\n";
 	autoIndex += "		body { font-family: Arial, sans-serif; margin: 40px; background-color: #f5f5f5; }\n";
 	autoIndex += "		.container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }\n";
@@ -68,31 +72,49 @@ std::vector<char> Index::generateAutoindex(DataAdapter& dataAdapter) {
 	autoIndex += "		}\n";
 	autoIndex += "	</script>\n";
 
-
-
 	autoIndex += "</head>\n<body>\n";
 	autoIndex += "<div class=\"container\">\n";
-	autoIndex += "	<h1>Index of " + path + "</h1>\n";
+	autoIndex += "	<h1>Index of <i style=\"color: darkcyan;\">" + dataAdapter.getRequest().url + "</i></h1>\n";
 	autoIndex += "	<a href=\"http://localhost:8042\" class=\"home-link\">Home</a>\n";
 	autoIndex += "	<hr>\n";
 	autoIndex += "	<table class=\"file-list\">\n";
 	autoIndex += "	<thead><tr><th>Name</th><th>Actions</th></tr></thead>\n";
 	autoIndex += "<tbody>\n";
 
+	std::string upperPath =  dataAdapter.getRequest().url;
+	upperPath.append("/../");
+	autoIndex += "		<tr>\n";
+	autoIndex += "			<td><a href='" + upperPath + "'>../</a></td>\n";
+	autoIndex += "		</tr>\n";
 
 	while ((entry = readdir(dir)) != NULL) {
-		if (entry->d_name[0] != '.') {
-			std::string fileName = entry->d_name;
+		if (entry->d_type == DT_DIR) {
+			std::string dirName, relativePath;
 
-			//TODO arreglar raiz del/ == del (PATHMANAGER!!!!!)
-
-			std::string relativePath;
+			dirName = entry->d_name;
+			if (dirName == ".." || dirName == ".")
+				continue;
+			dirName.append("/");
 			PathManager::stackRelativePath(relativePath, dataAdapter.getRequest().url);
+			PathManager::stackRelativePath(relativePath, dirName);
+
+			autoIndex += "		<tr>\n";
+			autoIndex += "			<td><a href='" + relativePath + "'>" + dirName + "</a></td>\n";
+			autoIndex += "		</tr>\n";
+		}
+	}
+
+	closedir(dir);
+	dir =  opendir(path.c_str());
+
+
+	while ((entry = readdir(dir)) != NULL) {
+		if (entry->d_type == DT_REG) {
+			std::string fileName, relativePath;
+
+			fileName = entry->d_name;
+ 			PathManager::stackRelativePath(relativePath, dataAdapter.getRequest().url);
 			PathManager::stackRelativePath(relativePath, fileName);
-
-
-			std::cout << "\t >>>" << relativePath << std::endl;
-
 
 			autoIndex += "		<tr>\n";
 			autoIndex += "			<td><a href=\"" + relativePath + "\" target=\"_blank\" >" + fileName + "</a></td>\n";
@@ -103,14 +125,15 @@ std::vector<char> Index::generateAutoindex(DataAdapter& dataAdapter) {
 			autoIndex += "		</tr>\n";
 		}
 	}
-
+	closedir(dir);
+	
 	autoIndex += "		</tbody>\n";
 	autoIndex += "	</table>\n";
 	autoIndex += "	<hr>\n";
 	autoIndex += "	<p style=\"text-align: right; color: #666;\">By courtesy of your friendly cpp 42WebServer</p>\n";
 	autoIndex += "</div>\n";
 	autoIndex += "</body>\n</html>\n";
-	closedir(dir);
+
 	return body = std::vector<char>(autoIndex.begin(), autoIndex.end());
 }
 

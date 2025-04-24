@@ -104,11 +104,11 @@ static void setDownloadResponse(DataAdapter& dataAdapter, std::string path) {
 
 HttpResponse::responseType	FileManager::readFile(DataAdapter& dataAdapter) {
 	std::string			path;
-	int							fd, readSize, i;
-	Server&					server = dataAdapter.getConnection()->getServer();
+	int					fd, readSize, i;
+	Server&				server = dataAdapter.getConnection()->getServer();
 	HttpRequest&		request = dataAdapter.getRequest();
 	HttpResponse&		response = dataAdapter.getResponse();
-	char						readBuffer[READ_BUFFER] = {0};
+	char				readBuffer[READ_BUFFER] = {0};
 
 	if (!response.statusCode.empty())
 		path.append(request.url);

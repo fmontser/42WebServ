@@ -83,24 +83,66 @@
 	</button>
 	
 	<hr>
-	
-	<button id="updateButton">Test not allowed method (PUT)</button>
-	<script>
-		document.getElementById('updateButton').addEventListener('click', function() {
-		var nuevoContenido = prompt("Ingrese el nuevo contenido del archivo:");
 
-		if (nuevoContenido) {
-			fetch('/del', {
-			method: 'PUT',
-			headers: {
-				'Content-Type': 'text/plain'
-			},
-			body: nuevoContenido
+	<button id="notAllowedButton">Test not allowed method (POST)</button>
+
+	<script>
+		document.getElementById('notAllowedButton').addEventListener('click', function() {
+			var nuevoContenido = prompt("Ingrese el nuevo contenido del archivo (será ignorado por POST):");
+	
+			fetch('/', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'text/plain'
+				},
+				body: nuevoContenido || "Test"
+			})
+			.then(function(response) {
+				return response.text();
+			})
+			.then(function(htmlBody) {
+				document.open();
+				document.write(htmlBody);
+				document.close();
+			})
+			.catch(function(error) {
+				console.error('Error en fetch:', error);
+				alert('Error al conectar con el servidor.');
 			});
-		}
 		});
 	</script>
+
 	<hr>
+
+	<button id="notImplementedButton">Test not implemented method (PUT)</button>
+	<script>
+		document.getElementById('notImplementedButton').addEventListener('click', function() {
+			var nuevoContenido = prompt("Ingrese el nuevo contenido del archivo (será ignorado por PUT):");
+	
+			fetch('/del', {
+				method: 'PUT',
+				headers: {
+					'Content-Type': 'text/plain'
+				},
+				body: nuevoContenido || "Test PUT body"
+			})
+			.then(function(response) {
+				return response.text();
+			})
+			.then(function(htmlBody) {
+				document.open();
+				document.write(htmlBody);
+				document.close();
+			})
+			.catch(function(error) {
+				console.error('Error en fetch:', error);
+				alert('Error al conectar con el servidor.');
+			});
+		});
+	</script>
+
+	<hr>
+
 	<button id="testButton">Test Me!</button>
 	<script>
 		const gotoTest = () => {

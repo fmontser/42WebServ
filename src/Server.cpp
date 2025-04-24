@@ -145,40 +145,37 @@ void	Server::setMaxPayLoad(const std::string& maxPayLoad) {
 }
 
 //TODO check cleanhost
-Route	*Server::getRequestedRoute(DataAdapter& dataAdapter) {
-	std::string path, url, cleanHost;
-  
-		url = dataAdapter.getRequest().url;
+HttpResponse::responseType	Server::getRequestedRoute(Route **route, DataAdapter& dataAdapter) {
+	std::string path, url;
+
+	url = dataAdapter.getRequest().url;
 	if (dataAdapter.getRequest().isCgiRequest) {
 		url = CgiAdapter::stripCgiParams(url);
 		url = CgiAdapter::stripCgiPathInfo(url);
 	}
 
 	path = PathManager::resolveServerPath(dataAdapter);
-	cleanHost = dataAdapter.getRequest().getCleanHost();
 
-	if (!Utils::isDirectory(path)) {
-		if (!(access(path.c_str(), F_OK) == 0))
-			return NULL;
+	if (!Utils::isDirectory(path))
 		url = Utils::getPathDir(url);
-	}
+
+	if (!(access(path.c_str(), F_OK) == 0))
+		return HttpResponse::NOT_FOUND;
+	if (!(access(path.c_str(), R_OK) == 0))
+		return HttpResponse::FORBIDDEN;
 
 	std::map<std::string, Route>::iterator it = _routes.find(url);
 	if (it !=  _routes.end()) {
-		if (!cleanHost.empty() && cleanHost != this->_host) {
-			return NULL;
-		}
-		return &it->second;
+		*route = &it->second;
+		return HttpResponse::EMPTY;
 	}
 
 	it = _routes.find(url.append("/"));
 	if (it !=  _routes.end()) {
-		if (!cleanHost.empty() && cleanHost != this->_host) {
-			return NULL;
-		}
-		return &it->second;
-	}	
-	return NULL;
+		*route = &it->second;
+		return HttpResponse::EMPTY;
+	}
+	return HttpResponse::FORBIDDEN;
 }
 
 bool	Server::hasPollIn() const { return _pollfd.revents & POLLIN; }
