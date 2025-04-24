@@ -26,7 +26,6 @@ FileManager& FileManager::operator=(const FileManager& src) {
 	return *this;
 }
 
-
 static std::vector<char>::const_iterator findCRLF(std::vector<char>::const_iterator begin, std::vector<char>::const_iterator end) {
 	const char crlf[] = {'\r', '\n'};
 

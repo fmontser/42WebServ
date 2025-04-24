@@ -26,6 +26,7 @@ ConnectionManager& ConnectionManager::operator=(const ConnectionManager& src) {
 	return *this;
 }
 
+
 static int	pollSockets(Server& server) {
 	int						pollStatus;
 	std::list<Connection *>	connectionList;
@@ -62,8 +63,8 @@ static void	manageServerConnections(Server& server) {
 			connection.sendData();
 		else if (connection.hasPollIn() && !connection.isOverPayloadLimit)
 			connection.recieveData();
-		else if (connection.hasPendingCgi)
-			connection.fetchCgi();
+		else if (connection.hasPendingCgi || connection.isDerived)
+			connection.fetch();
 	}
 	cachedList.clear();
 }

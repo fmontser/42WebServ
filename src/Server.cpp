@@ -33,7 +33,7 @@ Server::~Server() {
 }
 Server::Server(const Server& src) {	
 	_name = src._name;
-	_host = src._host;
+	_hosts = src._hosts;
 	_port = src._port;
 	_root = src._root;
 	_defaults = src._defaults;
@@ -48,7 +48,7 @@ Server::Server(const Server& src) {
 Server& Server::operator=(const Server& src) {
 	if (this != &src) {
 		_name = src._name;
-		_host = src._host;
+		_hosts = src._hosts;
 		_port = src._port;
 		_root = src._root;
 		_defaults = src._defaults;
@@ -87,10 +87,11 @@ void Server::listenSocket() {
 
 	if (bind(_socketFd, (struct sockaddr *)&address, sizeof(address)) < 0) {// @@add EADDRINUSE for runtimePort conflict 
 		if (errno == EADDRINUSE)//Launch multiple servers at the same time with different configurations but with common ports. 
-			std::cerr << RED << "Error: Port " << _port << " is already in use" << END << std::endl;
-		else 
+			std::cerr << BLUE << "Warning: Port " << _port << " is already in use" << END << std::endl;
+		else {
 			std::cerr << RED << "Error: failed to bind address" << END << std::endl;
-		exit(1);
+			exit(1);
+		}
 	}
 	
 
@@ -98,7 +99,7 @@ void Server::listenSocket() {
 		std::cerr << RED << "Error: socket listen failed" << END << std::endl;
 		exit(1);
 	}
-	std::cout << GREEN << "Listening on port: " << _port <<  END << " 🚀" << std::endl;
+	std::cout << GREEN << "Server " << _name << " listening on port: " << _port <<  END << " 🚀" << std::endl;
 
 	_pollfd = pollfd();
 	_pollfd.fd = _socketFd;
@@ -107,7 +108,7 @@ void Server::listenSocket() {
 }
 
 std::string						Server::getName() const { return this->_name; }
-std::string						Server::getHost() const { return this->_host; }
+std::vector<std::string>&		Server::getHosts() { return this->_hosts; }
 int										Server::getPort() const { return this->_port; }
 std::string						Server::getRoot() const { return this->_root; }
 std::vector<std::string>&		Server::getServerMethods() { return this->_serverMethods; }
@@ -122,7 +123,7 @@ struct pollfd					Server::getPollfd() const { return _pollfd; }
 
 
 void	Server::setName(const std::string& name) { this->_name = name; }
-void	Server::setHost(const std::string& host) { this->_host = host; }
+void	Server::setHosts(const std::vector<std::string>& hosts) { this->_hosts = hosts; }
 void	Server::setRoot(const std::string& root) {_root = root; }
 void	Server::setServerMethods(const std::vector<std::string>& serverMethods) { _serverMethods = serverMethods; }
 void	Server::setSocketFd(int socketFd) { _socketFd = socketFd; }

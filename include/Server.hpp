@@ -14,7 +14,7 @@ class DataAdapter;
 class Server {
 	private:
 		std::string													_name;
-		std::string													_host;
+		std::vector<std::string>			_hosts;
 		int																	_port;
 		size_t															_maxPayload;
 		std::string													_root;
@@ -32,8 +32,8 @@ class Server {
 		Server& operator=(const Server& src);
 
 		std::string							getName() const;
-		std::string							getHost() const;
-		int											getPort() const;
+		std::vector<std::string>&			getHosts();
+		int									getPort() const;
 		std::string							getRoot() const;
 		std::vector<std::string>&			getServerMethods();
 		std::map<std::string, std::string>&	getDefaults();
@@ -44,7 +44,7 @@ class Server {
 		struct pollfd						getPollfd() const;
 
 		void	setName(const std::string& name);
-		void	setHost(const std::string& host);
+		void	setHosts(const std::vector<std::string>& hosts);
 		void	setPort(const std::string& port);
 		void	setRoot(const std::string& root);
 		void	setServerMethods(const std::vector<std::string>& serverMethods);

@@ -28,6 +28,7 @@ class Connection {
 		std::vector<char>	recvBuffer;
 		std::vector<char>	sendBuffer;
 		bool				isOverPayloadLimit;
+		bool				isDerived;
 		bool				hasPendingCgi;
 		bool				hasChunksEnded;
 		RequestMode			requestMode;
@@ -45,7 +46,9 @@ class Connection {
 		Server&			getServer() const;
 		struct pollfd	getPollFd() const;
 
-		void			fetchCgi();
+		void			setServer(Server& server);
+
+		void			fetch();
 		void			recieveData();
 		void			sendData();
 		void			updatePollFd(struct pollfd pfd);

@@ -22,6 +22,6 @@ class HttpRequest : public HttpMessage {
 		bool	isBinaryDownload;
 		bool	isCgiRequest;
 		bool	handlePostMode(Connection *connection);
-		std::string getCleanHost() const;
+		std::string getHostName() const;
 };
 

@@ -20,6 +20,7 @@ Connection::Connection(Server& server) : _server(server), _dataAdapter(NULL), _c
 	}
 
 	isOverPayloadLimit = false;
+	isDerived = false;
 	hasPendingCgi = false;
 	hasChunksEnded = false;
 	requestMode = SINGLE;
@@ -41,6 +42,7 @@ Connection::Connection(const Connection& src) : _server(src._server) {
 	recvBuffer = src.recvBuffer;
 	sendBuffer = src.sendBuffer;
 	isOverPayloadLimit = src.isOverPayloadLimit;
+	isDerived = src.isDerived;
 	hasPendingCgi = src.hasPendingCgi;
 	hasChunksEnded = src.hasChunksEnded;
 	responseMode = src.responseMode;
@@ -56,6 +58,7 @@ Connection& Connection::operator=(const Connection& src) {
 		recvBuffer = src.recvBuffer;
 		sendBuffer = src.sendBuffer;
 		isOverPayloadLimit = src.isOverPayloadLimit;
+		isDerived = src.isDerived;
 		hasPendingCgi = src.hasPendingCgi;
 		hasChunksEnded = src.hasChunksEnded;
 		responseMode = src.responseMode;
@@ -118,15 +121,15 @@ void	Connection::manageSingle(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter){
 	
 	if (requestMode == Connection::PARTS) {
 		dataAdapter.getResponse().statusCode = "";
-		if (!hasPendingCgi && contentLength == 0)
+		if (!hasPendingCgi && !isDerived && contentLength == 0)
 			resetConnection();
 	}
 	else if (requestMode == Connection::CHUNKS) {
 		dataAdapter.getResponse().statusCode = "";
-		if (!hasPendingCgi && hasChunksEnded )
+		if (!hasPendingCgi && !isDerived && hasChunksEnded )
 			resetConnection();
 	}
-	else if (!hasPendingCgi && contentLength == 0)
+	else if (!hasPendingCgi && !isDerived && contentLength == 0)
 		resetConnection();
 	recvBuffer.clear();
 }
@@ -149,20 +152,20 @@ void	Connection::manageMultiPart(DataAdapter& dataAdapter, CgiAdapter& cgiAdapte
 
 	if (requestMode == Connection::PARTS) {
 		dataAdapter.getResponse().statusCode = "";
-		if (!hasPendingCgi && contentLength == 0)
+		if (!hasPendingCgi && !isDerived && contentLength == 0)
 			resetConnection();
 	}
 	else if (requestMode == Connection::CHUNKS) {
 		dataAdapter.getResponse().statusCode = "";
-		if (!hasPendingCgi && hasChunksEnded )
+		if (!hasPendingCgi && !isDerived && hasChunksEnded )
 			resetConnection();
 	}
-	else if (!hasPendingCgi && contentLength == 0)
+	else if (!hasPendingCgi && !isDerived && contentLength == 0)
 		resetConnection();
 }
 
-void	Connection::fetchCgi() {
-	if (requestMode == PARTS)
+void	Connection::fetch() {
+	if (requestMode != SINGLE)
 		manageMultiPart(*_dataAdapter, *_cgiAdapter);
 	else 
 		manageSingle(*_dataAdapter, *_cgiAdapter);
@@ -239,6 +242,9 @@ void	Connection::sendData() {
 		ConnectionManager::deleteConnection(_server, this);
 	sendBuffer.clear();
 }
+
+
+void	Connection::setServer(Server& server) { _server = server; }
 
 void	Connection::updatePollFd(struct pollfd pfd) { _pollfd = pfd; }
 bool	Connection::hasPollErr() const { return _pollfd.revents & POLLERR; }

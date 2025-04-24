@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>TUCAN-KAMON!</title>
+	<link rel="icon" href="/favicon.png" type="image/x-icon">
+	<link rel="stylesheet" href="style.css">
+	<style>
+		h4 {
+			text-align: center;
+			color: #575353;
+			padding-bottom: 	0px;
+			margin-bottom: 0px;
+		}
+
+		@keyframes popInOut {
+	from {
+		opacity: 0;
+		transform: scale(0.5);
+		font-weight: 100;
+	}
+	50% {
+		opacity: 1;
+		transform: scale(1.5);
+		font-weight: 900;
+	}
+	to {
+		opacity: 0;
+		transform: scale(0.5);
+		font-weight: 100;
+	}
+}
+
+.tutu span {
+	display: inline-block;
+	animation: popInOut 3s ease-in-out infinite;
+}
+	</style>
+
+
+
+</head>
+<body>
+	<h1>TUCAN-KAMON!</h1>
+
+	<img src="/tucan.png" alt="tucan image">
+
+
+	<p class="tutu">
+		<span style="animation-delay: 0s">T</span>
+		<span style="animation-delay: 0.2s">U</span>
+		<span style="animation-delay: 0.4s">&nbsp;</span>
+		<span style="animation-delay: 0.6s">T</span>
+		<span style="animation-delay: 0.8s">U</span>
+		<span style="animation-delay: 1.0s">&nbsp;</span>
+		<span style="animation-delay: 1.2s">T</span>
+		<span style="animation-delay: 1.4s">U</span>
+		<span style="animation-delay: 1.6s">&nbsp;</span>
+		<span style="animation-delay: 1.8s">T</span>
+		<span style="animation-delay: 2.0s">U</span>
+		<span style="animation-delay: 2.2s">U</span>
+		<span style="animation-delay: 2.4s">U</span>
+		<span style="animation-delay: 2.6s">U</span>
+		<span style="animation-delay: 2.8s">!!</span>
+	</p>
+	
+	<hr>
+	<form action="/del" method="post" enctype="multipart/form-data">
+		<input type="file" name="archivo" id="archivo">
+		<button type="submit">upload</button>
+	</form>
+	
+	<hr>
+
+	<form action="/del" method="post">
+		<input type="file" name="archivo" id="archivo">
+		<button type="submit">upload non encode</button>
+	</form>
+	
+	<hr>
+	
+	<button>
+		<a href="http://localhost:8042/del">Directory listing</a>
+	</button>
+	
+	<hr>
+
+	<button id="notAllowedButton">Test not allowed method (POST)</button>
+
+	<script>
+		document.getElementById('notAllowedButton').addEventListener('click', function() {
+			var nuevoContenido = prompt("Ingrese el nuevo contenido del archivo (será ignorado por POST):");
+	
+			fetch('/', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'text/plain'
+				},
+				body: nuevoContenido || "Test"
+			})
+			.then(function(response) {
+				return response.text();
+			})
+			.then(function(htmlBody) {
+				document.open();
+				document.write(htmlBody);
+				document.close();
+			})
+			.catch(function(error) {
+				console.error('Error en fetch:', error);
+				alert('Error al conectar con el servidor.');
+			});
+		});
+	</script>
+
+	<hr>
+
+	<button id="notImplementedButton">Test not implemented method (PUT)</button>
+	<script>
+		document.getElementById('notImplementedButton').addEventListener('click', function() {
+			var nuevoContenido = prompt("Ingrese el nuevo contenido del archivo (será ignorado por PUT):");
+	
+			fetch('/del', {
+				method: 'PUT',
+				headers: {
+					'Content-Type': 'text/plain'
+				},
+				body: nuevoContenido || "Test PUT body"
+			})
+			.then(function(response) {
+				return response.text();
+			})
+			.then(function(htmlBody) {
+				document.open();
+				document.write(htmlBody);
+				document.close();
+			})
+			.catch(function(error) {
+				console.error('Error en fetch:', error);
+				alert('Error al conectar con el servidor.');
+			});
+		});
+	</script>
+
+	<hr>
+
+	<button id="testButton">Test Me!</button>
+	<script>
+		const gotoTest = () => {
+			window.location.href = 'http://localhost:8042/test';
+		}
+		document.addEventListener('DOMContentLoaded', function() {
+			document.getElementById('testButton').addEventListener('click', function() {
+				alert('Test Button clicked!');
+				gotoTest();
+			});
+		});
+	</script>
+	<hr>
+	<button id="nowhereButton">Nowhere!</button>
+	<script>
+		const gotoNowhere = () => {
+			window.location.href = 'http://localhost:8042/asadasdas';
+		}
+		document.addEventListener('DOMContentLoaded', function() {
+			document.getElementById('nowhereButton').addEventListener('click', function() {
+				alert('Nowhere Button clicked!');
+				gotoNowhere();
+			});
+		});
+	</script>
+	<hr>
+	<h4>Test CGI</h4>
+	<!-- CGI BASIC TEST -->
+	<button id="multiplyButton">Calculate with CGI script</button>
+	<script>
+		document.getElementById('multiplyButton').addEventListener('click', function() {
+			let a = prompt("Enter the first number (a):");
+			let b = prompt("Enter the second number (b):");
+			let t = prompt("Enter timeout value (t):");
+			let operator = prompt("Enter the operator (+, -, *, /):");
+			if (operator === null || operator === "") {
+				operator = "*";
+			}
+	
+			if (
+				a !== null && b !== null && t !== null &&
+				!isNaN(a) && !isNaN(b) && !isNaN(t)
+			) {
+				const url = `http://localhost:8042/cgi-bin/multiply.cgi?a=${encodeURIComponent(a)}&b=${encodeURIComponent(b)}&t=${encodeURIComponent(t)}&operator=${encodeURIComponent(operator)}`;
+
+				window.location.href = url;
+			} else {
+				alert("Please enter valid numbers for number 1, number 2, time and operator.");
+			}
+		});
+		</script>
+
+	</button>
+	
+	<hr>
+	
+	<form action="/cgi-bin/replace.cgi?a=2&b=5&t=0" method="post" enctype="multipart/form-data">
+		REPLACE all 0's with 2's with CGI script
+		<input type="file" name="archivo" id="archivo">
+		<button type="submit">upload</button>
+	</form>
+	
+	<hr>
+	<form action="/cgi-bin/cgi_test.cgi" method="post" enctype="text/plain">
+		<textarea id="data" name="data" rows="2" cols="50" placeholder="Send data to CGI script&#10;Enter some text: "></textarea><br>
+		<input type="submit" value="Send to CGI">
+	</form>
+
+</body>
+</html>

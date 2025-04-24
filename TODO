@@ -30,8 +30,10 @@ curl -X PUT \
 -H "Content-Type: text/plain" \
 http://localhost:8042/del
 
-
-
+curl -X GET \
+-H "Host: bravo.net" \
+-H "Content-Type: text/plain" \
+http://localhost:8042
 
 
 //POST ENTREGA
