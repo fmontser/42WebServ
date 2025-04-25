@@ -20,6 +20,7 @@ class Connection {
 		void	manageSingle(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter);
 		void	manageMultiPart(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter);
 		void	resetConnection();
+		void	checkPayload();
 
 	public:
 

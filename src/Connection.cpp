@@ -96,6 +96,16 @@ void	Connection::resetConnection() {
 	contentLength = 0;
 }
 
+void Connection::checkPayload() {
+	size_t	bodySize = _dataAdapter->getRequest().body.size();
+	size_t	serverMaxPayLoad = _server.getMaxPayload();
+
+	if (bodySize > serverMaxPayLoad || contentLength > serverMaxPayLoad)
+		isOverPayloadLimit = true;
+	else
+		isOverPayloadLimit = false;
+}
+
 void	Connection::manageSingle(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter){
 	
 	if (!hasPendingCgi) {
@@ -108,6 +118,7 @@ void	Connection::manageSingle(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter){
 	dataAdapter.getRequest().isCgiRequest 
 		= CgiAdapter::isCgiRequest(dataAdapter.getRequest().url);
 	checkBinaryDownload(dataAdapter.getRequest());
+	checkPayload();
 
 	HttpProcessor::processHttpRequest(dataAdapter, cgiAdapter);
 
@@ -132,10 +143,11 @@ void	Connection::manageSingle(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter){
 void	Connection::manageMultiPart(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter){
 
 	dataAdapter.deserializeRequest();
-		
+	
 	dataAdapter.getRequest().method = "POST";
 	dataAdapter.getRequest().isCgiRequest = CgiAdapter::isCgiRequest(dataAdapter.getRequest().url);
 	checkBinaryDownload(dataAdapter.getRequest());
+	checkPayload();
 
 	if (requestMode == CHUNKS && !hasChunksEnded)
 		return;
