@@ -4,8 +4,6 @@
 #include <limits.h>
 
 
-	//TODO @@@@@@@@@@@@@@@@@@ aclarar la relacion conexion - server - adapters - httpmessage
-
 	std::string PathManager::_workingDir;
 
 	PathManager::PathManager() {}
@@ -58,7 +56,7 @@
 	}
 
 	std::string		PathManager::resolveRoutePath(DataAdapter& dataAdapter) {
-		Server&			server = dataAdapter.getConnection()->getServer();
+		Server			server = dataAdapter.getConnection()->getServer();
 		HttpRequest&	request = dataAdapter.getRequest();
 		Route*			route = NULL; 
 		std::string		path, url, _default;
@@ -94,7 +92,7 @@
 
 
 	std::string		PathManager::resolveServerPath(DataAdapter& dataAdapter) {
-		Server&			server = dataAdapter.getConnection()->getServer();
+		Server			server = dataAdapter.getConnection()->getServer();
 		HttpRequest&	request = dataAdapter.getRequest();
 
 		std::string		path, url;
@@ -114,7 +112,7 @@
 	}
 
 	std::string		PathManager::resolveUploadDir(DataAdapter& dataAdapter){
-		Server&			server = dataAdapter.getConnection()->getServer();
+		Server			server = dataAdapter.getConnection()->getServer();
 		Route*			route = NULL;
 		std::string		upload, path;
 

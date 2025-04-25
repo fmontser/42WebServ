@@ -11,7 +11,7 @@
 
 static	HttpResponse::responseType	validateRoute(DataAdapter& dataAdapter) {
 	HttpRequest	request = dataAdapter.getRequest();
-	Server&		server = dataAdapter.getConnection()->getServer();
+	Server		server = dataAdapter.getConnection()->getServer();
 	Route		*actualRoute;
 	HttpResponse::responseType result = dataAdapter.getConnection()
 			->getServer().getRequestedRoute(&actualRoute, dataAdapter);
@@ -30,73 +30,6 @@ static	HttpResponse::responseType	validateRoute(DataAdapter& dataAdapter) {
 	return HttpResponse::EMPTY;
 }
 
-
-#include "Config.hpp"
-#include "Server.hpp"
-
-static bool	deriveConnection(DataAdapter& dataAdapter) {
-	HttpRequest&	request = dataAdapter.getRequest();
-	Connection		*actualConnection = dataAdapter.getConnection();
-	std::string		hostName = request.getHostName();
-	
-	std::map<std::string, Server>& serverList = Config::getServers();
-	
-
-	for (std::map<std::string, Server>::iterator server = serverList.begin(); server != serverList.end(); ++server) {
-
-		// busca una coinidencia de host en todos los servers 
-		std::vector<std::string>& serverHosts = server->second.getHosts();
-		for (std::vector<std::string>::iterator host = serverHosts.begin(); host != serverHosts.end(); ++host) {
-			if (*host == hostName) {
-
-				//si la encuentra...
-
-
-				std::list<Connection *>& connectionList = server->second.getConnectionList();
-				for (std::list<Connection *>::iterator connection = connectionList.begin(); connection != connectionList.end(); ++connection) {
-
-					// busca la conexion actual  en la lista de las conexiones de ESTE server
-
-					//si la encuentra, adelante
-					if (*connection == actualConnection) {
-						actualConnection->isDerived = false;
-						return false;
-					}
-
-				}
-				// si no tiene esta conexion, debe tenerla, mover conexion aqui.
-
-				connectionList.push_back(actualConnection);
-				actualConnection->getServer().getConnectionList().remove(actualConnection);
-				actualConnection->setServer(server->second);
-				actualConnection->isDerived = true;
-				return true;
-
-			}
-				
-		}
-	
-	}
-
-	//buscar server default para este puerto
-	int port = actualConnection->getServer().getPort();
-
-	//mover la conexion al default para el port (el primero)
-	for (std::map<std::string, Server>::iterator server = serverList.begin(); server != serverList.end(); ++server) {
-		if (server->second.getPort() == port) {
-			std::list<Connection *>& connectionList = server->second.getConnectionList();
-			connectionList.push_back(actualConnection);
-			actualConnection->getServer().getConnectionList().remove(actualConnection);
-			actualConnection->setServer(server->second);
-			actualConnection->isDerived = true;
-			return true;
-		}
-	}
-	actualConnection->isDerived = false;
-	return false;
-}
-
-
 void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter) {
 	
 	HttpResponse::responseType rtype;
@@ -105,12 +38,6 @@ void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter, CgiAdapter& cgi
 	HttpResponse&	response = dataAdapter.getResponse();
 	Connection		*connection = dataAdapter.getConnection();
 	
-	//TODO abstraer
-	if (deriveConnection(dataAdapter)) {
-		std::cout << BLUE << "Info: Connection derived to server " << connection->getServer().getName() << END << std::endl;
-		return ;
-	}
-
 	if (connection->requestMode == Connection::SINGLE) {
 		rtype = validateRoute(dataAdapter);
 		if (rtype != HttpResponse::EMPTY) {

@@ -8,7 +8,7 @@
 class ConnectionManager {
 	private:
 
-		std::list<Connection *>	_connectionList;
+		static std::list<Connection *>	_connectionList;
 		std::list<Socket>		_socketList;;
 		
 		void		addListenSocket(Server& server);
@@ -20,7 +20,7 @@ class ConnectionManager {
 		void		recieveData(Connection *connection);
 		void		sendData(Connection *connection);
 		
-		public:
+	public:
 		
 		ConnectionManager();
 		~ConnectionManager();

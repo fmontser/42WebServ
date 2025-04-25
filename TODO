@@ -1,5 +1,7 @@
 /*
 
+//TODO @@@@@@@@@@@@@@@@@@ aclarar la relacion conexion - server - adapters - httpmessage
+
 //TODO pendiente de investigar
 	* The first server for a host:port will be the default for this host:port (that means
 	it will answer to all the requests that don’t belong to an other server).

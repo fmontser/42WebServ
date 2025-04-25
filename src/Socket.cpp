@@ -16,6 +16,15 @@ Socket& Socket::operator=(const Socket& src) {
 	return *this;
 }
 
+bool Socket::operator==(const Socket& src) {
+	return (_pollFd.fd == src._pollFd.fd) 
+			&& (_type == src._type);
+}
+
+bool Socket::operator!=(const Socket& src) {
+	return !(*this == src);
+}
+
 struct pollfd	Socket::getPollFd() const { return _pollFd; }
 SocketType		Socket::getType() const { return _type; }
 

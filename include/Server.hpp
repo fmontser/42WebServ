@@ -47,5 +47,4 @@ class Server {
 		void	setMaxPayLoad(const std::string& maxPayLoad);
 
 		HttpResponse::responseType	getRequestedRoute(Route **route, DataAdapter& dataAdapter);
-}
-
+};

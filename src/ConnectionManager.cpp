@@ -14,6 +14,8 @@
 #include "DataAdapter.hpp"
 #include "Server.hpp"
 
+std::list<Connection *> ConnectionManager::_connectionList;
+
 ConnectionManager::ConnectionManager() {
 	for (std::map<std::string, Server>::iterator it = Config::getServers().begin();
 		it != Config::getServers().end(); ++it) {
@@ -73,17 +75,16 @@ void	ConnectionManager::monitorConnections() {
 				std::list<Connection *>	cachedList(_connectionList);
 				for (std::list<Connection *>::iterator it = cachedList.begin(); it != cachedList.end(); ++it) {
 					Connection&	connection = *(*it);
-					if (connection.hasPollErr())
+					Socket&		socket = connection.getSocket();
+
+					if (socket.hasPollErr())
 						deleteConnection(&connection);
-					else if (connection.hasPollOut() && !connection.sendBuffer.empty())
+					else if (socket.hasPollOut() && !connection.sendBuffer.empty())
 						connection.sendData();
-					else if (connection.hasPollIn() && !connection.isOverPayloadLimit)
+					else if (socket.hasPollIn() && !connection.isOverPayloadLimit)
 						connection.recieveData();
-					else if (connection.hasPendingCgi || connection.isDerived)
+					else if (connection.hasPendingCgi)
 						connection.fetch();
-			
-					if (connection.isDerived)
-						break;
 				}
 				cachedList.clear();
 			}

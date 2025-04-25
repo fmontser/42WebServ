@@ -2,7 +2,7 @@
 
 #include <poll.h>
 
-typedef enum SocketType { LISTEN, CONNECTION };
+enum SocketType { LISTEN, CONNECTION };
 
 class Socket {
 	private:
@@ -16,14 +16,16 @@ class Socket {
 		Socket(struct pollfd pfd, SocketType type);
 		~Socket();
 		Socket(const Socket& src);
-		Socket& operator=(const Socket& src);
+		Socket&	operator=(const Socket& src);
+		bool	operator==(const Socket& src);
+		bool	operator!=(const Socket& src);
 
 		struct pollfd	getPollFd() const;
 		SocketType		getType() const;
 
 		void			setPollFd(struct pollfd pollFd);
 
-		bool			hasPollErr() const { return _pollFd.revents & POLLERR; }
-		bool			hasPollIn() const { return _pollFd.revents & POLLIN; }
-		bool			hasPollOut() const { return _pollFd.revents & POLLOUT; }
+		bool			hasPollErr() const;
+		bool			hasPollIn() const;
+		bool			hasPollOut() const;
 };

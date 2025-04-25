@@ -13,7 +13,6 @@
 
 Connection::Connection(Socket& socket) : _socket(socket), _dataAdapter(NULL), _cgiAdapter(NULL) {
 	isOverPayloadLimit = false;
-	isDerived = false;
 	hasPendingCgi = false;
 	hasChunksEnded = false;
 	requestMode = SINGLE;
@@ -30,7 +29,6 @@ Connection::Connection(const Connection& src) : _socket(src._socket) {
 	recvBuffer = src.recvBuffer;
 	sendBuffer = src.sendBuffer;
 	isOverPayloadLimit = src.isOverPayloadLimit;
-	isDerived = src.isDerived;
 	hasPendingCgi = src.hasPendingCgi;
 	hasChunksEnded = src.hasChunksEnded;
 	responseMode = src.responseMode;
@@ -46,7 +44,6 @@ Connection& Connection::operator=(const Connection& src) {
 		recvBuffer = src.recvBuffer;
 		sendBuffer = src.sendBuffer;
 		isOverPayloadLimit = src.isOverPayloadLimit;
-		isDerived = src.isDerived;
 		hasPendingCgi = src.hasPendingCgi;
 		hasChunksEnded = src.hasChunksEnded;
 		responseMode = src.responseMode;
@@ -92,7 +89,7 @@ void	Connection::resetConnection() {
 
 void	Connection::manageSingle(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter){
 	
-	if (!hasPendingCgi && !isDerived) {
+	if (!hasPendingCgi) {
 		dataAdapter.deserializeRequest();
 
 		std::cout	<< BLUE << "Info: Socket fd " << getSocket().getPollFd().fd
@@ -110,15 +107,15 @@ void	Connection::manageSingle(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter){
 	
 	if (requestMode == Connection::PARTS) {
 		dataAdapter.getResponse().statusCode = "";
-		if (!hasPendingCgi && !isDerived && contentLength == 0)
+		if (!hasPendingCgi && contentLength == 0)
 			resetConnection();
 	}
 	else if (requestMode == Connection::CHUNKS) {
 		dataAdapter.getResponse().statusCode = "";
-		if (!hasPendingCgi && !isDerived && hasChunksEnded )
+		if (!hasPendingCgi && hasChunksEnded )
 			resetConnection();
 	}
-	else if (!hasPendingCgi && !isDerived && contentLength == 0)
+	else if (!hasPendingCgi && contentLength == 0)
 		resetConnection();
 	recvBuffer.clear();
 }
@@ -126,8 +123,7 @@ void	Connection::manageSingle(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter){
 void	Connection::manageMultiPart(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter){
 
 
-	if (!isDerived)
-		dataAdapter.deserializeRequest();
+	dataAdapter.deserializeRequest();
 		
 	dataAdapter.getRequest().method = "POST";
 	dataAdapter.getRequest().isCgiRequest = CgiAdapter::isCgiRequest(dataAdapter.getRequest().url);
@@ -145,15 +141,15 @@ void	Connection::manageMultiPart(DataAdapter& dataAdapter, CgiAdapter& cgiAdapte
 
 	if (requestMode == Connection::PARTS) {
 		dataAdapter.getResponse().statusCode = "";
-		if (!hasPendingCgi && !isDerived && contentLength == 0)
+		if (!hasPendingCgi && contentLength == 0)
 			resetConnection();
 	}
 	else if (requestMode == Connection::CHUNKS) {
 		dataAdapter.getResponse().statusCode = "";
-		if (!hasPendingCgi && !isDerived && hasChunksEnded )
+		if (!hasPendingCgi && hasChunksEnded )
 			resetConnection();
 	}
-	else if (!hasPendingCgi && !isDerived && contentLength == 0)
+	else if (!hasPendingCgi && contentLength == 0)
 		resetConnection();
 }
 
