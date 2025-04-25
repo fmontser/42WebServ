@@ -84,11 +84,16 @@ void	Connection::resetConnection() {
 	delete _cgiAdapter;
 	_cgiAdapter = NULL;
 
+	hasServerAssigned = false;
+	isOverPayloadLimit = false;
 	hasPendingCgi = false;
+	hasChunksEnded = false;
 	boundarie.clear();
 	boundStart.clear();
 	boundEnd.clear();
-	requestMode = Connection::SINGLE;
+	requestMode = SINGLE;
+	responseMode = NORMAL;
+	contentLength = 0;
 }
 
 void	Connection::manageSingle(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter){

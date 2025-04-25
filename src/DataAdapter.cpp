@@ -85,17 +85,21 @@ static void removeBoundarie(std::vector<char>& body, const std::string& boundari
 		body.erase(it, it + boundary_len);
 }
 
-static void	deserializeBody(std::stringstream& data, HttpRequest& request, DataAdapter& dataAdapter) {
-	char	c[1];
-	Connection *connection = dataAdapter.getConnection();
-	size_t		bodySize = 0;
 
-	while(data.get(*c)) {
-		request.body.push_back(*c);
-		bodySize++;
-		if (bodySize > connection->getServer().getMaxPayload())
-			connection->isOverPayloadLimit = true;
-	}
+static void	deserializeBody(std::stringstream& data, HttpRequest& request, DataAdapter& dataAdapter) {
+	Connection	*connection = dataAdapter.getConnection();
+	char		buffer[READ_BUFFER];
+
+	while (data.good() && !data.eof()) {
+		data.read(buffer, READ_BUFFER);
+		std::streamsize bytesRead = data.gcount();
+		if (bytesRead > 0)
+			request.body.insert(request.body.end(), buffer, buffer + bytesRead);
+	} 
+
+
+
+
 
 	if (connection->requestMode == Connection::PARTS) {
 		removeBoundarie(request.body, connection->boundStart);
@@ -157,6 +161,7 @@ static void	assingServer(DataAdapter& dataAdapter) {
 		for (std::vector<std::string>::iterator host = serverHosts.begin(); host != serverHosts.end(); ++host) {
 			if (*host == hostName) {
 				actualConnection->setServer(server->second);
+				actualConnection->hasServerAssigned = true;
 				return ;
 			}
 		}
@@ -165,6 +170,7 @@ static void	assingServer(DataAdapter& dataAdapter) {
 	for (std::map<std::string, Server>::iterator server = serverList.begin(); server != serverList.end(); ++server) {
 		if (server->second.getPort() == port) {
 			actualConnection->setServer(server->second);
+			actualConnection->hasServerAssigned = true;
 			return ;
 		}
 	}

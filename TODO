@@ -1,5 +1,9 @@
 /*
 
+//TODO Response timeout? (para socket connection)
+//TODO malformed si no esta el header Host:
+//TODO trigger PAYLOAD ERROR
+
 //TODO full subject test
 //TODO full eval test
 
