@@ -1,7 +1,17 @@
 /*
 
-//TODO Response timeout? (para socket connection)
-//TODO malformed si no esta el header Host:
+//TODO Añadir timeout para conexiones...
+	- guardar un t_time con el momento de la ultima actividad (recv/send)
+	- Connection manager las compara con el timepo actual/ timeout
+	- si supera el tiempo, cierra la conexion!
+
+
+//TODO si la eval comprueba...malformed requests devuelven 400 bad request (ver ia)
+	- no host
+	- falta algun CRLF
+	- algo falta o esta mal en la linea de peticion
+	- algun header no tiene ':' o el valor esta vacio
+	- muchos mas, con esos serian suficientes...?
 
 
 //TODO full subject test
@@ -9,9 +19,7 @@
 
 //TODO pasar los test adjuntos
 
-
 //TESTS
-
 
 curl -X POST \
 -H "Transfer-Encoding: chunked" \
