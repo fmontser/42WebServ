@@ -25,5 +25,5 @@ private:
 public:
 	static void loadConfig(std::fstream &configFileStream);
 	static std::map<std::string, Server>& getServers();
-	static bool portDuplicated(int port);
+	//static bool portDuplicated(int port);
 };

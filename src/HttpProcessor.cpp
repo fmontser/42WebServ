@@ -1,4 +1,5 @@
 #include <iostream>
+#include <unistd.h>
 #include "HttpHeader.hpp"
 #include "HttpProcessor.hpp"
 #include "DataAdapter.hpp"
@@ -7,11 +8,10 @@
 #include "Utils.hpp"
 #include "Index.hpp"
 #include "CgiAdapter.hpp"
-#include <unistd.h>
 
 static	HttpResponse::responseType	validateRoute(DataAdapter& dataAdapter) {
 	HttpRequest	request = dataAdapter.getRequest();
-	Server&		server = dataAdapter.getConnection()->getServer();
+	Server		server = dataAdapter.getConnection()->getServer();
 	Route		*actualRoute;
 	HttpResponse::responseType result = dataAdapter.getConnection()
 			->getServer().getRequestedRoute(&actualRoute, dataAdapter);
@@ -24,7 +24,7 @@ static	HttpResponse::responseType	validateRoute(DataAdapter& dataAdapter) {
 		return HttpResponse::METHOD_NOT_IMPLEMENTED;
 	if (!actualRoute->isMethodAllowed(request.method))
 		return HttpResponse::METHOD_NOT_ALLOWED;
-	if (Index::isIndexRoute(dataAdapter, actualRoute)) {
+	if (Index::isIndexRoute(dataAdapter, *actualRoute)) {
 		return HttpResponse::DIR_LIST;
 	}
 	return HttpResponse::EMPTY;
@@ -33,11 +33,11 @@ static	HttpResponse::responseType	validateRoute(DataAdapter& dataAdapter) {
 void	HttpProcessor::processHttpRequest(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter) {
 	
 	HttpResponse::responseType rtype;
-
+	
 	HttpRequest&	request = dataAdapter.getRequest();
 	HttpResponse&	response = dataAdapter.getResponse();
 	Connection		*connection = dataAdapter.getConnection();
-
+	
 	if (connection->requestMode == Connection::SINGLE) {
 		rtype = validateRoute(dataAdapter);
 		if (rtype != HttpResponse::EMPTY) {

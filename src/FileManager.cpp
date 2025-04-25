@@ -26,7 +26,6 @@ FileManager& FileManager::operator=(const FileManager& src) {
 	return *this;
 }
 
-
 static std::vector<char>::const_iterator findCRLF(std::vector<char>::const_iterator begin, std::vector<char>::const_iterator end) {
 	const char crlf[] = {'\r', '\n'};
 
@@ -105,7 +104,7 @@ static void setDownloadResponse(DataAdapter& dataAdapter, std::string path) {
 HttpResponse::responseType	FileManager::readFile(DataAdapter& dataAdapter) {
 	std::string			path;
 	int					fd, readSize, i;
-	Server&				server = dataAdapter.getConnection()->getServer();
+	Server				server = dataAdapter.getConnection()->getServer();
 	HttpRequest&		request = dataAdapter.getRequest();
 	HttpResponse&		response = dataAdapter.getResponse();
 	char				readBuffer[READ_BUFFER] = {0};

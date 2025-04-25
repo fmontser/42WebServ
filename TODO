@@ -1,16 +1,7 @@
 /*
 
-//TODO pendiente de investigar
-	* The first server for a host:port will be the default for this host:port (that means
-	it will answer to all the requests that don’t belong to an other server).
-
-//TODO pendiente
-	* Setup the server_names or not.
-
 //TODO full subject test
 //TODO full eval test
-
-//TODO limpiar todos los TODOS
 
 //TODO pasar los test adjuntos
 
@@ -30,8 +21,10 @@ curl -X PUT \
 -H "Content-Type: text/plain" \
 http://localhost:8042/del
 
-
-
+curl -X GET \
+-H "Host: bravo.net" \
+-H "Content-Type: text/plain" \
+http://localhost:8042
 
 
 //POST ENTREGA

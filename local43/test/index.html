@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Test Page</title>
+		<link rel="stylesheet" href="../style.css">
+		<style>
+			body {
+				background-color: #f0f0f0;
+				font-family: Arial, sans-serif;
+				color: #333;
+				padding-top: 150px;
+			}
+		</style>
+		<script src="script.js" defer></script>
+		<link rel="icon" href="favicon.ico" type="image/x-icon">
+		<link rel="apple-touch-icon" href="apple-touch-icon.png">
+		<link rel="manifest" href="manifest.json">
+		<meta name="theme-color" content="#ffffff">
+		<meta name="description" content="This is a test page for local42.">
+		<meta name="keywords" content="local42, test, example">
+		<meta name="author" content="local42">
+		<script>
+			const gotoLocalHost = () => {
+				window.location.href = 'http://localhost:8042/yep';
+			}
+			document.addEventListener('DOMContentLoaded', function() {
+				document.getElementById('testButton').addEventListener('click', function() {
+					alert('Yep Button clicked!');
+					gotoLocalHost();
+				});
+			});
+		</script>
+</head>
+<body>
+		<header>
+			<h1>Welcome to the Test Page</h1>
+		</header>
+		<main>
+			<p>This is a test page for local42.</p>
+			<button id="testButton">Click Me!</button>
+			<br>
+			<br>
+			<a href="../index.html" >Home</a>
+			<br>
+			<a href="../del/" >Files</a>
+		</main>
+		<footer>
+			<p>&copy; 2023 local42. No rights reserved.</p>
+		</footer>
+
+</html>

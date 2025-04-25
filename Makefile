@@ -14,12 +14,12 @@ CGI_BIN_GET		:=	multiply.cgi
 CGI_BIN_POST	:=	replace.cgi
 CGI_BIN_TEST 			:=	cgi_test.cgi
 
-HDRS			:=	ServerConstants.hpp	Config.hpp  Route.hpp Server.hpp HttpMessage.hpp HttpRequest.hpp\
+HDRS			:=	ServerConstants.hpp	Config.hpp Socket.hpp Route.hpp Server.hpp HttpMessage.hpp HttpRequest.hpp\
 					HttpResponse.hpp ConnectionManager.hpp DataAdapter.hpp CgiAdapter.hpp\
 					FileManager.hpp  SignalManager.hpp Connection.hpp HttpProcessor.hpp HttpHeader.hpp\
 					HeaderValue.hpp HeaderProperty.hpp Utils.hpp Index.hpp PathManager.hpp
 
-SRCS			:=	main.cpp			Config.cpp  Route.cpp Server.cpp HttpMessage.cpp HttpRequest.cpp\
+SRCS			:=	main.cpp			Config.cpp Socket.cpp Route.cpp Server.cpp HttpMessage.cpp HttpRequest.cpp\
 					HttpResponse.cpp ConnectionManager.cpp DataAdapter.cpp CgiAdapter.cpp\
 					FileManager.cpp SignalManager.cpp Connection.cpp HttpProcessor.cpp HttpHeader.cpp\
 					HeaderValue.cpp HeaderProperty.cpp Utils.cpp Index.cpp PathManager.cpp

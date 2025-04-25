@@ -14,85 +14,158 @@
 #include "DataAdapter.hpp"
 #include "Server.hpp"
 
-ConnectionManager::ConnectionManager() {}
-ConnectionManager::~ConnectionManager() {}
+std::list<Connection *> ConnectionManager::_connectionList;
 
-ConnectionManager::ConnectionManager(const ConnectionManager& src) { (void)src; }
+ConnectionManager::ConnectionManager() {}
+
+ConnectionManager::~ConnectionManager() {
+	for (std::list<Connection *>::iterator connection = _connectionList.begin()
+			; connection != _connectionList.end(); ++connection) {
+		if (*connection)
+				delete *connection;
+	}
+}
+
+ConnectionManager::ConnectionManager(const ConnectionManager& src) {
+	_connectionList = src._connectionList;
+	_socketList = src._socketList;
+}
 
 ConnectionManager& ConnectionManager::operator=(const ConnectionManager& src) {
 	if (this != &src) {
-		(void)src;
+		_connectionList = src._connectionList;
+		_socketList = src._socketList;
 	}
 	return *this;
 }
 
-static int	pollSockets(Server& server) {
-	int						pollStatus;
-	std::list<Connection *>	connectionList;
-	size_t					i = 1;
+int	ConnectionManager::pollSockets() {
+	int		pollStatus;
+	size_t	i = 0;
+	size_t	arraySize = _socketList.size();
+	pollfd	pollArray[arraySize];
 
-	connectionList = server.getConnectionList();
-	pollfd	pollArray[connectionList.size() + 1];
-	pollArray[0] = server.getPollfd();
-	for (std::list<Connection *>::iterator it = connectionList.begin(); it != connectionList.end(); ++it)
-		pollArray[i++] = (*it)->getPollFd();
-	pollStatus = poll(pollArray, connectionList.size() + 1, 0);
+	for (std::list<Socket>::iterator socket = _socketList.begin(); socket != _socketList.end(); ++socket)
+		pollArray[i++] = socket->getPollFd();
 
-	i = 1;
-	server.setPollfd(pollArray[0]);
-	for (std::list<Connection *>::iterator it = connectionList.begin(); it != connectionList.end(); ++it)
-		(*it)->updatePollFd(pollArray[i++]);
+	pollStatus = poll(pollArray, arraySize, 0);
+
+	i = 0;
+	for (std::list<Socket>::iterator socket = _socketList.begin(); socket != _socketList.end(); ++socket)
+		socket->setPollFd(pollArray[i++]);
+	
 	return (pollStatus);
-}
-
-static void	manageServerSocket(Server& server) {
-	if (server.hasPollIn()) {
-		Connection	*newConnection = new Connection(server);
-		ConnectionManager::addConnection(server, newConnection);
-	}
-}
-
-static void	manageServerConnections(Server& server) {
-	std::list<Connection *>	cachedList(server.getConnectionList());
-	for (std::list<Connection *>::iterator it = cachedList.begin(); it != cachedList.end(); ++it) {
-		Connection&	connection = *(*it);
-		if (connection.hasPollErr())
-			ConnectionManager::deleteConnection(server, &connection);
-		else if (connection.hasPollOut() && !connection.sendBuffer.empty())
-			connection.sendData();
-		else if (connection.hasPollIn() && !connection.isOverPayloadLimit)
-			connection.recieveData();
-		else if (connection.hasPendingCgi)
-			connection.fetchCgi();
-	}
-	cachedList.clear();
 }
 
 void	ConnectionManager::monitorConnections() {
 	int	pollStatus;
 	
 	while (true) {
-		for (std::map<std::string, Server>::iterator it = Config::getServers().begin();
-			it != Config::getServers().end(); ++it) {
-			Server&	server = it->second;
-			pollStatus = pollSockets(server);
+			pollStatus = pollSockets();
 			if (pollStatus == -1) {
-				std::cerr << RED << "Server error: Server connection error" << END << std::endl;
+				std::cerr << RED << "Error: socket error" << END << std::endl;
 			}
 			else if (pollStatus > 0) {
-				manageServerSocket(server);
-				manageServerConnections(server);
+				acceptConnections();
+				std::list<Connection *>	cachedList(_connectionList);
+				for (std::list<Connection *>::iterator it = cachedList.begin(); it != cachedList.end(); ++it) {
+					Connection&	connection = *(*it);
+					Socket&		socket = connection.getSocket();
+
+					if (socket.hasPollErr())
+						deleteConnection(&connection);
+					else if (socket.hasPollOut() && !connection.sendBuffer.empty())
+						connection.sendData();
+					else if (socket.hasPollIn() && !connection.isOverPayloadLimit)
+						connection.recieveData();
+					else if (connection.hasPendingCgi)
+						connection.fetch();
+				}
+				cachedList.clear();
 			}
+	}
+}
+
+
+void	ConnectionManager::addListenSocket(Server& server) {
+	int					optionEnable = 1;
+	int					optionBufferSize = SOCKET_BUFFER_SIZE;
+	struct sockaddr_in	address;
+	struct pollfd		pollFd;
+
+	int socketFd = socket(AF_INET, SOCK_STREAM, 0);
+	if (socketFd < 0) {
+		std::cerr << RED << "Error: opening socket" << END << std::endl;
+		exit(1);
+	}
+
+	if (setsockopt(socketFd, SOL_SOCKET, SO_REUSEADDR, &optionEnable, sizeof(int)) < 0
+	&&  setsockopt(socketFd, SOL_SOCKET, SO_REUSEPORT, &optionEnable, sizeof(int)) < 0
+	&&  setsockopt(socketFd, SOL_SOCKET, SO_RCVBUF, &optionBufferSize, sizeof(int)) < 0
+	&&  setsockopt(socketFd, SOL_SOCKET, SO_SNDBUF, &optionBufferSize, sizeof(int)) < 0) {
+		std::cerr << RED << "Error: setting socket options" << END << std::endl;
+		close(socketFd);
+		exit(1);
+	}
+
+	address.sin_family = AF_INET;
+	address.sin_addr.s_addr = INADDR_ANY;
+	address.sin_port = htons(server.getPort());
+
+	if (bind(socketFd, (struct sockaddr *)&address, sizeof(address)) < 0) {
+		if (errno == EADDRINUSE) {
+			std::cout << GREEN << "Server " << server.getName() << " listening on port: " << server.getPort() <<  END << " 🚀" << std::endl;
+			return ;
+		}
+		else {
+			std::cerr << RED << "Error: failed to bind address" << END << std::endl;
+			close(socketFd);
+			exit(1);
+		}
+	}
+	
+	if (listen(socketFd, SOCKET_LISTEN_QUEUE_SIZE) < 0) {
+		std::cerr << RED << "Error: socket listen failed" << END << std::endl;
+		close(socketFd);
+		exit(1);
+	}
+	std::cout << GREEN << "Server " << server.getName() << " listening on port: " << server.getPort() <<  END << " 🚀" << std::endl;
+
+	pollFd = pollfd();
+	pollFd.fd = socketFd;
+	pollFd.events = POLLIN | POLLOUT | POLLHUP | POLLERR;
+	pollFd.revents = 0;
+
+	Socket newSocket(server.getPort(),pollFd, LISTEN);
+	_socketList.push_back(newSocket);
+}
+
+void	ConnectionManager::acceptConnections() {
+	std::list<Socket> cachedSocketList(_socketList);
+
+	for (std::list<Socket>::iterator socket = cachedSocketList.begin(); socket != cachedSocketList.end(); ++socket) {
+		if (socket->getType() == LISTEN && socket->hasPollIn()) {
+			struct pollfd pollFd = pollfd();
+			sockaddr_in	client_addr;
+			socklen_t	client_addr_len = sizeof(client_addr);
+
+			pollFd.events = POLLIN | POLLOUT | POLLHUP | POLLERR;
+			pollFd.revents = 0;
+			pollFd.fd  = accept(socket->getPollFd().fd, (sockaddr *)&client_addr, &client_addr_len);
+			if (pollFd.fd == -1)
+				std::cerr << RED << "Error: client connection error " << END << std::endl;
+			
+			Socket newSocket(socket->getPort(), pollFd, CONNECTION);
+			_socketList.push_back(newSocket);
+			_connectionList.push_back(new Connection(*(std::find(_socketList.begin(), _socketList.end(), newSocket))));
 		}
 	}
 }
 
-void	ConnectionManager::addConnection(Server& server, Connection *connection) {
-	server.getConnectionList().push_back(connection);
+void	ConnectionManager::addConnection(Connection *connection) {
+	_connectionList.push_back(connection);
 }
-
-void	ConnectionManager::deleteConnection(Server& server, Connection *connection) {
-	server.getConnectionList().erase(std::find(server.getConnectionList().begin(),server.getConnectionList().end(), connection));
+void	ConnectionManager::deleteConnection(Connection *connection) {
+	_connectionList.erase(std::find(_connectionList.begin(),_connectionList.end(), connection));
 	delete(connection);
 }
-

@@ -137,15 +137,15 @@ std::vector<char> Index::generateAutoindex(DataAdapter& dataAdapter) {
 	return body = std::vector<char>(autoIndex.begin(), autoIndex.end());
 }
 
-bool	Index::isIndexRoute(DataAdapter& dataAdapter, Route *actualRoute) {
+bool	Index::isIndexRoute(DataAdapter& dataAdapter, Route actualRoute) {
 	std::string	path = PathManager::resolveServerPath(dataAdapter);
 	HttpRequest	request = dataAdapter.getRequest();
 
 	if (request.method == "GET"
 		&& Utils::isDirectory(path)
-		&& actualRoute->getAutoIndex() == "on"
+		&& actualRoute.getAutoIndex() == "on"
 		&& ((access(path.c_str(), R_OK) == 0))
-		&& actualRoute->getDefault().empty())
+		&& actualRoute.getDefault().empty())
 			return true;
 	return false;
 }
