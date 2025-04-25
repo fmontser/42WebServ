@@ -19,7 +19,13 @@ SignalManager& SignalManager::operator=(const SignalManager& src) {
 }
 
 void SignalManager::signalHandler(int signal) {
-	//TODO (hacer esto lo ultimo!!!) liberar socketFD y los servers y cualquier otra cosa 
+
+	for (std::list<Connection *>::iterator connection = ConnectionManager::_connectionList.begin()
+			; connection != ConnectionManager::_connectionList.end(); ++connection) {
+		if (*connection)
+				delete *connection;
+	}
+	
 	std::cout << std::endl << BLUE << "Signal " << signal << " received. Server shutting down." << END << std::endl;
 	std::exit(EXIT_SUCCESS);
 }

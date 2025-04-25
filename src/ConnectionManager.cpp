@@ -16,12 +16,8 @@
 
 std::list<Connection *> ConnectionManager::_connectionList;
 
-ConnectionManager::ConnectionManager() {
-	for (std::map<std::string, Server>::iterator it = Config::getServers().begin();
-		it != Config::getServers().end(); ++it) {
-			addListenSocket(it->second);
-	}
-}
+ConnectionManager::ConnectionManager() {}
+
 ConnectionManager::~ConnectionManager() {
 	for (std::list<Connection *>::iterator connection = _connectionList.begin()
 			; connection != _connectionList.end(); ++connection) {
@@ -68,7 +64,6 @@ void	ConnectionManager::monitorConnections() {
 			pollStatus = pollSockets();
 			if (pollStatus == -1) {
 				std::cerr << RED << "Error: socket error" << END << std::endl;
-				//TODO tratar esto!!
 			}
 			else if (pollStatus > 0) {
 				acceptConnections();
@@ -119,7 +114,7 @@ void	ConnectionManager::addListenSocket(Server& server) {
 
 	if (bind(socketFd, (struct sockaddr *)&address, sizeof(address)) < 0) {
 		if (errno == EADDRINUSE) {
-			std::cerr << BLUE << "Warning: Port " << server.getPort() << " is already in use" << END << std::endl;
+			std::cout << GREEN << "Server " << server.getName() << " listening on port: " << server.getPort() <<  END << " 🚀" << std::endl;
 			return ;
 		}
 		else {
@@ -141,7 +136,7 @@ void	ConnectionManager::addListenSocket(Server& server) {
 	pollFd.events = POLLIN | POLLOUT | POLLHUP | POLLERR;
 	pollFd.revents = 0;
 
-	Socket newSocket(pollFd, LISTEN);
+	Socket newSocket(server.getPort(),pollFd, LISTEN);
 	_socketList.push_back(newSocket);
 }
 
@@ -156,11 +151,11 @@ void	ConnectionManager::acceptConnections() {
 
 			pollFd.events = POLLIN | POLLOUT | POLLHUP | POLLERR;
 			pollFd.revents = 0;
-			pollFd.fd  = accept(pollFd.fd, (sockaddr *)&client_addr, &client_addr_len);
+			pollFd.fd  = accept(socket->getPollFd().fd, (sockaddr *)&client_addr, &client_addr_len);
 			if (pollFd.fd == -1)
 				std::cerr << RED << "Error: client connection error " << END << std::endl;
 			
-			Socket newSocket(pollFd, CONNECTION);
+			Socket newSocket(socket->getPort(), pollFd, CONNECTION);
 			_socketList.push_back(newSocket);
 			_connectionList.push_back(new Connection(*(std::find(_socketList.begin(), _socketList.end(), newSocket))));
 		}

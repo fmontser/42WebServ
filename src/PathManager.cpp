@@ -57,7 +57,7 @@
 
 	std::string		PathManager::resolveRoutePath(DataAdapter& dataAdapter) {
 		Server			server = dataAdapter.getConnection()->getServer();
-		HttpRequest&	request = dataAdapter.getRequest();
+		HttpRequest		request = dataAdapter.getRequest();
 		Route*			route = NULL; 
 		std::string		path, url, _default;
 
@@ -93,7 +93,7 @@
 
 	std::string		PathManager::resolveServerPath(DataAdapter& dataAdapter) {
 		Server			server = dataAdapter.getConnection()->getServer();
-		HttpRequest&	request = dataAdapter.getRequest();
+		HttpRequest		request = dataAdapter.getRequest();
 
 		std::string		path, url;
 

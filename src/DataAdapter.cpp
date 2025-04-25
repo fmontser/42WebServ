@@ -48,6 +48,8 @@ static void	deserializeRequestLine(std::stringstream& data, HttpRequest& request
 	request.url = line.substr(0, line.find(' '));
 	if (!request.url.empty() && request.url.at(request.url.size() -1) == '/')
 		request.url.erase(request.url.size() - 1, 1);
+	if (request.url.empty())
+		request.url = "/";
 	line =  line.substr(line.find(' ') + SPLIT_CHR_SZ, line.size());
 	request.version = line.substr(0, line.find('\r'));
 }
@@ -136,6 +138,41 @@ HttpHeader	DataAdapter::deserializeHeader(std::string data) {
 
 
 
+
+
+
+#include "Config.hpp"
+#include "Server.hpp"
+
+static void	assingServer(DataAdapter& dataAdapter) {
+	HttpRequest&					request = dataAdapter.getRequest();
+	Connection						*actualConnection = dataAdapter.getConnection();
+	std::string						hostName = request.getHostName();
+	int 							port = actualConnection->getSocket().getPort();
+	std::map<std::string, Server>&	serverList = Config::getServers();
+	
+	for (std::map<std::string, Server>::iterator server = serverList.begin(); server != serverList.end(); ++server) {
+
+		std::vector<std::string>& serverHosts = server->second.getHosts();
+		for (std::vector<std::string>::iterator host = serverHosts.begin(); host != serverHosts.end(); ++host) {
+			if (*host == hostName) {
+				actualConnection->setServer(server->second);
+				return ;
+			}
+		}
+	}
+
+	for (std::map<std::string, Server>::iterator server = serverList.begin(); server != serverList.end(); ++server) {
+		if (server->second.getPort() == port) {
+			actualConnection->setServer(server->second);
+			return ;
+		}
+	}
+}
+
+
+
+
 void	DataAdapter::deserializeRequest() {
 	std::stringstream			data;
 
@@ -143,13 +180,18 @@ void	DataAdapter::deserializeRequest() {
 
 	if (_connection->requestMode == Connection::SINGLE)
 		deserializeRequestLine(data, _request);
+
 	if (!isHeadersComplete)
 		isHeadersComplete = deserializeHeaders(data, _request, *this);
+
 	if (!_connection->isOverPayloadLimit)
 		deserializeBody(data, _request, *this);
 
 	if (_connection->requestMode == Connection::CHUNKS && !getConnection()->hasChunksEnded)
 		checkChunksEnd();
+
+	if (!_connection->hasServerAssigned)
+		assingServer(*this);
 }
 
 

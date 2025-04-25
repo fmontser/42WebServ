@@ -14,7 +14,6 @@
 #define WR 1
 
 CgiAdapter::CgiAdapter() {
-	randomcount = 0;//TODO DELETE
 	_initFlag = true;
 }
 CgiAdapter::~CgiAdapter() {}

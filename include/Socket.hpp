@@ -7,13 +7,14 @@ enum SocketType { LISTEN, CONNECTION };
 class Socket {
 	private:
 		
+		int				_port;
 		struct pollfd	_pollFd;
 		SocketType		_type;
 		
 	
 	public:
 		
-		Socket(struct pollfd pfd, SocketType type);
+		Socket(int port, struct pollfd pfd, SocketType type);
 		~Socket();
 		Socket(const Socket& src);
 		Socket&	operator=(const Socket& src);
@@ -22,6 +23,7 @@ class Socket {
 
 		struct pollfd	getPollFd() const;
 		SocketType		getType() const;
+		int				getPort() const;
 
 		void			setPollFd(struct pollfd pollFd);
 

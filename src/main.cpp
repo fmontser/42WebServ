@@ -25,6 +25,11 @@ int main(int argc, char** argv) {
 
 	Config::loadConfig(configFileStream);
 
+	for (std::map<std::string, Server>::iterator it = Config::getServers().begin();
+		it != Config::getServers().end(); ++it) {
+			connectionManager.addListenSocket(it->second);
+	}
+
 	connectionManager.monitorConnections();
 
 	return 0;

@@ -12,6 +12,7 @@
 #include "Utils.hpp"
 
 Connection::Connection(Socket& socket) : _socket(socket), _dataAdapter(NULL), _cgiAdapter(NULL) {
+	hasServerAssigned = false;
 	isOverPayloadLimit = false;
 	hasPendingCgi = false;
 	hasChunksEnded = false;
@@ -29,6 +30,7 @@ Connection::Connection(const Connection& src) : _socket(src._socket) {
 	recvBuffer = src.recvBuffer;
 	sendBuffer = src.sendBuffer;
 	isOverPayloadLimit = src.isOverPayloadLimit;
+	hasServerAssigned =  src.hasServerAssigned;
 	hasPendingCgi = src.hasPendingCgi;
 	hasChunksEnded = src.hasChunksEnded;
 	responseMode = src.responseMode;
@@ -44,6 +46,7 @@ Connection& Connection::operator=(const Connection& src) {
 		recvBuffer = src.recvBuffer;
 		sendBuffer = src.sendBuffer;
 		isOverPayloadLimit = src.isOverPayloadLimit;
+		hasServerAssigned =  src.hasServerAssigned;
 		hasPendingCgi = src.hasPendingCgi;
 		hasChunksEnded = src.hasChunksEnded;
 		responseMode = src.responseMode;
@@ -59,6 +62,7 @@ Connection::~Connection() {
 		delete _dataAdapter;
 	if (_cgiAdapter != NULL)
 		delete _cgiAdapter;
+	close(_socket.getPollFd().fd);
 }
 
 Socket&	Connection::getSocket() const { return _socket; }
@@ -92,8 +96,8 @@ void	Connection::manageSingle(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter){
 	if (!hasPendingCgi) {
 		dataAdapter.deserializeRequest();
 
-		std::cout	<< BLUE << "Info: Socket fd " << getSocket().getPollFd().fd
-					<< " requested: " << dataAdapter.getRequest().url << END << std::endl;
+		std::cout	<< BLUE << "Info: Server '" << dataAdapter.getConnection()->getServer().getName()
+					<< "' requested url '" << dataAdapter.getRequest().url << "'" << END << std::endl;
 	}
 
 	dataAdapter.getRequest().isCgiRequest 
@@ -121,7 +125,6 @@ void	Connection::manageSingle(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter){
 }
 
 void	Connection::manageMultiPart(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter){
-
 
 	dataAdapter.deserializeRequest();
 		
@@ -161,9 +164,9 @@ void	Connection::fetch() {
 }
 
 void	Connection::recieveData() {
-	char		buffer[READ_BUFFER] = {0};
-	int			socketFd = _socket.getPollFd().fd;
-	int			len;
+	char	buffer[READ_BUFFER] = {0};
+	int		socketFd = _socket.getPollFd().fd;
+	int		len;
 
 	if (_dataAdapter == NULL)
 		_dataAdapter = new DataAdapter(this);
@@ -233,8 +236,3 @@ void	Connection::sendData() {
 		ConnectionManager::deleteConnection(this);
 	sendBuffer.clear();
 }
-
-
-
-
-
