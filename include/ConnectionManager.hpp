@@ -14,9 +14,8 @@ class ConnectionManager {
 		
 		void		acceptConnections();
 		void		addConnection(Connection *connection);
-		
-		void		recieveData(Connection *connection);
-		void		sendData(Connection *connection);
+
+		bool		checkClientTimeOut(Connection& connection);
 	
 	public:
 	

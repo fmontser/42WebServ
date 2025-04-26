@@ -178,6 +178,10 @@ void Config::addServer(std::vector<std::pair<std::string, std::vector<std::strin
 			server.setPort(values[0]);
 		} else if (key == "root") {
 			server.setRoot(values[0]);
+		} else if (key == "clientTimeOut") {
+			server.setClientTimeOut(values[0]);
+		} else if (key == "serverTimeOut") {
+			server.setServerTimeOut(values[0]);
 		} else if (key == "serverMethods") {
 			server.setServerMethods(values);
 		} else if (key.find("default",0) != key.npos) {
@@ -213,9 +217,13 @@ bool Config::isValidConfig(Server &server) {
 
 	if (port <= 0 || port > 65535)
 		return printFalse("Server port is invalid.");
-	/* if (portDuplicated(port))
-		return printFalse("Server port " + toString(port) + " is duplicated.");
- */
+
+	if (server.getClientTimeOut() <= 0)
+		return printFalse("Client timeout is invalid.");
+
+	if (server.getServerTimeOut() <= 0)
+		return printFalse("Server timeout is invalid.");
+
 	if (server.getRoot().empty())
 		return printFalse("Server root is missing.");
 
@@ -246,11 +254,3 @@ bool Config::isValidConfig(Server &server) {
 }
 
 std::map<std::string, Server>& Config::getServers() { return _servers; }
-/* 
-bool Config::portDuplicated(int port) {
-	for (std::map<std::string, Server>::iterator it = _servers.begin(); it != _servers.end(); ++it) {
-		if (it->second.getPort() == port)
-			return true;
-	}
-	return false;
-} */

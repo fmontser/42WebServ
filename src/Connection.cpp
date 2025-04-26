@@ -12,6 +12,7 @@
 #include "Utils.hpp"
 
 Connection::Connection(Socket& socket) : _socket(socket), _dataAdapter(NULL), _cgiAdapter(NULL) {
+	_lastTime = time(NULL);
 	hasServerAssigned = false;
 	isOverPayloadLimit = false;
 	hasPendingCgi = false;
@@ -26,6 +27,7 @@ Connection::Connection(Socket& socket) : _socket(socket), _dataAdapter(NULL), _c
 }
 
 Connection::Connection(const Connection& src) : _socket(src._socket) {
+	_lastTime = time(NULL);
 	_server = src._server;
 	recvBuffer = src.recvBuffer;
 	sendBuffer = src.sendBuffer;
@@ -41,6 +43,7 @@ Connection::Connection(const Connection& src) : _socket(src._socket) {
 
 Connection& Connection::operator=(const Connection& src) {
 	if (this != &src) {
+		_lastTime = time(NULL);
 		_server = src._server;
 		_socket = src._socket;
 		recvBuffer = src.recvBuffer;
@@ -67,6 +70,7 @@ Connection::~Connection() {
 
 Socket&	Connection::getSocket() const { return _socket; }
 Server	Connection::getServer() const { return _server; }
+time_t	Connection::getLastTime() const { return _lastTime; }
 
 void	Connection::setServer(Server& server) { _server = server; }
 
@@ -84,11 +88,25 @@ void	Connection::resetConnection() {
 	delete _cgiAdapter;
 	_cgiAdapter = NULL;
 
+	isOverPayloadLimit = false;
 	hasPendingCgi = false;
+	hasChunksEnded = false;
 	boundarie.clear();
 	boundStart.clear();
 	boundEnd.clear();
-	requestMode = Connection::SINGLE;
+	requestMode = SINGLE;
+	responseMode = NORMAL;
+	contentLength = 0;
+}
+
+void Connection::checkPayload() {
+	size_t	bodySize = _dataAdapter->getRequest().body.size();
+	size_t	serverMaxPayLoad = _server.getMaxPayload();
+
+	if (bodySize > serverMaxPayLoad || contentLength > serverMaxPayLoad)
+		isOverPayloadLimit = true;
+	else
+		isOverPayloadLimit = false;
 }
 
 void	Connection::manageSingle(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter){
@@ -103,6 +121,7 @@ void	Connection::manageSingle(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter){
 	dataAdapter.getRequest().isCgiRequest 
 		= CgiAdapter::isCgiRequest(dataAdapter.getRequest().url);
 	checkBinaryDownload(dataAdapter.getRequest());
+	checkPayload();
 
 	HttpProcessor::processHttpRequest(dataAdapter, cgiAdapter);
 
@@ -127,10 +146,11 @@ void	Connection::manageSingle(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter){
 void	Connection::manageMultiPart(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter){
 
 	dataAdapter.deserializeRequest();
-		
+	
 	dataAdapter.getRequest().method = "POST";
 	dataAdapter.getRequest().isCgiRequest = CgiAdapter::isCgiRequest(dataAdapter.getRequest().url);
 	checkBinaryDownload(dataAdapter.getRequest());
+	checkPayload();
 
 	if (requestMode == CHUNKS && !hasChunksEnded)
 		return;
@@ -183,6 +203,7 @@ void	Connection::recieveData() {
 		ConnectionManager::deleteConnection(this);
 	}
 	else if (len > 0) {
+		_lastTime = time(NULL);
 		recvBuffer.assign(buffer, buffer + len);
 		if (requestMode != SINGLE) {
 			if (requestMode == PARTS)
@@ -232,7 +253,9 @@ void	Connection::sendData() {
 		std::cerr << RED << "Send error: Server connection error" << END << std::endl;
 		ConnectionManager::deleteConnection(this);
 	}
+	_lastTime = time(NULL);
 	if (isOverPayloadLimit)
 		ConnectionManager::deleteConnection(this);
 	sendBuffer.clear();
 }
+

@@ -68,14 +68,16 @@ $(CGI_BIN_TEST):
 	@cp $(CGI_BIN_DIR)$(CGI_BIN_TEST) local42/cgi-bin/
 	@echo "$(COLOR_GREEN)copy file: $(CGI_BIN_DIR)$(CGI_BIN_TEST)$(COLOR_END)"
 
+#TODO borrar -pg
 $(NAME): $(OBJS)
 	@mkdir -p $(BIN_DIR)
-	@$(CC) $(addprefix $(OBJ_DIR),$(OBJS)) -o $(BIN_DIR)$(NAME)
+	@$(CC) -pg $(addprefix $(OBJ_DIR),$(OBJS)) -o $(BIN_DIR)$(NAME)
 	@echo "$(COLOR_GREEN)write file: $(BIN_DIR)$(NAME)$(COLOR_END)"
 
+#TODO borrar -pg
 %.o : %.cpp $(HDRS) $(MAKEFILE)
 	@mkdir -p $(OBJ_DIR)
-	@$(CC) -I $(INC_DIR) $(CC_FLAGS) $< -o $(OBJ_DIR)$@
+	@$(CC) -pg -I $(INC_DIR) $(CC_FLAGS)  $< -o $(OBJ_DIR)$@
 	@echo "$(COLOR_GREEN)write file: $(OBJ_DIR)$@ $(COLOR_END)"
 
 run: all

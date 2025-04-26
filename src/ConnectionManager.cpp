@@ -72,14 +72,15 @@ void	ConnectionManager::monitorConnections() {
 					Connection&	connection = *(*it);
 					Socket&		socket = connection.getSocket();
 
-					if (socket.hasPollErr())
-						deleteConnection(&connection);
-					else if (socket.hasPollOut() && !connection.sendBuffer.empty())
+
+					if (socket.hasPollOut() && !connection.sendBuffer.empty())
 						connection.sendData();
 					else if (socket.hasPollIn() && !connection.isOverPayloadLimit)
 						connection.recieveData();
 					else if (connection.hasPendingCgi)
 						connection.fetch();
+					else if (socket.hasPollErr() || checkClientTimeOut(connection))
+						deleteConnection(&connection);
 				}
 				cachedList.clear();
 			}
@@ -168,4 +169,23 @@ void	ConnectionManager::addConnection(Connection *connection) {
 void	ConnectionManager::deleteConnection(Connection *connection) {
 	_connectionList.erase(std::find(_connectionList.begin(),_connectionList.end(), connection));
 	delete(connection);
+}
+
+bool	ConnectionManager::checkClientTimeOut(Connection& connection) {
+	time_t	actualTime, timeOut, lastTime;
+	
+	if (!connection.hasServerAssigned)
+		return false;
+	
+	actualTime =  time(NULL);
+	timeOut = connection.getServer().getClientTimeOut();
+	lastTime = connection.getLastTime();
+
+	if ((actualTime - lastTime) > timeOut && !connection.hasPendingCgi) {
+		std::cout << BLUE << "Info: Server '" << connection.getServer().getName()
+		<< "' closed connection " << connection.getSocket().getPollFd().fd 
+		<< " (client timeout)" << END << std::endl;
+		return true;
+	}
+	return false;
 }

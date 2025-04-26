@@ -48,6 +48,7 @@ CgiAdapter& CgiAdapter::operator=(const CgiAdapter& src) {
 HttpResponse::responseType	CgiAdapter::executeCgi(std::string& output, DataAdapter& dataAdapter) {
 	char		readBuffer[READ_BUFFER];
 	ssize_t		bytesRead;
+	time_t		serverTimeOut = dataAdapter.getConnection()->getServer().getServerTimeOut();
 
 	if (_initFlag){
 		if (pipe(_ppOut) == -1 || pipe(_ppIn) == -1)
@@ -83,7 +84,7 @@ HttpResponse::responseType	CgiAdapter::executeCgi(std::string& output, DataAdapt
 		}
 
 		_actualTime = time(NULL);
-		if (_actualTime - _startTime > TIMEOUT) {
+		if (_actualTime - _startTime > serverTimeOut) {
 			close(_ppOut[RD]);
 			kill(_pid, SIGKILL);
 			dataAdapter.getConnection()->hasPendingCgi = false;
