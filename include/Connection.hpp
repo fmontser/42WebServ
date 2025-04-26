@@ -16,6 +16,7 @@ class Connection {
 		Socket&			_socket;
 		DataAdapter		*_dataAdapter;
 		CgiAdapter		*_cgiAdapter;
+		time_t			_lastTime;
 
 		void	manageSingle(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter);
 		void	manageMultiPart(DataAdapter& dataAdapter, CgiAdapter& cgiAdapter);
@@ -47,6 +48,7 @@ class Connection {
 
 		Server			getServer() const;
 		Socket&			getSocket() const;
+		time_t			getLastTime() const;
 
 		void			setServer(Server& server);
 

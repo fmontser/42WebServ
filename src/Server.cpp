@@ -30,6 +30,8 @@ Server::Server(const Server& src) {
 	_hosts = src._hosts;
 	_port = src._port;
 	_root = src._root;
+	_clientTimeOut = src._clientTimeOut;
+	_serverTimeOut = src._serverTimeOut;
 	_defaults = src._defaults;
 	_maxPayload = src._maxPayload;
 	_routes = src._routes;
@@ -42,6 +44,8 @@ Server& Server::operator=(const Server& src) {
 		_hosts = src._hosts;
 		_port = src._port;
 		_root = src._root;
+		_clientTimeOut = src._clientTimeOut;
+		_serverTimeOut = src._serverTimeOut;
 		_defaults = src._defaults;
 		_maxPayload = src._maxPayload;
 		_routes = src._routes;
@@ -50,20 +54,21 @@ Server& Server::operator=(const Server& src) {
 	return *this;
 }
 
-std::string							Server::getName() const { return this->_name; }
-std::vector<std::string>&			Server::getHosts() { return this->_hosts; }
-int									Server::getPort() const { return this->_port; }
-std::string							Server::getRoot() const { return this->_root; }
-std::vector<std::string>&			Server::getServerMethods() { return this->_serverMethods; }
-std::map<std::string, std::string>&	Server::getDefaults() {return this->_defaults; }
+std::string							Server::getName() const { return _name; }
+std::vector<std::string>&			Server::getHosts() { return _hosts; }
+int									Server::getPort() const { return _port; }
+time_t								Server::getClientTimeOut() const { return _clientTimeOut; }
+time_t								Server::getServerTimeOut() const { return _serverTimeOut; }
+std::string							Server::getRoot() const { return _root; }
+std::vector<std::string>&			Server::getServerMethods() { return _serverMethods; }
+std::map<std::string, std::string>&	Server::getDefaults() {return _defaults; }
 size_t								Server::getMaxPayload() const { return _maxPayload; }
 std::map<std::string, Route>&		Server::getRoutes() { return _routes; }
 
-void	Server::setName(const std::string& name) { this->_name = name; }
-void	Server::setHosts(const std::vector<std::string>& hosts) { this->_hosts = hosts; }
+void	Server::setName(const std::string& name) { _name = name; }
+void	Server::setHosts(const std::vector<std::string>& hosts) { _hosts = hosts; }
 void	Server::setRoot(const std::string& root) {_root = root; }
 void	Server::setServerMethods(const std::vector<std::string>& serverMethods) { _serverMethods = serverMethods; }
-
 
 void	Server::setPort(const std::string& port) {
 	char	*err;
@@ -73,6 +78,22 @@ void	Server::setPort(const std::string& port) {
 	_port = portNumber;
 }
 
+void	Server::setClientTimeOut(std::string seconds) {
+	char	*err;
+	time_t		timeOut;
+	
+	timeOut = strtol(seconds.c_str(), &err, 10);
+	_clientTimeOut = timeOut;
+}
+
+void	Server::setServerTimeOut(std::string seconds) {
+	char	*err;
+	time_t	timeOut;
+	
+	timeOut = strtol(seconds.c_str(), &err, 10);
+	_serverTimeOut = timeOut;
+}
+
 void	Server::setMaxPayLoad(const std::string& maxPayLoad) {
 	char	*err;
 	int		payloadSize;
@@ -80,7 +101,6 @@ void	Server::setMaxPayLoad(const std::string& maxPayLoad) {
 	payloadSize = strtol(maxPayLoad.c_str(), &err, 10);
 	_maxPayload = payloadSize;
 }
-
 
 HttpResponse::responseType	Server::getRequestedRoute(Route **route, DataAdapter& dataAdapter) {
 	std::string path, url;
