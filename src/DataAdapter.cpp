@@ -97,10 +97,6 @@ static void	deserializeBody(std::stringstream& data, HttpRequest& request, DataA
 			request.body.insert(request.body.end(), buffer, buffer + bytesRead);
 	} 
 
-
-
-
-
 	if (connection->requestMode == Connection::PARTS) {
 		removeBoundarie(request.body, connection->boundStart);
 		removeBoundarie(request.body, connection->boundEnd);
@@ -140,11 +136,6 @@ HttpHeader	DataAdapter::deserializeHeader(std::string data) {
 	return newHeader;
 }
 
-
-
-
-
-
 #include "Config.hpp"
 #include "Server.hpp"
 
@@ -176,9 +167,6 @@ static void	assingServer(DataAdapter& dataAdapter) {
 		}
 	}
 }
-
-
-
 
 void	DataAdapter::deserializeRequest() {
 	std::stringstream			data;

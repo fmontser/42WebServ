@@ -13,7 +13,6 @@
 
 //TODO full eval test
 
-
 //TODO limpieza proyecto, generacion de rama de turn-in
 
 //TESTS
@@ -37,18 +36,10 @@ http://localhost:8042
 
 
 //POST ENTREGA
- //TODO post entrega: refactor streaming...
+//TODO refactor streaming, muy lento
 
+//TODO refactor constructores/operadores
 
-cerrar el pipe del input y el output trans la transmision del body general el EOF.
-∗Just remember that, for chunked request, your server needs to unchunk
-it, the CGI will expect EOF as end of the body.
-
-∗Same things for the output of the CGI. If no content_length is returned
-from the CGI, EOF will mark the end of the returned data.
- 
-
-
-//TODO arreglar constructor copia/asignacion de HttpRequest/Response hacia HttpMessage
+//TODO refactor en uso de copias/referencias/punteros, unificar y simplificar, especialmente la clase Connection.
 
 */
