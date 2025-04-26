@@ -156,20 +156,21 @@ static void	assingServer(DataAdapter& dataAdapter) {
 	std::map<std::string, Server>&	serverList = Config::getServers();
 	
 	for (std::map<std::string, Server>::iterator server = serverList.begin(); server != serverList.end(); ++server) {
-
-		std::vector<std::string>& serverHosts = server->second.getHosts();
-		for (std::vector<std::string>::iterator host = serverHosts.begin(); host != serverHosts.end(); ++host) {
-			if (*host == hostName) {
-				actualConnection->setServer(server->second);
-				actualConnection->hasServerAssigned = true;
-				return ;
+		if (server->second.getPort() == port) {
+			std::vector<std::string>& serverHosts = server->second.getHosts();
+			for (std::vector<std::string>::iterator host = serverHosts.begin(); host != serverHosts.end(); ++host) {
+				if (*host == hostName) {
+					actualConnection->setServer(server->second);
+					actualConnection->hasServerAssigned = true;
+					return ;
+				}
 			}
 		}
 	}
 
-	for (std::map<std::string, Server>::iterator server = serverList.begin(); server != serverList.end(); ++server) {
-		if (server->second.getPort() == port) {
-			actualConnection->setServer(server->second);
+	for (std::map<std::string, Server>::iterator defaultServer = serverList.begin(); defaultServer != serverList.end(); ++defaultServer) {
+		if (defaultServer->second.getPort() == port) {
+			actualConnection->setServer(defaultServer->second);
 			actualConnection->hasServerAssigned = true;
 			return ;
 		}
