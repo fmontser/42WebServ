@@ -2,12 +2,6 @@
 
 //TODO en los html, todos las HREF internas deben ser relativas!!!
 
-//TODO si la eval comprueba...malformed requests devuelven 400 bad request (ver ia)
-	- no host
-	- falta algun CRLF
-	- algo falta o esta mal en la linea de peticion
-	- algun header no tiene ':' o el valor esta vacio
-	- muchos mas, con esos serian suficientes...?
 	
 //TODO pasar los test adjuntos
 
@@ -41,5 +35,12 @@ http://localhost:8042
 //TODO refactor constructores/operadores
 
 //TODO refactor en uso de copias/referencias/punteros, unificar y simplificar, especialmente la clase Connection.
+
+//TODO malformed requests
+	- no host
+	- falta algun CRLF
+	- algo falta o esta mal en la linea de peticion
+	- algun header no tiene ':' o el valor esta vacio
+	- muchos mas, con esos serian suficientes...?
 
 */

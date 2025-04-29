@@ -152,7 +152,6 @@ static void	assingServer(DataAdapter& dataAdapter) {
 			for (std::vector<std::string>::iterator host = serverHosts.begin(); host != serverHosts.end(); ++host) {
 				if (*host == hostName) {
 					actualConnection->setServer(server->second);
-					actualConnection->hasServerAssigned = true;
 					return ;
 				}
 			}
@@ -162,7 +161,6 @@ static void	assingServer(DataAdapter& dataAdapter) {
 	for (std::map<std::string, Server>::iterator defaultServer = serverList.begin(); defaultServer != serverList.end(); ++defaultServer) {
 		if (defaultServer->second.getPort() == port) {
 			actualConnection->setServer(defaultServer->second);
-			actualConnection->hasServerAssigned = true;
 			return ;
 		}
 	}
@@ -185,8 +183,7 @@ void	DataAdapter::deserializeRequest() {
 	if (_connection->requestMode == Connection::CHUNKS && !getConnection()->hasChunksEnded)
 		checkChunksEnd();
 
-	if (!_connection->hasServerAssigned)
-		assingServer(*this);
+	assingServer(*this);
 }
 
 
