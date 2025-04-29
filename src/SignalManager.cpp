@@ -20,6 +20,11 @@ SignalManager& SignalManager::operator=(const SignalManager& src) {
 
 void SignalManager::signalHandler(int signal) {
 
+	for (std::list<Socket>::iterator socket = ConnectionManager::_socketList.begin()
+		; socket != ConnectionManager::_socketList.end(); ++socket) {
+			close(socket->getPollFd().fd);
+	}
+
 	for (std::list<Connection *>::iterator connection = ConnectionManager::_connectionList.begin()
 			; connection != ConnectionManager::_connectionList.end(); ++connection) {
 		if (*connection)
