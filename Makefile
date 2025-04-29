@@ -26,7 +26,7 @@ SRCS			:=	main.cpp			Config.cpp Socket.cpp Route.cpp Server.cpp HttpMessage.cpp 
 
 CGI_GET			:=	Multiply.cgi.cpp
 CGI_POST		:=	Replace.cgi.cpp
-CGI_TEST_SRC		:=	Cgi_test.cgi.cpp
+CGI_TEST_SRC	:=	Cgi_test.cgi.cpp
 
 OBJS			:=	$(SRCS:.cpp=.o)
 INPUT			:=	"config/config.cfg"
@@ -51,18 +51,21 @@ all: $(NAME) $(CGI_BIN_GET) $(CGI_BIN_POST) $(CGI_BIN_TEST)
 
 
 $(CGI_BIN_GET):
+	@mkdir -p $(CGI_BIN_DIR)
 	@$(CC) $(CGI_DIR)$(CGI_GET) -o $(CGI_BIN_DIR)$(CGI_BIN_GET)
 	@echo "$(COLOR_GREEN)write file: $(CGI_BIN_DIR)$(CGI_BIN_GET)$(COLOR_END)"
 	@cp $(CGI_BIN_DIR)$(CGI_BIN_GET) local42/cgi-bin/
 	@echo "$(COLOR_GREEN)copy file: $(CGI_BIN_DIR)$(CGI_BIN_GET)$(COLOR_END)"
 
 $(CGI_BIN_POST):
+	@mkdir -p $(CGI_BIN_DIR)
 	@$(CC) $(CGI_DIR)$(CGI_POST) -o $(CGI_BIN_DIR)$(CGI_BIN_POST)
 	@echo "$(COLOR_GREEN)write file: $(CGI_BIN_DIR)$(CGI_BIN_POST)$(COLOR_END)"
 	@cp $(CGI_BIN_DIR)$(CGI_BIN_POST) local42/cgi-bin/
 	@echo "$(COLOR_GREEN)copy file: $(CGI_BIN_DIR)$(CGI_BIN_POST)$(COLOR_END)"
 
 $(CGI_BIN_TEST):
+	@mkdir -p $(CGI_BIN_DIR)
 	@$(CC) $(CGI_DIR)$(CGI_TEST_SRC) -o $(CGI_BIN_DIR)$(CGI_BIN_TEST)
 	@echo "$(COLOR_GREEN)write file: $(CGI_BIN_DIR)$(CGI_BIN_TEST)$(COLOR_END)"
 	@cp $(CGI_BIN_DIR)$(CGI_BIN_TEST) local42/cgi-bin/
