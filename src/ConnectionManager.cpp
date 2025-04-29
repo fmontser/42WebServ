@@ -115,7 +115,8 @@ void	ConnectionManager::addListenSocket(Server& server) {
 
 	if (bind(socketFd, (struct sockaddr *)&address, sizeof(address)) < 0) {
 		if (errno == EADDRINUSE) {
-			std::cout << GREEN << "Server " << server.getName() << " listening on port: " << server.getPort() <<  END << " 🚀" << std::endl;
+			std::cout << BLUE << "Info: Port " << server.getPort() << " already in use" << END << " 🚀" << std::endl;
+			std::cout << GREEN << "Virtual Server " << server.getName() << " listening on port: " << server.getPort() <<  END << " 🚀" << std::endl;
 			return ;
 		}
 		else {
