@@ -7,7 +7,7 @@
 #include "Server.hpp"
 
 int main(int argc, char** argv) {
-	
+	ConnectionManager	connectionManager;
 
 	if (argc < 2) {
 		std::cerr << "Argument error: Invalid number of arguments" << std::endl;
@@ -27,10 +27,10 @@ int main(int argc, char** argv) {
 
 	for (std::map<std::string, Server>::iterator it = Config::getServers().begin();
 		it != Config::getServers().end(); ++it) {
-			it->second.listenSocket();
+			connectionManager.addListenSocket(it->second);
 	}
-	
-	ConnectionManager::monitorConnections();
+
+	connectionManager.monitorConnections();
 
 	return 0;
 }

@@ -14,12 +14,12 @@ CGI_BIN_GET		:=	multiply.cgi
 CGI_BIN_POST	:=	replace.cgi
 CGI_BIN_TEST 			:=	cgi_test.cgi
 
-HDRS			:=	ServerConstants.hpp	Config.hpp  Route.hpp Server.hpp HttpMessage.hpp HttpRequest.hpp\
+HDRS			:=	ServerConstants.hpp	Config.hpp Socket.hpp Route.hpp Server.hpp HttpMessage.hpp HttpRequest.hpp\
 					HttpResponse.hpp ConnectionManager.hpp DataAdapter.hpp CgiAdapter.hpp\
 					FileManager.hpp  SignalManager.hpp Connection.hpp HttpProcessor.hpp HttpHeader.hpp\
 					HeaderValue.hpp HeaderProperty.hpp Utils.hpp Index.hpp PathManager.hpp
 
-SRCS			:=	main.cpp			Config.cpp  Route.cpp Server.cpp HttpMessage.cpp HttpRequest.cpp\
+SRCS			:=	main.cpp			Config.cpp Socket.cpp Route.cpp Server.cpp HttpMessage.cpp HttpRequest.cpp\
 					HttpResponse.cpp ConnectionManager.cpp DataAdapter.cpp CgiAdapter.cpp\
 					FileManager.cpp SignalManager.cpp Connection.cpp HttpProcessor.cpp HttpHeader.cpp\
 					HeaderValue.cpp HeaderProperty.cpp Utils.cpp Index.cpp PathManager.cpp
@@ -68,6 +68,7 @@ $(CGI_BIN_TEST):
 	@cp $(CGI_BIN_DIR)$(CGI_BIN_TEST) local42/cgi-bin/
 	@echo "$(COLOR_GREEN)copy file: $(CGI_BIN_DIR)$(CGI_BIN_TEST)$(COLOR_END)"
 
+
 $(NAME): $(OBJS)
 	@mkdir -p $(BIN_DIR)
 	@$(CC) $(addprefix $(OBJ_DIR),$(OBJS)) -o $(BIN_DIR)$(NAME)
@@ -75,7 +76,7 @@ $(NAME): $(OBJS)
 
 %.o : %.cpp $(HDRS) $(MAKEFILE)
 	@mkdir -p $(OBJ_DIR)
-	@$(CC) -I $(INC_DIR) $(CC_FLAGS) $< -o $(OBJ_DIR)$@
+	@$(CC) -I $(INC_DIR) $(CC_FLAGS)  $< -o $(OBJ_DIR)$@
 	@echo "$(COLOR_GREEN)write file: $(OBJ_DIR)$@ $(COLOR_END)"
 
 run: all

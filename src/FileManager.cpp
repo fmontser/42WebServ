@@ -26,7 +26,6 @@ FileManager& FileManager::operator=(const FileManager& src) {
 	return *this;
 }
 
-
 static std::vector<char>::const_iterator findCRLF(std::vector<char>::const_iterator begin, std::vector<char>::const_iterator end) {
 	const char crlf[] = {'\r', '\n'};
 
@@ -104,8 +103,8 @@ static void setDownloadResponse(DataAdapter& dataAdapter, std::string path) {
 
 HttpResponse::responseType	FileManager::readFile(DataAdapter& dataAdapter) {
 	std::string			path;
-	int					fd, readSize, i;
-	Server&				server = dataAdapter.getConnection()->getServer();
+	int					fd, readSize;
+	Server				server = dataAdapter.getConnection()->getServer();
 	HttpRequest&		request = dataAdapter.getRequest();
 	HttpResponse&		response = dataAdapter.getResponse();
 	char				readBuffer[READ_BUFFER] = {0};
@@ -124,11 +123,10 @@ HttpResponse::responseType	FileManager::readFile(DataAdapter& dataAdapter) {
 	fd = open(path.c_str(), O_RDONLY, 0644);
 	if (fd < 0)
 		return HttpResponse::SERVER_ERROR;
+
 	do {
-		i = 0;
 		readSize = read(fd, readBuffer, READ_BUFFER);
-		while (i < readSize)
-			response.body.push_back(readBuffer[i++]);
+		response.body.insert(response.body.end(), readBuffer, readBuffer + readSize);
 	} while (readSize);
 
 	if (request.isBinaryDownload)
@@ -147,8 +145,6 @@ HttpResponse::responseType	FileManager::readFile(DataAdapter& dataAdapter) {
 	close(fd);
 	return HttpResponse::OK;
 }
-
-
 
 HttpResponse::responseType	FileManager::writeFile(DataAdapter& dataAdapter) {
 	HttpRequest&	request = dataAdapter.getRequest();
@@ -215,30 +211,27 @@ HttpResponse::responseType	FileManager::deleteFile(DataAdapter& dataAdapter) {
 }
 
 HttpResponse::responseType FileManager::downloadFile(DataAdapter& dataAdapter) {
-		HttpRequest& request = dataAdapter.getRequest();
 		HttpResponse& response = dataAdapter.getResponse();
+		std::string contentType, ext, path, fileName;
+		std::vector<char> buffer;
+		size_t fileSize;
 
-		std::string filePath = ".." + dataAdapter.getConnection()->getServer().getRoot() + request.url;
-		std::string fileName = request.url.substr(request.url.find_last_of('/') + 1);
+		path = PathManager::resolveRoutePath(dataAdapter);
+		fileName = Utils::getFileName(path);
+		
+		if (access(path.c_str(), F_OK) != 0)
+			return HttpResponse::NOT_FOUND;
+		if (access(path.c_str(), R_OK) != 0)
+			return HttpResponse::FORBIDDEN;
 
-		if (access(filePath.c_str(), F_OK) == -1) {
-		}
-
-		std::ifstream file(filePath.c_str(), std::ios::binary);
-		if (!file.is_open()) {
+		std::ifstream file(path.c_str(), std::ios::binary);
+		if (!file.is_open())
 			return HttpResponse::SERVER_ERROR;
-		}
-
-
 		file.seekg(0, std::ios::end);
-		size_t fileSize = file.tellg();
+		fileSize = file.tellg();
 		file.seekg(0, std::ios::beg);
 
-		std::string contentType;
-
-
-		std::string ext = Utils::getFileType(fileName);
-
+		ext = Utils::getFileType(fileName);
 		if (ext == "html" || ext == "htm") {
 			contentType = "text/html";
 		} else if (ext == "css") {
@@ -288,18 +281,14 @@ HttpResponse::responseType FileManager::downloadFile(DataAdapter& dataAdapter) {
 		contentLengthHeader.addValue(clValue);
 		response.addHeader(contentLengthHeader);
 		
-
-
-		std::vector<char> buffer(fileSize);
+		buffer.reserve(fileSize);
 		file.read(buffer.data(), fileSize);
 		if (!file) {
 			file.close();
 			return HttpResponse::SERVER_ERROR;
 		}
 
-
 		response.body = buffer;
 		file.close();
 		return HttpResponse::OK;
-
 }

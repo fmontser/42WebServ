@@ -83,14 +83,17 @@ bool	HttpRequest::handlePostMode(Connection *connection) {
 	return false;
 }
 
-std::string HttpRequest::getCleanHost() const {
+std::string HttpRequest::getHostName() const {
+	std::string host;
+
 	for (std::vector<HttpHeader>::const_iterator it = headers.begin(); it != headers.end(); ++it) {
-		if (Utils::toLower(it->name) == "host" && !it->values.empty()) {
-			std::string host = it->values[0].name;
-			size_t port_pos = host.find(':');
-				return (port_pos != std::string::npos) ? host.substr(0, port_pos) : host;
-				
-			}
+		if (it->name == "Host" && !it->values.empty()) {
+			host = it->values[0].name;
+			host = host.substr(0, host.find(':')); //check -1???
+
+			return host;
 		}
-		return "";
+	}
+	return host;
 }
+

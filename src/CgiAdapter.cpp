@@ -14,7 +14,6 @@
 #define WR 1
 
 CgiAdapter::CgiAdapter() {
-	randomcount = 0;//TODO DELETE
 	_initFlag = true;
 }
 CgiAdapter::~CgiAdapter() {}
@@ -49,6 +48,7 @@ CgiAdapter& CgiAdapter::operator=(const CgiAdapter& src) {
 HttpResponse::responseType	CgiAdapter::executeCgi(std::string& output, DataAdapter& dataAdapter) {
 	char		readBuffer[READ_BUFFER];
 	ssize_t		bytesRead;
+	time_t		serverTimeOut = dataAdapter.getConnection()->getServer().getServerTimeOut();
 
 	if (_initFlag){
 		if (pipe(_ppOut) == -1 || pipe(_ppIn) == -1)
@@ -84,7 +84,7 @@ HttpResponse::responseType	CgiAdapter::executeCgi(std::string& output, DataAdapt
 		}
 
 		_actualTime = time(NULL);
-		if (_actualTime - _startTime > TIMEOUT) {
+		if (_actualTime - _startTime > serverTimeOut) {
 			close(_ppOut[RD]);
 			kill(_pid, SIGKILL);
 			dataAdapter.getConnection()->hasPendingCgi = false;
@@ -119,7 +119,7 @@ HttpResponse::responseType	CgiAdapter::executeCgi(std::string& output, DataAdapt
 void	CgiAdapter::setEnvironment(DataAdapter& dataAdapter) {
 	HttpRequest&	request = dataAdapter.getRequest();
 	int				i = 0;
-	
+		
 	_path = PathManager::resolveServerPath(dataAdapter);
 
 	_argv[i] = const_cast<char *>(_scriptName.c_str());
@@ -155,15 +155,6 @@ void	CgiAdapter::parseParameters(DataAdapter& dataAdapter){
 	_scriptName = raw[0].substr(0, raw[0].find(".cgi",0) + 4);
 	_pathInfo = raw[0].substr(raw[0].find(".cgi",0) + 4, raw[0].size());
 	_query = raw[1];
-	/*
-	std::cerr << "this is the " << randomcount << "st/nd/rd/th time"<< std::endl;
-	std::cerr << "results of all these finds: " << std::endl;
-	std::cerr << "scr name: " << _scriptName << std::endl;
-	std::cerr << "pinfo   : " << _pathInfo << std::endl;
-	std::cerr << "q       : " << _query << std::endl;
-	randomcount++;
-	*/ // special xdddd TODO DELETE
-
 	
 	header = request.findHeader("Content-Type");
 	if (header)

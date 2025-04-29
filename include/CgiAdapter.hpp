@@ -6,7 +6,6 @@
 
 class CgiAdapter {
 	private:
-		int	randomcount;//TODO DELETE
 		std::string	_scriptName;
 		std::string	_method;
 		std::string	_query;

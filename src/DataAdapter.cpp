@@ -48,6 +48,8 @@ static void	deserializeRequestLine(std::stringstream& data, HttpRequest& request
 	request.url = line.substr(0, line.find(' '));
 	if (!request.url.empty() && request.url.at(request.url.size() -1) == '/')
 		request.url.erase(request.url.size() - 1, 1);
+	if (request.url.empty())
+		request.url = "/";
 	line =  line.substr(line.find(' ') + SPLIT_CHR_SZ, line.size());
 	request.version = line.substr(0, line.find('\r'));
 }
@@ -83,17 +85,17 @@ static void removeBoundarie(std::vector<char>& body, const std::string& boundari
 		body.erase(it, it + boundary_len);
 }
 
-static void	deserializeBody(std::stringstream& data, HttpRequest& request, DataAdapter& dataAdapter) {
-	char	c[1];
-	Connection *connection = dataAdapter.getConnection();
-	size_t		bodySize = 0;
 
-	while(data.get(*c)) {
-		request.body.push_back(*c);
-		bodySize++;
-		if (bodySize > connection->getServer().getMaxPayload())
-			connection->isOverPayloadLimit = true;
-	}
+static void	deserializeBody(std::stringstream& data, HttpRequest& request, DataAdapter& dataAdapter) {
+	Connection	*connection = dataAdapter.getConnection();
+	char		buffer[READ_BUFFER];
+
+	while (data.good() && !data.eof()) {
+		data.read(buffer, READ_BUFFER);
+		std::streamsize bytesRead = data.gcount();
+		if (bytesRead > 0)
+			request.body.insert(request.body.end(), buffer, buffer + bytesRead);
+	} 
 
 	if (connection->requestMode == Connection::PARTS) {
 		removeBoundarie(request.body, connection->boundStart);
@@ -134,7 +136,37 @@ HttpHeader	DataAdapter::deserializeHeader(std::string data) {
 	return newHeader;
 }
 
+#include "Config.hpp"
+#include "Server.hpp"
 
+static void	assingServer(DataAdapter& dataAdapter) {
+	HttpRequest&					request = dataAdapter.getRequest();
+	Connection						*actualConnection = dataAdapter.getConnection();
+	std::string						hostName = request.getHostName();
+	int 							port = actualConnection->getSocket().getPort();
+	std::map<std::string, Server>&	serverList = Config::getServers();
+	
+	for (std::map<std::string, Server>::iterator server = serverList.begin(); server != serverList.end(); ++server) {
+		if (server->second.getPort() == port) {
+			std::vector<std::string>& serverHosts = server->second.getHosts();
+			for (std::vector<std::string>::iterator host = serverHosts.begin(); host != serverHosts.end(); ++host) {
+				if (*host == hostName) {
+					actualConnection->setServer(server->second);
+					actualConnection->hasServerAssigned = true;
+					return ;
+				}
+			}
+		}
+	}
+
+	for (std::map<std::string, Server>::iterator defaultServer = serverList.begin(); defaultServer != serverList.end(); ++defaultServer) {
+		if (defaultServer->second.getPort() == port) {
+			actualConnection->setServer(defaultServer->second);
+			actualConnection->hasServerAssigned = true;
+			return ;
+		}
+	}
+}
 
 void	DataAdapter::deserializeRequest() {
 	std::stringstream			data;
@@ -143,13 +175,17 @@ void	DataAdapter::deserializeRequest() {
 
 	if (_connection->requestMode == Connection::SINGLE)
 		deserializeRequestLine(data, _request);
+
 	if (!isHeadersComplete)
 		isHeadersComplete = deserializeHeaders(data, _request, *this);
+
 	if (!_connection->isOverPayloadLimit)
 		deserializeBody(data, _request, *this);
 
 	if (_connection->requestMode == Connection::CHUNKS && !getConnection()->hasChunksEnded)
 		checkChunksEnd();
+
+	assingServer(*this);
 }
 
 

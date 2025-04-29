@@ -3,21 +3,30 @@
 #include <string>
 #include "Connection.hpp"
 #include "Server.hpp"
+#include "Socket.hpp"
 
 class ConnectionManager {
-private:
-	ConnectionManager();
-	~ConnectionManager();
-	ConnectionManager(const ConnectionManager& src);
-	ConnectionManager& operator=(const ConnectionManager& src);
+	private:
 
-	static void	recieveData(Connection *connection);
-	static void	sendData(Connection *connection);
+		std::list<Socket>		_socketList;;
+		
+		int			pollSockets();
+		
+		void		acceptConnections();
+		void		addConnection(Connection *connection);
 
-public:
-
-	static void	monitorConnections();
-	static void	recieveResponse(Connection *connection, const std::string& response, bool hasChunks);
-	static void	addConnection(Server& server, Connection *connection);
-	static void	deleteConnection(Server& server, Connection *connection);
-};
+		bool		checkClientTimeOut(Connection& connection);
+	
+	public:
+	
+		ConnectionManager();
+		~ConnectionManager();
+		ConnectionManager(const ConnectionManager& src);
+		ConnectionManager& operator=(const ConnectionManager& src);
+		
+		static std::list<Connection *>	_connectionList;
+		
+		void	addListenSocket(Server& server);
+		void	monitorConnections();
+		static void	deleteConnection(Connection *connection);
+	};
