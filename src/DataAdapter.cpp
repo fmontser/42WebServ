@@ -168,6 +168,19 @@ static void	assingServer(DataAdapter& dataAdapter) {
 	}
 }
 
+static void	updateServer(DataAdapter& dataAdapter) {
+	HttpRequest&					request = dataAdapter.getRequest();
+	Server							server = dataAdapter.getConnection()->getServer();
+	std::string						hostName = request.getHostName();
+
+	std::vector<std::string>& serverHosts = server.getHosts();
+	for (std::vector<std::string>::iterator host = serverHosts.begin(); host != serverHosts.end(); ++host) {
+		if (*host == hostName)
+			return ;
+	}
+	assingServer(dataAdapter);
+}
+
 void	DataAdapter::deserializeRequest() {
 	std::stringstream			data;
 
@@ -185,7 +198,10 @@ void	DataAdapter::deserializeRequest() {
 	if (_connection->requestMode == Connection::CHUNKS && !getConnection()->hasChunksEnded)
 		checkChunksEnd();
 
-	assingServer(*this);
+	if(!_connection->hasServerAssigned)
+		assingServer(*this);
+	else
+		updateServer(*this);
 }
 
 
