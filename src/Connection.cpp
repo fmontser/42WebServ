@@ -13,6 +13,7 @@
 
 Connection::Connection(Socket& socket) : _socket(socket), _dataAdapter(NULL), _cgiAdapter(NULL) {
 	_lastTime = time(NULL);
+	hasServerAssigned = false;
 	isOverPayloadLimit = false;
 	hasPendingCgi = false;
 	hasChunksEnded = false;
@@ -31,6 +32,7 @@ Connection::Connection(const Connection& src) : _socket(src._socket) {
 	recvBuffer = src.recvBuffer;
 	sendBuffer = src.sendBuffer;
 	isOverPayloadLimit = src.isOverPayloadLimit;
+	hasServerAssigned =  src.hasServerAssigned;
 	hasPendingCgi = src.hasPendingCgi;
 	hasChunksEnded = src.hasChunksEnded;
 	responseMode = src.responseMode;
@@ -47,6 +49,7 @@ Connection& Connection::operator=(const Connection& src) {
 		recvBuffer = src.recvBuffer;
 		sendBuffer = src.sendBuffer;
 		isOverPayloadLimit = src.isOverPayloadLimit;
+		hasServerAssigned =  src.hasServerAssigned;
 		hasPendingCgi = src.hasPendingCgi;
 		hasChunksEnded = src.hasChunksEnded;
 		responseMode = src.responseMode;

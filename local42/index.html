@@ -71,12 +71,8 @@
 	
 	<hr>
 
-	<a href="https://www.google.com/">Directory listing</a>
-
-	<hr>
-
 	<button>
-		<a href="http://localhost:8042/del">Directory listing</a>
+		<a href="/del">Directory listing</a>
 	</button>
 	
 	<hr>
@@ -143,7 +139,7 @@
 	<button id="testButton">Test Me!</button>
 	<script>
 		const gotoTest = () => {
-			window.location.href = 'http://localhost:8042/test';
+			window.location.href = '/test';
 		}
 		document.addEventListener('DOMContentLoaded', function() {
 			document.getElementById('testButton').addEventListener('click', function() {
@@ -156,7 +152,7 @@
 	<button id="nowhereButton">Nowhere!</button>
 	<script>
 		const gotoNowhere = () => {
-			window.location.href = 'http://localhost:8042/asadasdas';
+			window.location.href = '/asadasdas';
 		}
 		document.addEventListener('DOMContentLoaded', function() {
 			document.getElementById('nowhereButton').addEventListener('click', function() {
@@ -183,7 +179,7 @@
 				a !== null && b !== null && t !== null &&
 				!isNaN(a) && !isNaN(b) && !isNaN(t)
 			) {
-				const url = `http://localhost:8042/cgi-bin/multiply.cgi?a=${encodeURIComponent(a)}&b=${encodeURIComponent(b)}&t=${encodeURIComponent(t)}&operator=${encodeURIComponent(operator)}`;
+				const url = `/cgi-bin/multiply.cgi?a=${encodeURIComponent(a)}&b=${encodeURIComponent(b)}&t=${encodeURIComponent(t)}&operator=${encodeURIComponent(operator)}`;
 
 				window.location.href = url;
 			} else {
@@ -201,11 +197,5 @@
 		<input type="file" name="archivo" id="archivo">
 		<button type="submit">upload</button>
 	</form>
-	<hr>
-	<form action="/cgi-bin/cgi_test.cgi" method="post" enctype="text/plain">
-		<textarea id="data" name="data" rows="2" cols="50" placeholder="Send data to CGI script&#10;Enter some text: "></textarea><br>
-		<input type="submit" value="Send to CGI">
-	</form>
-
 </body>
 </html>

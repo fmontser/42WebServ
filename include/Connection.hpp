@@ -31,6 +31,7 @@ class Connection {
 		std::vector<char>	recvBuffer;
 		std::vector<char>	sendBuffer;
 		bool				isOverPayloadLimit;
+		bool				hasServerAssigned;
 		bool				hasPendingCgi;
 		bool				hasChunksEnded;
 		RequestMode			requestMode;

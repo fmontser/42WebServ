@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+		<base href="/../test/">
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<title>Test Page</title>
-		<link rel="stylesheet" href="../style.css">
+		<link rel="stylesheet" href="/style.css">
 		<style>
 			body {
 				background-color: #f0f0f0;
@@ -23,7 +24,7 @@
 		<meta name="author" content="local42">
 		<script>
 			const gotoLocalHost = () => {
-				window.location.href = 'http://localhost:8042/yep';
+				window.location.href = '../yep';
 			}
 			document.addEventListener('DOMContentLoaded', function() {
 				document.getElementById('testButton').addEventListener('click', function() {
@@ -42,9 +43,9 @@
 			<button id="testButton">Click Me!</button>
 			<br>
 			<br>
-			<a href="../index.html" >Home</a>
+			<a href="../" >Home</a>
 			<br>
-			<a href="../del/" >Files</a>
+			<a href="../del" >Files</a>
 		</main>
 		<footer>
 			<p>&copy; 2023 local42. No rights reserved.</p>
