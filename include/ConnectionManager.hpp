@@ -8,8 +8,6 @@
 class ConnectionManager {
 	private:
 
-		std::list<Socket>		_socketList;;
-		
 		int			pollSockets();
 		
 		void		acceptConnections();
@@ -24,6 +22,7 @@ class ConnectionManager {
 		ConnectionManager(const ConnectionManager& src);
 		ConnectionManager& operator=(const ConnectionManager& src);
 		
+		static std::list<Socket>		_socketList;
 		static std::list<Connection *>	_connectionList;
 		
 		void	addListenSocket(Server& server);

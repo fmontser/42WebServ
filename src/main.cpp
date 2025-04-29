@@ -1,10 +1,12 @@
 #include <iostream>
 #include <fstream>
+#include <unistd.h>
 #include "Config.hpp"
 #include "ConnectionManager.hpp"
 #include "SignalManager.hpp"
 #include "PathManager.hpp"
 #include "Server.hpp"
+#include "Utils.hpp"
 
 int main(int argc, char** argv) {
 	ConnectionManager	connectionManager;
@@ -15,8 +17,7 @@ int main(int argc, char** argv) {
 	}
 
 	SignalManager::signalSetUp();
-	PathManager::setWorkingDir("../");
-	std::string test(argv[1]);
+
 	std::fstream configFileStream(argv[1]);
 	if (!configFileStream.is_open()) {
 		std::cerr << "Configuration error: cannot open config file" << std::endl;
@@ -24,6 +25,8 @@ int main(int argc, char** argv) {
 	}
 
 	Config::loadConfig(configFileStream);
+
+	PathManager::setWorkingDir("../");
 
 	for (std::map<std::string, Server>::iterator it = Config::getServers().begin();
 		it != Config::getServers().end(); ++it) {

@@ -29,7 +29,7 @@ CGI_POST		:=	Replace.cgi.cpp
 CGI_TEST_SRC	:=	Cgi_test.cgi.cpp
 
 OBJS			:=	$(SRCS:.cpp=.o)
-INPUT			:=	"config/config.cfg"
+INPUT			:=	"../config/config.cfg"
 
 CC				:=	g++ #c++
 CC_FLAGS		:=	-Wall -Werror -Wextra -g -c -std=c++98

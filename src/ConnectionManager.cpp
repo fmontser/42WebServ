@@ -15,6 +15,7 @@
 #include "Server.hpp"
 
 std::list<Connection *> ConnectionManager::_connectionList;
+std::list<Socket>		ConnectionManager::_socketList;
 
 ConnectionManager::ConnectionManager() {}
 
